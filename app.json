@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Orazaka",
+    "slug": "orazaka-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "orazaka",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.krizaka.orazaka"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0a0e14"
+      },
+      "package": "com.krizaka.orazaka"
+    }
+  }
+}

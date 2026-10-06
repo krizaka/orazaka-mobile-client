@@ -1,0 +1,39 @@
+{
+  "name": "orazaka-mobile-client",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/App.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "validate": "npm run lint && npm run typecheck && npm run test",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@react-navigation/bottom-tabs": "^7.18.16",
+    "@react-navigation/native": "^7.1.0",
+    "@react-navigation/native-stack": "^7.3.0",
+    "date-fns": "^4.3.0",
+    "expo": "~53.0.0",
+    "expo-secure-store": "~14.2.0",
+    "expo-status-bar": "~2.2.0",
+    "@krizaka/orazaka-shared": "*",
+    "react": "19.2.4",
+    "react-native": "0.79.2",
+    "react-native-safe-area-context": "^5.4.0",
+    "react-native-screens": "~4.11.1"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19",
+    "eslint": "^9",
+    "jest": "^30.4.2",
+    "jest-expo": "~53.0.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.61.0"
+  }
+}
