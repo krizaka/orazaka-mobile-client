@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   badgeText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     borderColor: c.textSecondary,
   },
   subscribeBtnText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 16,
     fontWeight: "700",
   },

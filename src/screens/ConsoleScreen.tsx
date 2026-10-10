@@ -238,6 +238,6 @@ const styles = StyleSheet.create({
   sendButtonText: {
     fontSize: 18,
     fontWeight: "700",
-    color: c.surface0,
+    color: c.onAccent,
   },
 });

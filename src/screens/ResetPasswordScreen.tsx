@@ -73,7 +73,7 @@ export function ResetPasswordScreen({ route, navigation }: Props): React.JSX.Ele
         onPress={() => void submit()}
       >
         {isSubmitting ? (
-          <ActivityIndicator color={c.surface0} />
+          <ActivityIndicator color={c.onAccent} />
         ) : (
           <Text style={styles.primaryBtnText}>Reset Password</Text>
         )}
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   primaryBtnText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 16,
     fontWeight: "700",
   },

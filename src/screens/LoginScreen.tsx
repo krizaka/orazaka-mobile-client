@@ -70,7 +70,7 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
         onPress={() => void submit()}
       >
         {isSubmitting ? (
-          <ActivityIndicator color={c.surface0} />
+          <ActivityIndicator color={c.onAccent} />
         ) : (
           <Text style={styles.primaryBtnText}>Sign In</Text>
         )}
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   primaryBtnText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 16,
     fontWeight: "700",
   },

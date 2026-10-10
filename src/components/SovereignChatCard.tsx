@@ -4,18 +4,16 @@
  * A static, welcome-state mockup of the Orazaka engine answering *locally* —
  * dramatizes on-prem inference + interceptor pipeline + zero data egress.
  *
- * Consumes the SAME design tokens as web (AGENTS.md §8: "Mobile has its own
- * RN components but imports the same tokens from shared"). No inline hex —
- * every colour comes from `themes` in `orazaka-shared`. A single status dot
- * pulses on the native driver (transform/opacity only), disabled under
- * Reduce Motion.
+ * A product composite on the @krizaka/ui/native primitives: `Card.Root` for the
+ * frame, `Badge` for the model, and the colours of `useTheme()` — the platform's
+ * roles with the Orazaka brand (ThemeProvider in App.tsx). Text on the accent
+ * reads `onAccent`. No inline hex. A single status dot pulses on the native
+ * driver (opacity only), disabled under Reduce Motion.
  */
 
 import React, { useEffect, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from "react-native";
-import { themes } from "@krizaka/orazaka-shared";
-
-const c = themes.dark;
+import { Badge, Card, useTheme, type Theme } from "@krizaka/ui/native";
 
 /** Scripted, sovereign demo copy (mobile is English-first, like its siblings). */
 const DEMO = {
@@ -33,6 +31,8 @@ const DEMO = {
 
 /** Renders the mobile sovereign-chat welcome card. */
 export function SovereignChatCard(): React.JSX.Element {
+  const { theme } = useTheme();
+  const styles = React.useMemo(() => makeStyles(theme), [theme]);
   const pulse = useRef(new Animated.Value(0.5)).current;
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -59,7 +59,7 @@ export function SovereignChatCard(): React.JSX.Element {
   }, [pulse, reduceMotion]);
 
   return (
-    <View style={styles.card}>
+    <Card.Root radius="xl" style={styles.card}>
       {/* Header */}
       <View style={styles.head}>
         <View style={styles.idRow}>
@@ -74,9 +74,7 @@ export function SovereignChatCard(): React.JSX.Element {
             </View>
           </View>
         </View>
-        <View style={styles.modelChip}>
-          <Text style={styles.modelText}>{DEMO.model}</Text>
-        </View>
+        <Badge>{DEMO.model}</Badge>
       </View>
 
       {/* Conversation */}
@@ -111,116 +109,108 @@ export function SovereignChatCard(): React.JSX.Element {
           <Text style={styles.privacy}>{DEMO.privacy}</Text>
         </View>
       </View>
-    </View>
+    </Card.Root>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: c.borderDefault,
-    backgroundColor: c.surface1,
-    overflow: "hidden",
-  },
-  head: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: c.borderSubtle,
-    backgroundColor: c.surface2,
-  },
-  idRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: c.surface3,
-    borderWidth: 1,
-    borderColor: c.borderStrong,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarMark: { width: 14, height: 14, borderRadius: 4, backgroundColor: c.accent },
-  agent: { fontSize: 13, fontWeight: "700", color: c.textPrimary },
-  statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.accent },
-  status: { fontSize: 11, color: c.textSecondary },
-  modelChip: {
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: c.borderSubtle,
-    backgroundColor: c.surface1,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  modelText: { fontSize: 10, fontWeight: "600", color: c.textSecondary },
-  body: { paddingHorizontal: 16, paddingVertical: 16, gap: 12 },
-  bubble: { maxWidth: "88%", borderRadius: 16, paddingHorizontal: 13, paddingVertical: 10 },
-  userBubble: { alignSelf: "flex-end", backgroundColor: c.accent, borderBottomRightRadius: 5 },
-  userText: { fontSize: 13, fontWeight: "500", color: c.surface0, lineHeight: 19 },
-  aiBubble: {
-    alignSelf: "flex-start",
-    backgroundColor: c.surface2,
-    borderWidth: 1,
-    borderColor: c.borderSubtle,
-    borderBottomLeftRadius: 5,
-  },
-  routed: {
-    fontSize: 9.5,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-    color: c.accent,
-    marginBottom: 6,
-  },
-  aiText: { fontSize: 13, color: c.textPrimary, lineHeight: 19 },
-  pipeline: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    marginTop: 11,
-    paddingTop: 11,
-    borderTopWidth: 1,
-    borderTopColor: c.borderSubtle,
-  },
-  chip: { borderRadius: 999, backgroundColor: c.surface3, paddingHorizontal: 8, paddingVertical: 3 },
-  chipText: { fontSize: 10, fontWeight: "600", color: c.accent },
-  foot: {
-    paddingHorizontal: 16,
-    paddingTop: 13,
-    paddingBottom: 15,
-    borderTopWidth: 1,
-    borderTopColor: c.borderSubtle,
-    backgroundColor: c.surface2,
-    gap: 10,
-  },
-  fakeInput: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: c.borderDefault,
-    backgroundColor: c.surface1,
-    paddingLeft: 14,
-    paddingRight: 6,
-    paddingVertical: 6,
-  },
-  placeholder: { fontSize: 12.5, color: c.textMuted },
-  send: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: c.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  sendArrow: { fontSize: 15, fontWeight: "700", color: c.surface0 },
-  privacyRow: { flexDirection: "row", alignItems: "center", gap: 7 },
-  privacyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.accent },
-  privacy: { fontSize: 11, fontWeight: "500", color: c.textSecondary },
-});
+/** The card's styles for one theme (the roles of `useTheme()`). */
+function makeStyles(c: Theme) {
+  return StyleSheet.create({
+    card: { width: "100%" },
+    head: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: c.borderSubtle,
+      backgroundColor: c.surface2,
+    },
+    idRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+    avatar: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: c.surface3,
+      borderWidth: 1,
+      borderColor: c.borderStrong,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarMark: { width: 14, height: 14, borderRadius: 4, backgroundColor: c.accent },
+    agent: { fontSize: 13, fontWeight: "700", color: c.textPrimary },
+    statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
+    dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.accent },
+    status: { fontSize: 11, color: c.textSecondary },
+    body: { paddingHorizontal: 16, paddingVertical: 16, gap: 12 },
+    bubble: { maxWidth: "88%", borderRadius: 16, paddingHorizontal: 13, paddingVertical: 10 },
+    userBubble: { alignSelf: "flex-end", backgroundColor: c.accent, borderBottomRightRadius: 5 },
+    userText: { fontSize: 13, fontWeight: "500", color: c.onAccent, lineHeight: 19 },
+    aiBubble: {
+      alignSelf: "flex-start",
+      backgroundColor: c.surface2,
+      borderWidth: 1,
+      borderColor: c.borderSubtle,
+      borderBottomLeftRadius: 5,
+    },
+    routed: {
+      fontSize: 9.5,
+      fontWeight: "700",
+      letterSpacing: 0.5,
+      color: c.accentText,
+      marginBottom: 6,
+    },
+    aiText: { fontSize: 13, color: c.textPrimary, lineHeight: 19 },
+    pipeline: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 6,
+      marginTop: 11,
+      paddingTop: 11,
+      borderTopWidth: 1,
+      borderTopColor: c.borderSubtle,
+    },
+    chip: {
+      borderRadius: 999,
+      backgroundColor: c.surface3,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+    },
+    chipText: { fontSize: 10, fontWeight: "600", color: c.accentText },
+    foot: {
+      paddingHorizontal: 16,
+      paddingTop: 13,
+      paddingBottom: 15,
+      borderTopWidth: 1,
+      borderTopColor: c.borderSubtle,
+      backgroundColor: c.surface2,
+      gap: 10,
+    },
+    fakeInput: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: c.borderDefault,
+      backgroundColor: c.surface1,
+      paddingLeft: 14,
+      paddingRight: 6,
+      paddingVertical: 6,
+    },
+    placeholder: { fontSize: 12.5, color: c.textMuted },
+    send: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: c.accent,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    sendArrow: { fontSize: 15, fontWeight: "700", color: c.onAccent },
+    privacyRow: { flexDirection: "row", alignItems: "center", gap: 7 },
+    privacyDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: c.accent },
+    privacy: { fontSize: 11, fontWeight: "500", color: c.textSecondary },
+  });
+}

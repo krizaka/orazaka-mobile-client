@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   userText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontWeight: "500",
   },
   inputBar: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   sendBtnText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 20,
     fontWeight: "700",
   },

@@ -105,6 +105,6 @@ const styles = StyleSheet.create({
   retryText: {
     fontSize: 15,
     fontWeight: "700",
-    color: c.surface0,
+    color: c.onAccent,
   },
 });
