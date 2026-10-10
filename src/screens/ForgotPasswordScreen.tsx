@@ -70,7 +70,7 @@ export function ForgotPasswordScreen({ navigation }: Props): React.JSX.Element {
         onPress={() => void submit()}
       >
         {isSubmitting ? (
-          <ActivityIndicator color={c.surface0} />
+          <ActivityIndicator color={c.onAccent} />
         ) : (
           <Text style={styles.primaryBtnText}>Send Recovery Link</Text>
         )}
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   primaryBtnText: {
-    color: c.surface0,
+    color: c.onAccent,
     fontSize: 16,
     fontWeight: "700",
   },

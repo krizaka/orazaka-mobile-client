@@ -94,7 +94,7 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
           onPress={() => void install()}
         >
           {isInstalling ? (
-            <ActivityIndicator color={c.surface0} />
+            <ActivityIndicator color={c.onAccent} />
           ) : (
             <Text style={styles.primaryBtnText}>Installer</Text>
           )}
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { color: c.surface0, fontSize: 16, fontWeight: "700" },
+  primaryBtnText: { color: c.onAccent, fontSize: 16, fontWeight: "700" },
   lockedNotice: {
     borderWidth: 1,
     borderColor: c.surface3,

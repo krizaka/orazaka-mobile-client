@@ -86,7 +86,7 @@ export type RootStackParamList = AuthStackParamList & AppStackParamList & TabPar
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
-const Tabs = createBottomTabNavigator<TabParamList>();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 const OrazakaDarkTheme = {
   ...DefaultTheme,
@@ -104,7 +104,7 @@ const OrazakaDarkTheme = {
 
 function TabNavigator(): React.JSX.Element {
   return (
-    <Tabs.Navigator
+    <Tab.Navigator
       screenOptions={{
         headerStyle: { backgroundColor: c.surface1 },
         headerTintColor: c.textPrimary,
@@ -113,17 +113,17 @@ function TabNavigator(): React.JSX.Element {
         tabBarInactiveTintColor: c.textMuted,
       }}
     >
-      <Tabs.Screen name="Studios" component={StudioCatalogueScreen} options={{ title: "Studios" }} />
-      <Tabs.Screen name="ChatStream" component={ChatStreamScreen} options={{ title: "Chat", headerShown: false }} />
-      <Tabs.Screen name="Jobs" component={JobsScreen} options={{ title: "Jobs" }} />
-      <Tabs.Screen name="Automation" component={AutomationScreen} options={{ title: "Connecteurs" }} />
-      <Tabs.Screen
+      <Tab.Screen name="Studios" component={StudioCatalogueScreen} options={{ title: "Studios" }} />
+      <Tab.Screen name="ChatStream" component={ChatStreamScreen} options={{ title: "Chat", headerShown: false }} />
+      <Tab.Screen name="Jobs" component={JobsScreen} options={{ title: "Jobs" }} />
+      <Tab.Screen name="Automation" component={AutomationScreen} options={{ title: "Connecteurs" }} />
+      <Tab.Screen
         name="Dashboard"
         component={boundary("Dashboard", DashboardScreen)}
         options={{ title: "Système" }}
       />
-      <Tabs.Screen name="Profile" component={ProfileScreen} options={{ title: "Profil" }} />
-    </Tabs.Navigator>
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "Profil" }} />
+    </Tab.Navigator>
   );
 }
 

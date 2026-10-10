@@ -122,7 +122,7 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
           onPress={() => void start()}
         >
           {isStarting ? (
-            <ActivityIndicator color={c.surface0} />
+            <ActivityIndicator color={c.onAccent} />
           ) : (
             <Text style={styles.primaryBtnText}>Lancer</Text>
           )}
@@ -210,6 +210,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { color: c.surface0, fontSize: 16, fontWeight: "700" },
+  primaryBtnText: { color: c.onAccent, fontSize: 16, fontWeight: "700" },
   error: { color: c.accent, fontSize: 13, marginTop: 8 },
 });
