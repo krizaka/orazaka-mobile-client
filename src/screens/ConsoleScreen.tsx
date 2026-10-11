@@ -108,7 +108,7 @@ export function ConsoleScreen(): React.JSX.Element {
           item.role === "user" ? styles.userBubble : styles.systemBubble,
         ]}
       >
-        <Text style={styles.messageText}>{item.content}</Text>
+        <Text style={[styles.messageText, item.role === "user" && styles.userText]}>{item.content}</Text>
       </View>
     ),
     [],
@@ -202,6 +202,8 @@ const styles = StyleSheet.create({
     backgroundColor: c.surface2,
     alignSelf: "flex-start",
   },
+  // Text on the orange reads in onAccent (near-black, AA), never in the page's text colour.
+  userText: { color: c.onAccent },
   messageText: {
     fontSize: 14,
     color: c.textPrimary,

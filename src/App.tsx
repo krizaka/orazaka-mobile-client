@@ -5,6 +5,7 @@ import { ThemeProvider } from "@krizaka/ui/native";
 import { brands } from "@krizaka/tokens/native";
 import { AppNavigator } from "./navigation/AppNavigator";
 import { AuthProvider } from "./core/AuthContext";
+import { AppCharts } from "./components/AppCharts";
 
 /**
  * The root: the @krizaka/ui/native theme with the Orazaka brand (the orange of the mark, from @krizaka/tokens/native)
@@ -15,9 +16,11 @@ export default function App(): React.JSX.Element {
     <SafeAreaProvider>
       <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
         <StatusBar style="light" />
-        <AuthProvider>
-          <AppNavigator />
-        </AuthProvider>
+        <AppCharts>
+          <AuthProvider>
+            <AppNavigator />
+          </AuthProvider>
+        </AppCharts>
       </ThemeProvider>
     </SafeAreaProvider>
   );
