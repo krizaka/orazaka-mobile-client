@@ -45,7 +45,12 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores([".expo/**", "dist/**", "node_modules/**", "babel.config.js"]),
+  {
+    // Tooling read by Node as CommonJS (Metro, Expo config plugins, Jest): `require` is how they load.
+    files: ["metro.config.js", "jest.config.js", "plugins/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
+  globalIgnores([".expo/**", "dist/**", "node_modules/**", "babel.config.js", "ios/**", "android/**"]),
 ]);
 
 export default eslintConfig;

@@ -16,6 +16,9 @@
         "backgroundColor": "#0a0e14"
       },
       "package": "com.krizaka.orazaka"
-    }
+    },
+    "plugins": [
+      "./plugins/with-xcode27"
+    ]
   }
 }

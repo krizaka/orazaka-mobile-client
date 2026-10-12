@@ -39,3 +39,7 @@ next-env.d.ts
 *.log
 var/
 scratch/
+
+# Native folders are generated (Continuous Native Generation: npx expo prebuild)
+/ios
+/android
