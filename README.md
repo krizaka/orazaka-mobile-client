@@ -35,6 +35,9 @@ The Expo SDK 53 client (port `8081`). Native clients call the edge (`:8088`) wit
 npm install && npm start
 ```
 
+Running it on a simulator against the local stack, what each screen does today and what is missing:
+[docs/MOBILE.md](https://github.com/krizaka/orazaka/blob/main/docs/MOBILE.md) of the workspace.
+
 ## Position in the platform
 
 | | |
