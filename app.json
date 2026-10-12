@@ -2,6 +2,7 @@
   "expo": {
     "name": "Orazaka",
     "slug": "orazaka-mobile",
+    "owner": "oussamaabid",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "orazaka",
@@ -19,6 +20,11 @@
     },
     "plugins": [
       "./plugins/with-xcode27"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "27da30b2-57a8-4f97-a985-be044a5d2e09"
+      }
+    }
   }
 }
