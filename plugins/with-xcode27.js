@@ -53,34 +53,45 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 `;
 
+/** The SDK 53 Podfile with the Xcode 27 build settings in its post_install. Idempotent; throws on another template. */
+function patchPodfile(src) {
+  if (src.includes(MARK)) return src;
+  const anchor = /(\n\s*:ccache_enabled => [^\n]*\n\s*\)\n)/;
+  if (!anchor.test(src)) throw new Error("with-xcode27: Podfile template changed");
+  return src.replace(anchor, `$1${PODFILE_PATCH}`);
+}
+
+/** The SDK 53 AppDelegate.swift with a scene delegate that starts React Native. Idempotent; throws on another template. */
+function adoptScenes(src) {
+  if (src.includes("class SceneDelegate")) return src;
+  if (!START_IN_APP_DELEGATE.test(src)) throw new Error("with-xcode27: AppDelegate template changed");
+  return src.replace(START_IN_APP_DELEGATE, "\n    // SceneDelegate creates the window and starts React Native (scene life cycle, iOS 27).\n") + SCENE_DELEGATE;
+}
+
+/** One window scene, delegated to SceneDelegate. */
+const SCENE_MANIFEST = {
+  UIApplicationSupportsMultipleScenes: false,
+  UISceneConfigurations: {
+    UIWindowSceneSessionRoleApplication: [{ UISceneConfigurationName: "Default Configuration", UISceneDelegateClassName: "SceneDelegate" }],
+  },
+};
+
 function withXcode27(config) {
   config = withPodfile(config, (c) => {
-    if (!c.modResults.contents.includes(MARK)) {
-      const anchor = /(\n\s*:ccache_enabled => [^\n]*\n\s*\)\n)/;
-      if (!anchor.test(c.modResults.contents)) throw new Error("with-xcode27: Podfile template changed");
-      c.modResults.contents = c.modResults.contents.replace(anchor, `$1${PODFILE_PATCH}`);
-    }
+    c.modResults.contents = patchPodfile(c.modResults.contents);
     return c;
   });
   config = withInfoPlist(config, (c) => {
-    c.modResults.UIApplicationSceneManifest = {
-      UIApplicationSupportsMultipleScenes: false,
-      UISceneConfigurations: {
-        UIWindowSceneSessionRoleApplication: [{ UISceneConfigurationName: "Default Configuration", UISceneDelegateClassName: "SceneDelegate" }],
-      },
-    };
+    c.modResults.UIApplicationSceneManifest = SCENE_MANIFEST;
     return c;
   });
   return withAppDelegate(config, (c) => {
-    let src = c.modResults.contents;
-    if (!src.includes("class SceneDelegate")) {
-      if (!START_IN_APP_DELEGATE.test(src)) throw new Error("with-xcode27: AppDelegate template changed");
-      src = src.replace(START_IN_APP_DELEGATE, "\n    // SceneDelegate creates the window and starts React Native (scene life cycle, iOS 27).\n");
-      src += SCENE_DELEGATE;
-    }
-    c.modResults.contents = src;
+    c.modResults.contents = adoptScenes(c.modResults.contents);
     return c;
   });
 }
 
 module.exports = withXcode27;
+module.exports.patchPodfile = patchPodfile;
+module.exports.adoptScenes = adoptScenes;
+module.exports.SCENE_MANIFEST = SCENE_MANIFEST;

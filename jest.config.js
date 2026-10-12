@@ -21,7 +21,7 @@ module.exports = {
       displayName: "logic",
       testEnvironment: "node",
       preset: "ts-jest",
-      testMatch: ["<rootDir>/src/**/__tests__/**/*.test.ts"],
+      testMatch: ["<rootDir>/src/**/__tests__/**/*.test.ts", "<rootDir>/plugins/__tests__/*.test.ts"],
       transform: {
         "^.+\\.tsx?$": ["ts-jest", { tsconfig: { jsx: "react-jsx", esModuleInterop: true } }],
       },
