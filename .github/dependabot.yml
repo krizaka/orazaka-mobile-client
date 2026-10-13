@@ -44,12 +44,12 @@ updates:
       - dependency-name: "@react-native/*"
       # pinned by the Expo SDK (53 → 57 in PS7)
       - dependency-name: "jest-expo"
+      # the Expo SDK pins TypeScript (~5.8 on SDK 53); TS 6 breaks the ts-jest suites (TS5011 rootDir)
+      - dependency-name: "typescript"
+        versions: [">=6"]
       # with Expo 57; krizaka/orazaka-mobile-client#15
       - dependency-name: "@testing-library/react-native"
         versions: [">=14"]
-      # TypeScript 7 (native compiler) waits for @krizaka/config and typescript-eslint (krizaka-ui#141)
-      - dependency-name: "typescript"
-        versions: [">=7"]
       # types of the Node LTS we run (22/24), never a non-LTS line
       - dependency-name: "@types/node"
         versions: [">=25"]
