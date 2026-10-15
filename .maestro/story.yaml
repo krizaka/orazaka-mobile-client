@@ -28,8 +28,12 @@ appId: com.krizaka.orazaka
 - tapOn:
     id: "field-prompt"
 - inputText: ${IMAGE_PROMPT}
-- tapOn:
-    point: "50%,17%"
+# The software keyboard (when the simulator shows one) hides the button: close it.
+- runFlow:
+    when:
+      visible: "123"
+    commands:
+      - hideKeyboard
 - tapOn: "Lancer"
 - extendedWaitUntil:
     visible: "Votre image"
@@ -41,25 +45,11 @@ appId: com.krizaka.orazaka
     point: "14%,8%"
 - tapOn:
     point: "14%,8%"
-# A short clip, watched playing.
-- tapOn: "Génération vidéo.*"
-- tapOn: "Ouvrir"
-- tapOn:
-    id: "field-prompt"
-- inputText: ${VIDEO_PROMPT}
-- tapOn:
-    point: "50%,17%"
-- tapOn: "16:9"
-- tapOn: "Lancer"
-- extendedWaitUntil:
-    visible: "Votre vidéo"
-    timeout: 600000
-- waitForAnimationToEnd:
-    timeout: 8000
-- tapOn:
-    point: "14%,8%"
-- tapOn:
-    point: "14%,8%"
+# A short clip, watched playing — only where a video engine is available (-e WITH_VIDEO=true).
+- runFlow:
+    file: story-video.yaml
+    when:
+      true: ${WITH_VIDEO == 'true'}
 # A streamed answer.
 - tapOn: "Chat.*"
 - tapOn: "Message Orazaka…"

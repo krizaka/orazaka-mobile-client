@@ -1,0 +1,25 @@
+appId: com.krizaka.orazaka
+---
+# A short clip, watched playing (a subflow: it needs a video engine and its daily budget).
+- tapOn: "Génération vidéo.*"
+- tapOn: "Ouvrir"
+- tapOn:
+    id: "field-prompt"
+- inputText: ${VIDEO_PROMPT}
+# The software keyboard (when the simulator shows one) hides the button: close it.
+- runFlow:
+    when:
+      visible: "123"
+    commands:
+      - hideKeyboard
+- tapOn: "16:9"
+- tapOn: "Lancer"
+- extendedWaitUntil:
+    visible: "Votre vidéo"
+    timeout: 600000
+- waitForAnimationToEnd:
+    timeout: 8000
+- tapOn:
+    point: "14%,8%"
+- tapOn:
+    point: "14%,8%"
