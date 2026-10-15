@@ -101,7 +101,7 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
   useEffect(() => stopPolling, [stopPolling]);
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.page} contentContainerStyle={styles.content} keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>{label}</Text>
 
       {run === null ? (

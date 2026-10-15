@@ -28,12 +28,8 @@ appId: com.krizaka.orazaka
 - tapOn:
     id: "field-prompt"
 - inputText: ${IMAGE_PROMPT}
-# The software keyboard (when the simulator shows one) hides the button: close it.
-- runFlow:
-    when:
-      visible: "123"
-    commands:
-      - hideKeyboard
+# Return closes the software keyboard of a single-line field: the Launch button is then reachable.
+- pressKey: Enter
 - tapOn: "Lancer"
 - extendedWaitUntil:
     visible: "Votre image"
