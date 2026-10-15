@@ -37,8 +37,10 @@ appId: com.krizaka.orazaka
 - extendedWaitUntil:
     notVisible: "RUNNING"
     timeout: 5000
-- back
-- back
+- tapOn:
+    point: "14%,8%"
+- tapOn:
+    point: "14%,8%"
 # A short clip, watched playing.
 - tapOn: "Génération vidéo.*"
 - tapOn: "Ouvrir"
@@ -54,8 +56,10 @@ appId: com.krizaka.orazaka
     timeout: 600000
 - waitForAnimationToEnd:
     timeout: 8000
-- back
-- back
+- tapOn:
+    point: "14%,8%"
+- tapOn:
+    point: "14%,8%"
 # A streamed answer.
 - tapOn: "Chat.*"
 - tapOn: "Message Orazaka…"
