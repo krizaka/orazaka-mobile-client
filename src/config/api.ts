@@ -57,6 +57,15 @@ function messageOf(body: unknown, fallback: string): string {
   return fallback;
 }
 
+/**
+ * The language the app speaks, sent as `Accept-Language` so the platform answers in it (a Studio's name, its fields).
+ * Set once by the app's locale provider; the default is English, like the catalogues.
+ */
+let requestLanguage = "en";
+export function setRequestLanguage(language: string): void {
+  requestLanguage = language;
+}
+
 interface RequestOptions {
   readonly method?: string;
   readonly body?: unknown;
@@ -82,13 +91,21 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     method,
     headers: {
       "Content-Type": "application/json",
+      "Accept-Language": requestLanguage,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
 
   const text = await response.text();
-  const parsed: unknown = text === "" ? undefined : JSON.parse(text);
+  // A gateway error is an HTML page, not JSON: a failed status is an ApiError whatever the body is.
+  let parsed: unknown;
+  try {
+    parsed = text === "" ? undefined : JSON.parse(text);
+  } catch {
+    if (response.ok) throw new ApiError(response.status, "Unreadable response");
+    parsed = undefined;
+  }
 
   if (!response.ok) {
     throw new ApiError(response.status, messageOf(parsed, `Request failed (${response.status})`));

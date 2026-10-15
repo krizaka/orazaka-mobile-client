@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "../config/api";
 import { useToken } from "./AuthContext";
+import { useT } from "../i18n";
+import { errorText } from "../i18n/errorText";
 
 interface ApiResource<T> {
   readonly data: T | null;
@@ -21,6 +23,7 @@ interface ApiResource<T> {
  */
 export function useApi<T>(path: string | null): ApiResource<T> {
   const token = useToken();
+  const t = useT();
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +48,7 @@ export function useApi<T>(path: string | null): ApiResource<T> {
         }
       } catch (cause: unknown) {
         if (!cancelled) {
-          setError(cause instanceof Error ? cause.message : "Request failed");
+          setError(errorText(cause, t, "common.unavailable"));
         }
       } finally {
         if (!cancelled) {
@@ -59,7 +62,7 @@ export function useApi<T>(path: string | null): ApiResource<T> {
     return () => {
       cancelled = true;
     };
-  }, [path, token, attempt]);
+  }, [path, token, attempt, t]);
 
   return { data, isLoading, error, reload };
 }

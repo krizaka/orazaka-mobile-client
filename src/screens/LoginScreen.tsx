@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Button, TextField, Txt } from "@krizaka/ui/native";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { themes } from "@krizaka/orazaka-shared";
+import { ApiError } from "../config/api";
 import { useAuth } from "../core/AuthContext";
+import { errorText } from "../i18n/errorText";
+import { useT } from "../i18n";
+import { AuthShell } from "../ui/AuthShell";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export function LoginScreen({ navigation }: Props): React.JSX.Element {
+  const t = useT();
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,127 +29,43 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
       // No navigate(): the navigator swaps the auth stack for the app stack as soon as the
       // session exists, so there is exactly one place that decides where a signed-in user lands.
     } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : "Sign-in failed");
+      // A 401 here is a wrong e-mail or password, not an expired session.
+      setError(cause instanceof ApiError && cause.status === 401 ? t("auth.invalidCredentials") : errorText(cause, t, "auth.signInFailed"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Orazaka</Text>
-      <Text style={styles.subtitle}>Sign in to your account</Text>
-
-      <TextInput
-        id="login-email"
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={c.textMuted}
+    <AuthShell title={t("auth.name")} subtitle={t("auth.tagline")}>
+      <TextField
+        testID="login-email"
+        label={t("auth.email")}
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
-        editable={!isSubmitting}
+        disabled={isSubmitting}
         value={email}
-        onChangeText={setEmail}
+        onValueChange={setEmail}
       />
-      <TextInput
-        id="login-password"
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={c.textMuted}
+      <TextField
+        testID="login-password"
+        label={t("auth.password")}
         secureTextEntry
         autoComplete="current-password"
-        editable={!isSubmitting}
+        disabled={isSubmitting}
         value={password}
-        onChangeText={setPassword}
+        onValueChange={setPassword}
         onSubmitEditing={() => void submit()}
       />
-
-      {error !== null && <Text style={styles.error}>{error}</Text>}
-
-      <TouchableOpacity
-        id="login-submit"
-        style={[styles.primaryBtn, !canSubmit && styles.primaryBtnDisabled]}
-        disabled={!canSubmit}
-        onPress={() => void submit()}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator color={c.onAccent} />
-        ) : (
-          <Text style={styles.primaryBtnText}>Sign In</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity disabled={isSubmitting} onPress={() => navigation.navigate("ForgotPassword")}>
-        <Text style={styles.link}>Forgot password?</Text>
-      </TouchableOpacity>
-      <TouchableOpacity disabled={isSubmitting} onPress={() => navigation.navigate("Register")}>
-        <Text style={styles.link}>Create an account</Text>
-      </TouchableOpacity>
-    </View>
+      {error !== null && (
+        <Txt tone="danger" variant="caption">
+          {error}
+        </Txt>
+      )}
+      <Button testID="login-submit" label={t("auth.signIn")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <Button variant="ghost" label={t("auth.forgot")} disabled={isSubmitting} onPress={() => navigation.navigate("ForgotPassword")} />
+      <Button variant="ghost" label={t("auth.create")} disabled={isSubmitting} onPress={() => navigation.navigate("Register")} />
+    </AuthShell>
   );
 }
-
-/** The one dark palette, shared with web through `orazaka-shared`. */
-const c = themes.dark;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 28,
-    backgroundColor: c.surface0,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: c.accent,
-    textAlign: "center",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: c.textSecondary,
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  input: {
-    backgroundColor: c.surface1,
-    borderWidth: 1,
-    borderColor: c.surface3,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: c.textPrimary,
-    marginBottom: 14,
-  },
-  primaryBtn: {
-    backgroundColor: c.accent,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  primaryBtnDisabled: {
-    opacity: 0.4,
-  },
-  primaryBtnText: {
-    color: c.onAccent,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  error: {
-    color: c.accent,
-    fontSize: 13,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  link: {
-    color: c.accent,
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: 10,
-  },
-});

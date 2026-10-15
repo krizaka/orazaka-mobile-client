@@ -14,9 +14,10 @@ const job = (over: Partial<JobRecord>): JobRecord => ({
 });
 
 describe("jobStats", () => {
-  it("names the kind of work in the app's language", () => {
-    expect(jobKind("orazaka.core.media.speech")).toBe("Voix");
-    expect(jobKind("orazaka.core.chat.completion")).toBe("Texte");
+  it("names the kind of work by a key the screen words", () => {
+    expect(jobKind("orazaka.core.media.speech")).toBe("voice");
+    expect(jobKind("orazaka.studio.media.sound")).toBe("voice");
+    expect(jobKind("orazaka.core.chat.completion")).toBe("text");
   });
 
   it("lays out every day of the window, failures apart", () => {
@@ -27,8 +28,8 @@ describe("jobStats", () => {
 
   it("counts the kinds, largest first", () => {
     expect(jobsByKind([job({}), job({}), job({ featureKey: "x.video" })])).toEqual([
-      { kind: "Images", count: 2 },
-      { kind: "Vidéos", count: 1 },
+      { kind: "image", count: 2 },
+      { kind: "video", count: 1 },
     ]);
   });
 });

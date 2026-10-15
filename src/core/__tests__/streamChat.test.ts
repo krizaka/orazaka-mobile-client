@@ -1,4 +1,4 @@
-import { streamChat } from "../streamChat";
+import { streamChat, type StreamFailure } from "../streamChat";
 
 /**
  * A controllable stand-in for the XHR the streamer drives.
@@ -59,20 +59,30 @@ beforeEach(() => {
   (globalThis as { XMLHttpRequest: unknown }).XMLHttpRequest = FakeXhr;
 });
 
-function start(token: string | null = "jwt-123") {
+function start(token: string | null = "jwt-123", options: { model?: string | null } = {}) {
   const content: string[] = [];
-  const errors: string[] = [];
+  const errors: StreamFailure[] = [];
+  const pipeline: string[][] = [];
+  const steps: string[] = [];
   let done = false;
 
-  const abort = streamChat("conv-1", "Bonjour", token, {
-    onContent: (accumulated) => content.push(accumulated),
-    onDone: () => {
-      done = true;
+  const abort = streamChat(
+    "conv-1",
+    "Bonjour",
+    token,
+    {
+      onContent: (accumulated) => content.push(accumulated),
+      onPipeline: (ids) => pipeline.push([...ids]),
+      onStep: (id) => steps.push(id),
+      onDone: () => {
+        done = true;
+      },
+      onError: (failure) => errors.push(failure),
     },
-    onError: (message) => errors.push(message),
-  });
+    options,
+  );
 
-  return { xhr: FakeXhr.instances[0], content, errors, abort, isDone: () => done };
+  return { xhr: FakeXhr.instances[0], content, errors, pipeline, steps, abort, isDone: () => done };
 }
 
 describe("streamChat", () => {
@@ -121,11 +131,34 @@ describe("streamChat", () => {
   it("ignores pipeline events so interceptor traffic never lands in the reply", () => {
     const { xhr, content } = start();
 
-    xhr.push("event: pipeline-ack\ndata: {\"interceptors\":[\"a\",\"b\"]}\n\n");
+    xhr.push("event: pipeline-ack\ndata: {\"coreInterceptorIds\":[\"a\"],\"dynamicInterceptorIds\":[\"b\"]}\n\n");
     xhr.push("event: pipeline-step\ndata: {\"interceptorId\":\"translation\"}\n\n");
     xhr.push('data: {"content":"Bonjour"}\n\n');
 
     expect(content).toEqual(["Bonjour"]);
+  });
+
+  it("reports the real pipeline: the chain from the ack, then each step as it finishes", () => {
+    const { xhr, pipeline, steps } = start();
+
+    xhr.push(
+      'event:pipeline-ack\ndata:{"pipelineId":"default","coreInterceptorIds":["UserContextResolver","SafetyInterceptor"],"dynamicInterceptorIds":["RouterInterceptor"],"estimatedLatencyMs":70}\n\n',
+    );
+    xhr.push('event:pipeline-step\ndata:{"interceptorId":"UserContextResolver"}\n\n');
+    xhr.push('event:pipeline-step\ndata:{"interceptorId":"SafetyInterceptor"}\n\n');
+
+    expect(pipeline).toEqual([["UserContextResolver", "SafetyInterceptor", "RouterInterceptor"]]);
+    expect(steps).toEqual(["UserContextResolver", "SafetyInterceptor"]);
+  });
+
+  it("ignores a malformed pipeline payload instead of failing the answer", () => {
+    const { xhr, pipeline, content } = start();
+
+    xhr.push("event:pipeline-ack\ndata:not-json\n\n");
+    xhr.push('data:{"content":"ok"}\n\n');
+
+    expect(pipeline).toEqual([]);
+    expect(content).toEqual(["ok"]);
   });
 
   it("resumes reading message events after a pipeline event", () => {
@@ -154,7 +187,7 @@ describe("streamChat", () => {
 
     xhr.finish(401);
 
-    expect(errors[0]).toContain("Session expirée");
+    expect(errors[0]).toEqual({ kind: "unauthorized" });
   });
 
   it("reports other failures with their status", () => {
@@ -162,7 +195,7 @@ describe("streamChat", () => {
 
     xhr.finish(503);
 
-    expect(errors[0]).toContain("503");
+    expect(errors[0]).toEqual({ kind: "interrupted", status: 503 });
   });
 
   it("aborts the underlying request when the caller stops listening", () => {
@@ -171,6 +204,14 @@ describe("streamChat", () => {
     abort();
 
     expect(xhr.aborted).toBe(true);
+  });
+
+  it("sends the model the person picked", () => {
+    expect(JSON.parse(start("jwt", { model: "gemma-4-31B-it" }).xhr.sentBody ?? "{}")).toMatchObject({ model: "gemma-4-31B-it" });
+  });
+
+  it("sends null for the platform default", () => {
+    expect(JSON.parse(start("jwt").xhr.sentBody ?? "{}")).toMatchObject({ model: null });
   });
 
   it("sends the prompt the actor typed", () => {

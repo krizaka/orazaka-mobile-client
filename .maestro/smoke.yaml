@@ -1,7 +1,6 @@
-# Smoke flow: sign in on a fresh install, open a Studio, the jobs and the profile, sign out.
-# Run on a simulator against the local Orazaka stack (edge :8088), signed in as the demo persona
-# (`orazaka demo seed` — local only):
-#   maestro test .maestro/smoke.yaml -e ORAZAKA_EMAIL=eric.morel@example.com -e ORAZAKA_PASSWORD=<password>
+# Smoke flow: sign in on a fresh install, open a Studio, the chat, the jobs and the profile, sign out.
+# On a simulator whose language is English, against the stack the app points at (EXPO_PUBLIC_EDGE_URL):
+#   maestro test .maestro/smoke.yaml -e ORAZAKA_EMAIL=<email> -e ORAZAKA_PASSWORD=<password>
 appId: com.krizaka.orazaka
 ---
 - launchApp:
@@ -14,24 +13,28 @@ appId: com.krizaka.orazaka
 - inputText: ${ORAZAKA_EMAIL}
 - tapOn: "Password"
 - inputText: ${ORAZAKA_PASSWORD}
-# The password field submits the form (onSubmitEditing).
 - pressKey: Enter
 # iOS offers to save the password: decline.
 - tapOn:
     text: "Not Now"
     optional: true
-# A Studio card reads as one element: its name, tagline, profession and price.
 - extendedWaitUntil:
-    visible: "Génération d.image Une phrase.*"
+    visible:
+      id: "studio-image-generation"
     timeout: 30000
-- tapOn: "Génération d.image Une phrase.*"
-- assertVisible: "Installer"
-- tapOn: "Tabs"
-- tapOn: "Jobs.*"
-- extendedWaitUntil:
-    visible: "Tâches par jour"
-    timeout: 20000
-- tapOn: "Profil.*"
-- assertVisible: ${ORAZAKA_EMAIL}
-- tapOn: "Se déconnecter"
+- tapOn:
+    id: "studio-image-generation"
+- assertVisible:
+    id: "studio-open"
+- tapOn: "Back"
+# One chat, with its empty state and no decorative exchange.
+- tapOn: "Chat"
+- assertVisible: "What can I do for you?"
+- assertNotVisible: "Your sovereign AI, on this device."
+- tapOn: "Jobs"
+- assertVisible: "Jobs per day"
+- tapOn: "Profile"
+- assertVisible: "Sign out"
+- assertNotVisible: "ROLE_USER"
+- tapOn: "Sign out"
 - assertVisible: "Sign in to your account"

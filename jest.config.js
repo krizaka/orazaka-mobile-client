@@ -15,6 +15,23 @@ const reactDir = path.dirname(require.resolve("react/package.json", { paths: [__
 /** @krizaka/* packages export ES modules only (an `import` condition): Jest requires their files directly. */
 const krizaka = (name, file) => path.join(path.dirname(require.resolve(`@krizaka/${name}/package.json`, { paths: [__dirname] })), file);
 
+/** The ES-module entries of the packages the kit and the app import (each has only an `import` condition). */
+const esmEntries = {
+  pacer: ["", "react"],
+  intl: ["", "plural", "number", "date", "money"],
+  i18n: ["", "react"],
+  icons: ["native"],
+};
+const esmMap = Object.fromEntries(
+  Object.entries(esmEntries).flatMap(([name, subs]) =>
+    subs.map((sub) => {
+      const dir = path.dirname(require.resolve(`@krizaka/${name}/package.json`, { paths: [__dirname] }));
+      const entry = require(path.join(dir, "package.json")).exports[sub === "" ? "." : `./${sub}`].import;
+      return [`^@krizaka/${name}${sub === "" ? "" : `/${sub}`}$`, path.join(dir, entry)];
+    }),
+  ),
+);
+
 module.exports = {
   projects: [
     {
@@ -39,10 +56,10 @@ module.exports = {
         "^@krizaka/ui/native$": krizaka("ui", "dist/native.js"),
         "^@krizaka/tokens/native$": krizaka("tokens", "dist/native.js"),
         "^@krizaka/charts/native$": krizaka("charts", "dist/native.js"),
-        "^@krizaka/intl$": krizaka("intl", "dist/index.js"),
+        ...esmMap,
       },
       transformIgnorePatterns: [
-        "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@react-navigation/.*|react-navigation|@krizaka/.*|react-native-svg))",
+        "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@react-navigation/.*|react-navigation|@krizaka/.*|@tanstack/.*|react-native-svg))",
       ],
     },
   ],

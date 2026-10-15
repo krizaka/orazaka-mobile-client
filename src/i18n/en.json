@@ -1,0 +1,262 @@
+{
+  "common": {
+    "retry": "Retry",
+    "loading": "Loading",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "unavailable": "Unavailable right now",
+    "requestFailed": "Request failed ({status})",
+    "unreachable": "The platform cannot be reached.",
+    "sessionExpired": "Your session has expired. Sign in again.",
+    "streamInterrupted": "The answer was interrupted ({status}).",
+    "emptyJobs": "No jobs yet."
+  },
+  "tabs": {
+    "studios": "Studios",
+    "chat": "Chat",
+    "jobs": "Jobs",
+    "profile": "Profile",
+    "label": "Main sections"
+  },
+  "screens": {
+    "studio": "Studio",
+    "run": "Run",
+    "connectors": "Connectors",
+    "system": "System"
+  },
+  "auth": {
+    "tagline": "Sign in to your account",
+    "email": "Email",
+    "emailAddress": "Email address",
+    "password": "Password",
+    "username": "Username",
+    "signIn": "Sign in",
+    "signInFailed": "Sign-in failed",
+    "forgot": "Forgot password?",
+    "create": "Create an account",
+    "register": {
+      "title": "Create account",
+      "subtitle": "Join Orazaka",
+      "submit": "Create account",
+      "haveAccount": "Already have an account? Sign in",
+      "failed": "Registration failed",
+      "verify": "Check your inbox: a verification link was sent to {email}."
+    },
+    "forgotScreen": {
+      "title": "Reset password",
+      "subtitle": "Enter your email and we will send you a recovery link.",
+      "submit": "Send recovery link",
+      "sent": "If that address has an account, a reset link is on its way.",
+      "failed": "The request failed",
+      "back": "Back to sign in"
+    },
+    "reset": {
+      "title": "New password",
+      "subtitle": "Enter your new password below.",
+      "newPassword": "New password",
+      "confirm": "Confirm password",
+      "mismatch": "The two passwords do not match.",
+      "submit": "Reset password",
+      "failed": "The password could not be reset",
+      "done": "Your password has been reset. You can sign in."
+    },
+    "invalidCredentials": "Invalid email or password.",
+    "name": "Orazaka"
+  },
+  "studios": {
+    "empty": "No Studio in the catalogue yet.",
+    "locked": "Locked",
+    "pricing": {
+      "FREE": "Free",
+      "INCLUDED": "Included",
+      "PAID": "Paid"
+    },
+    "credits": "{count} credits per run",
+    "notIncluded": "This Studio is not included in your plan.",
+    "open": "Open",
+    "install": "Install",
+    "notFound": "Studio not found",
+    "installFailed": "The Studio could not be installed",
+    "launch": "Launch",
+    "listPlaceholder": "One value per line",
+    "startFailed": "The run could not be started",
+    "followFailed": "Following the run was interrupted",
+    "results": "Results",
+    "progress": "Run progress",
+    "stepsDone": "{done} of {total} steps",
+    "run": {
+      "PENDING_APPROVAL": "Waiting for approval",
+      "RUNNING": "Running",
+      "AWAITING_INPUT": "Waiting for your input",
+      "SUCCEEDED": "Done",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled",
+      "COMPENSATING": "Rolling back"
+    },
+    "step": {
+      "PENDING": "Waiting",
+      "RUNNING": "Running",
+      "SUCCEEDED": "Done",
+      "FAILED": "Failed",
+      "SKIPPED": "Skipped",
+      "CANCELLED": "Cancelled"
+    },
+    "fields": {
+      "image-generation": {
+        "prompt": "What you want to see"
+      },
+      "video-generation": {
+        "prompt": "What should happen on screen"
+      },
+      "speech-synthesis": {
+        "text": "The text to read"
+      },
+      "seed": "Seed (optional)",
+      "size": "Format",
+      "model": "Model (optional)",
+      "negativePrompt": "Avoid (optional)",
+      "image": "Starting image (optional)",
+      "aspect": "Format",
+      "durationSeconds": "Duration (seconds)",
+      "voice": "Voice",
+      "prompt": "Prompt",
+      "text": "Text"
+    },
+    "generating": "Working on it…",
+    "runAgain": "New run",
+    "moreOptions": "More options",
+    "fewerOptions": "Fewer options"
+  },
+  "artefact": {
+    "image": "Generated image",
+    "video": "Generated video",
+    "audio": "Generated audio",
+    "facts": {
+      "provider": "Provider",
+      "model": "Model",
+      "durationMs": "Duration",
+      "seed": "Seed",
+      "runId": "Run"
+    }
+  },
+  "jobs": {
+    "perDay": "Jobs per day",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "byKind": "By kind",
+    "running": "{kind} in progress",
+    "kind": {
+      "image": "Images",
+      "video": "Videos",
+      "voice": "Voice",
+      "text": "Text"
+    },
+    "status": {
+      "PENDING": "Waiting",
+      "PROCESSING": "In progress",
+      "COMPLETED": "Done",
+      "FAILED": "Failed"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "placeholder": "Message Orazaka",
+    "send": "Send",
+    "newChat": "New chat",
+    "emptyTitle": "What can I do for you?",
+    "emptyDescription": "Ask a question, draft a text or hand over a task.",
+    "suggestionsLabel": "Try asking",
+    "suggestions": {
+      "contract": "Summarise a contract and flag the risks",
+      "reply": "Draft a polite reply to a customer",
+      "law25": "Explain Quebec's Law 25 in five points"
+    },
+    "model": "Model",
+    "chooseModel": "Choose a model",
+    "defaultModel": "Default model",
+    "noEgress": "0 bytes left your network",
+    "thinking": "Orazaka is answering",
+    "steps": "{count} pipeline steps",
+    "you": "You",
+    "assistant": "Orazaka",
+    "noAnswer": "No answer came back. Try again or pick another model."
+  },
+  "pipeline": {
+    "UserContextResolver": "User context",
+    "SystemContextInjector": "System context",
+    "RagInterceptor": "Knowledge",
+    "SafetyInterceptor": "Safety",
+    "ScopeGuardInterceptor": "Scope guard",
+    "EntitlementInterceptor": "Entitlements",
+    "McpInterceptor": "Tools (MCP)",
+    "BrandContextInterceptor": "Brand context",
+    "MemoryInterceptor": "Memory",
+    "RefinerInterceptor": "Refiner",
+    "RouterInterceptor": "Router",
+    "ToolInterceptor": "Tools",
+    "MediaInterceptor": "Media",
+    "UserContextInterceptor": "User context"
+  },
+  "provider": {
+    "ollama": "On your server",
+    "localai": "On your server",
+    "do-inference": "Cloud inference",
+    "other": "Other provider"
+  },
+  "profile": {
+    "title": "Profile",
+    "loadFailed": "Profile unavailable",
+    "avatarOf": "Avatar of {name}",
+    "account": "Account",
+    "credits": "Credits",
+    "creditsValue": "{count} available",
+    "workspace": "Workspace",
+    "connectors": "Connectors",
+    "connectorsHint": "The services Orazaka can use for you",
+    "system": "System",
+    "systemHint": "Connection and version",
+    "preferences": "Preferences",
+    "language": "Language",
+    "theme": "Appearance",
+    "languageAuto": "Device language",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "signOut": "Sign out",
+    "roles": {
+      "USER": "Member",
+      "ADMIN": "Administrator",
+      "MODERATOR": "Moderator",
+      "OPERATOR": "Operator"
+    }
+  },
+  "connectors": {
+    "empty": "No connector configured.",
+    "configured": "Configured",
+    "notConfigured": "Not configured"
+  },
+  "system": {
+    "server": "Server",
+    "status": "Status",
+    "reachable": "Reachable · {ms} ms",
+    "unreachable": "Unreachable",
+    "version": "App version",
+    "account": "Signed in as",
+    "interceptions": "Active interceptors",
+    "none": "None",
+    "refresh": "Check again"
+  },
+  "report": {
+    "verdict": {
+      "PASS": "Pass",
+      "FAIL": "Fail",
+      "CONSISTENT": "Consistent",
+      "INCONSISTENT": "Inconsistent",
+      "INFO": "For information",
+      "NOT-EXAMINED": "Not examined",
+      "NOT_EXAMINED": "Not examined",
+      "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
+    }
+  }
+}

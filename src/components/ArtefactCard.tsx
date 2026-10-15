@@ -6,6 +6,7 @@ import { asReport, asTextResult } from "../core/report";
 import { Markdown } from "./Markdown";
 import { ReportCards } from "./ReportCards";
 import { ImageArtefact, VideoArtefact } from "./MediaArtefact";
+import { useT, type Key } from "../i18n";
 
 /**
  * One thing a run produced, as the blueprint typed it: a picture shown, a clip played, a rules report as cards, a
@@ -13,13 +14,27 @@ import { ImageArtefact, VideoArtefact } from "./MediaArtefact";
  */
 export function ArtefactCard({ artefact, token }: Readonly<{ artefact: RunArtefact; token: string | null }>): React.JSX.Element {
   const { theme } = useTheme();
+  const t = useT();
   const media = artefact.type !== "TEXT" && artefact.value !== "";
   const report = artefact.type === "TEXT" ? asReport(artefact.value) : null;
   const text = artefact.type === "TEXT" && report === null ? asTextResult(artefact.value) : null;
+  /** A picture, a clip or a sound is named by what it is; a text keeps the platform's own title. */
+  const title = artefact.type === "IMAGE" ? t("artefact.image") : artefact.type === "VIDEO" ? t("artefact.video") : artefact.type === "AUDIO" ? t("artefact.audio") : artefact.label;
+  const factName = (key: string): string => {
+    const k = `artefact.facts.${key}` as Key;
+    const text = t(k);
+    return text === k ? key : text;
+  };
+  const factValue = (key: string, value: string): string => {
+    if (key !== "provider") return value;
+    const k = `provider.${value}` as Key;
+    const text = t(k);
+    return text === k ? t("provider.other") : text;
+  };
   return (
     <Card.Root>
       <Card.Body padding="sm" style={styles.body}>
-        <Txt variant="caption" style={[styles.label, { color: theme.textMuted }]}>{artefact.label}</Txt>
+        <Txt variant="caption" style={[styles.label, { color: theme.textMuted }]}>{title}</Txt>
         {media && artefact.type === "VIDEO" && <VideoArtefact value={artefact.value} token={token} label={artefact.label} />}
         {media && artefact.type === "AUDIO" && <VideoArtefact audio value={artefact.value} token={token} label={artefact.label} />}
         {media && artefact.type === "IMAGE" && <ImageArtefact value={artefact.value} token={token} label={artefact.label} />}
@@ -28,7 +43,7 @@ export function ArtefactCard({ artefact, token }: Readonly<{ artefact: RunArtefa
         {text !== null && text.facts.length > 0 && (
           <View style={styles.facts}>
             {text.facts.map(([key, value]) => (
-              <Txt key={key} variant="caption" style={{ color: theme.textMuted }}>{`${key} · ${value}`}</Txt>
+              <Txt key={key} variant="caption" style={{ color: theme.textMuted }}>{`${factName(key)} · ${factValue(key, value)}`}</Txt>
             ))}
           </View>
         )}

@@ -1,248 +1,211 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FlatList, StyleSheet, View } from "react-native";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../navigation/AppNavigator";
-import { themes } from "@krizaka/orazaka-shared";
-import { Markdown } from "../components/Markdown";
-import { SovereignChatCard } from "../components/SovereignChatCard";
+  ActionSheet,
+  Card,
+  EmptyState,
+  Header,
+  IconButton,
+  MessageBubble,
+  MessageComposer,
+  OrazakaMark,
+  Screen,
+  Txt,
+  useTheme,
+} from "@krizaka/ui/native";
+import { PlusIcon } from "@krizaka/icons/native";
 import { useToken } from "../core/AuthContext";
-import { streamChat } from "../core/streamChat";
+import { streamChat, type StreamFailure } from "../core/streamChat";
+import { useApi } from "../core/useApi";
+import { answeringModel, chatModels, type CatalogModel } from "../core/sovereignty";
+import { AssistantMessage } from "../components/chat/AssistantMessage";
+import { ChatMeta } from "../components/chat/ChatMeta";
+import type { ChatMessage } from "../components/chat/types";
+import { useT, type Key } from "../i18n";
 
-/** Shared design tokens (AGENTS.md §8: mobile uses the same tokens as web). */
-const c = themes.dark;
+const SUGGESTIONS: readonly Key[] = ["chat.suggestions.contract", "chat.suggestions.reply", "chat.suggestions.law25"];
 
-type Props = NativeStackScreenProps<RootStackParamList, "ChatStream">;
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
+/** Nothing said yet: the kit's empty state, with three things to try (each one sends itself). */
+function Welcome({ onPick }: Readonly<{ onPick: (prompt: string) => void }>): React.JSX.Element {
+  const t = useT();
+  return (
+    <EmptyState
+      icon={<OrazakaMark size={56} />}
+      title={t("chat.emptyTitle")}
+      description={t("chat.emptyDescription")}
+      action={
+        <View style={styles.suggestions} accessibilityLabel={t("chat.suggestionsLabel")}>
+          {SUGGESTIONS.map((key) => (
+            <Card.Root key={key} onPress={() => onPick(t(key))} accessibilityRole="button" accessibilityLabel={t(key)}>
+              <Card.Body padding="sm">
+                <Txt variant="label" style={styles.suggestion}>
+                  {t(key)}
+                </Txt>
+              </Card.Body>
+            </Card.Root>
+          ))}
+        </View>
+      }
+    />
+  );
 }
 
-export function ChatStreamScreen(_props: Props): React.JSX.Element {
+/** One real conversation: the kit's bubbles and composer, the answer streamed, the pipeline that really ran. */
+export function ChatStreamScreen(): React.JSX.Element {
+  const t = useT();
+  const { theme } = useTheme();
   const bearer = useToken();
+  const catalog = useApi<CatalogModel[]>("/api/v1/models/catalog");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  // One conversation per mounted screen, so a reply lands in the thread that asked for it.
+  const [failure, setFailure] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
+  const [choosing, setChoosing] = useState(false);
+  // One conversation per "new chat", so a reply lands in the thread that asked for it.
   const conversationId = useRef(`mobile-${String(Date.now())}`);
   const abort = useRef<(() => void) | null>(null);
+  const answered = useRef(false);
+  const list = useRef<FlatList<ChatMessage>>(null);
 
   // Leaving the screen mid-answer must close the request, not leave it writing into a dead tree.
   useEffect(() => () => abort.current?.(), []);
 
-  const handleSend = () => {
-    const prompt = input.trim();
-    if (!prompt || isSending) return;
+  const models = useMemo(() => chatModels(catalog.data ?? []), [catalog.data]);
+  const model = useMemo(() => answeringModel(catalog.data ?? [], picked), [catalog.data, picked]);
 
-    const replyId = `msg-${String(Date.now())}-reply`;
-    setMessages((prev) => [
-      ...prev,
-      { id: `msg-${String(Date.now())}`, role: "user", content: prompt },
-      { id: replyId, role: "assistant", content: "" },
-    ]);
-    setInput("");
-    setIsSending(true);
-    setError(null);
+  const patchReply = useCallback((replyId: string, patch: (m: ChatMessage) => ChatMessage) => {
+    setMessages((prev) => prev.map((m) => (m.id === replyId ? patch(m) : m)));
+  }, []);
 
-    abort.current = streamChat(conversationId.current, prompt, bearer, {
-      onContent: (accumulated) => {
-        setMessages((prev) =>
-          prev.map((message) =>
-            message.id === replyId ? { ...message, content: accumulated } : message,
-          ),
-        );
-      },
-      onDone: () => setIsSending(false),
-      onError: (message) => {
-        setError(message);
-        setIsSending(false);
-      },
-    });
+  const wordsOf = useCallback(
+    (f: StreamFailure): string => {
+      if (f.kind === "unauthorized") return t("common.sessionExpired");
+      if (f.kind === "unreachable") return t("common.unreachable");
+      return t("common.streamInterrupted", { status: f.status });
+    },
+    [t],
+  );
+
+  const send = useCallback(
+    (text: string) => {
+      const prompt = text.trim();
+      if (prompt === "" || isSending) return;
+      const stamp = String(Date.now());
+      const replyId = `msg-${stamp}-reply`;
+      setMessages((prev) => [
+        ...prev,
+        { id: `msg-${stamp}`, role: "user", content: prompt, planned: [], steps: [], settled: true },
+        { id: replyId, role: "assistant", content: "", planned: [], steps: [], settled: false },
+      ]);
+      setInput("");
+      setIsSending(true);
+      setFailure(null);
+      answered.current = false;
+      abort.current = streamChat(
+        conversationId.current,
+        prompt,
+        bearer,
+        {
+          onContent: (accumulated) => {
+            answered.current = true;
+            patchReply(replyId, (m) => ({ ...m, content: accumulated }));
+          },
+          onPipeline: (ids) => patchReply(replyId, (m) => ({ ...m, planned: ids })),
+          onStep: (id) => patchReply(replyId, (m) => ({ ...m, steps: [...m.steps, id] })),
+          onDone: () => {
+            patchReply(replyId, (m) => ({ ...m, settled: true }));
+            // A stream that ends without a word (the model is down) is said, not left as an empty bubble.
+            if (!answered.current) setFailure(t("chat.noAnswer"));
+            setIsSending(false);
+          },
+          onError: (f) => {
+            patchReply(replyId, (m) => ({ ...m, settled: true }));
+            setFailure(wordsOf(f));
+            setIsSending(false);
+          },
+        },
+        { model: picked },
+      );
+    },
+    [bearer, isSending, patchReply, picked, t, wordsOf],
+  );
+
+  const newChat = () => {
+    abort.current?.();
+    conversationId.current = `mobile-${String(Date.now())}`;
+    setMessages([]);
+    setFailure(null);
+    setIsSending(false);
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Orazaka Chat</Text>
-      </View>
-
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        style={styles.messageList}
-        contentContainerStyle={styles.messageContent}
-        ListEmptyComponent={
-          <View style={styles.welcome}>
-            <Text style={styles.welcomeTitle}>Your sovereign AI, on this device.</Text>
-            <Text style={styles.welcomeSub}>
-              Every request runs through the local interceptor pipeline. Nothing leaves your network.
-            </Text>
-            <SovereignChatCard />
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.messageBubble,
-              item.role === "user" ? styles.userBubble : styles.assistantBubble,
-            ]}
-          >
-            {item.role === "assistant" && item.content !== "" ? (
-              <Markdown text={item.content} />
-            ) : (
-              <Text style={[styles.messageText, item.role === "user" && styles.userText]}>
-                {item.content === "" ? "…" : item.content}
-              </Text>
-            )}
-          </View>
-        )}
-      />
-
-      {error !== null && <Text style={styles.streamError}>{error}</Text>}
-
-      <View style={styles.inputBar}>
-        <TextInput
-          id="chat-input"
-          style={styles.textInput}
-          placeholder="Message Orazaka…"
-          placeholderTextColor={c.textMuted}
-          value={input}
-          onChangeText={setInput}
-          editable={!isSending}
-          multiline
-          maxLength={4000}
+    <Screen
+      scroll={false}
+      header={
+        <Header
+          title={t("chat.title")}
+          size="inline"
+          actions={
+            messages.length > 0 ? (
+              <IconButton label={t("chat.newChat")} variant="ghost" size="sm" icon={<PlusIcon size={20} color={theme.textPrimary} />} onPress={newChat} />
+            ) : undefined
+          }
         />
-        <TouchableOpacity
-          id="chat-send"
-          style={[styles.sendBtn, (isSending || !input.trim()) && styles.sendBtnDisabled]}
-          onPress={handleSend}
-          disabled={isSending || !input.trim()}
-        >
-          <Text style={styles.sendBtnText}>↑</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      }
+      footer={
+        <View>
+          {failure !== null && (
+            <Txt variant="caption" tone="danger" style={styles.failure}>
+              {failure}
+            </Txt>
+          )}
+          <ChatMeta model={model} onPickModel={() => setChoosing(true)} />
+          <MessageComposer
+            value={input}
+            onValueChange={setInput}
+            onSend={() => send(input)}
+            placeholder={t("chat.placeholder")}
+            sendLabel={t("chat.send")}
+            // The tab bar below already clears the home indicator: the composer does not add it twice.
+            style={styles.composer}
+          />
+        </View>
+      }
+    >
+      {messages.length === 0 ? (
+        <Welcome onPick={send} />
+      ) : (
+        <FlatList
+          ref={list}
+          data={messages}
+          keyExtractor={(m) => m.id}
+          contentContainerStyle={styles.messages}
+          onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
+          keyboardShouldPersistTaps="handled"
+          renderItem={({ item }) =>
+            item.role === "user" ? <MessageBubble text={item.content} mine /> : <AssistantMessage message={item} />
+          }
+        />
+      )}
+      <ActionSheet
+        open={choosing}
+        onOpenChange={setChoosing}
+        title={t("chat.chooseModel")}
+        cancelLabel={t("common.cancel")}
+        actions={models.map((m) => ({
+          label: `${m.modelLabel ?? m.modelName}${m.modelName === model?.modelName ? "  ✓" : ""}`,
+          onPress: () => setPicked(m.isDefault === true ? null : m.modelName),
+        }))}
+      />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  streamError: {
-    color: c.accent,
-    fontSize: 12,
-    textAlign: "center",
-    paddingVertical: 6,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: c.surface0,
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: c.borderSubtle,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: c.textPrimary,
-  },
-  messageList: {
-    flex: 1,
-  },
-  messageContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  welcome: {
-    paddingTop: 28,
-    paddingBottom: 8,
-    gap: 10,
-  },
-  welcomeTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    letterSpacing: -0.4,
-    color: c.textPrimary,
-  },
-  welcomeSub: {
-    fontSize: 13.5,
-    lineHeight: 20,
-    color: c.textSecondary,
-    marginBottom: 10,
-  },
-  messageBubble: {
-    maxWidth: "80%",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    marginBottom: 8,
-  },
-  userBubble: {
-    alignSelf: "flex-end",
-    backgroundColor: c.accent,
-  },
-  assistantBubble: {
-    alignSelf: "flex-start",
-    backgroundColor: c.surface2,
-    borderWidth: 1,
-    borderColor: c.borderSubtle,
-  },
-  messageText: {
-    fontSize: 15,
-    color: c.textPrimary,
-    lineHeight: 21,
-  },
-  userText: {
-    color: c.onAccent,
-    fontWeight: "500",
-  },
-  inputBar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: c.borderSubtle,
-    backgroundColor: c.surface1,
-  },
-  textInput: {
-    flex: 1,
-    backgroundColor: c.surface0,
-    borderWidth: 1,
-    borderColor: c.borderDefault,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: c.textPrimary,
-    maxHeight: 100,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: c.accent,
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 8,
-  },
-  sendBtnDisabled: { opacity: 0.4 },
-  sendBtnText: { color: c.onAccent, fontSize: 20, fontWeight: "700" },
+  messages: { padding: 16, gap: 12, flexGrow: 1 },
+  suggestions: { alignSelf: "stretch", gap: 8, paddingHorizontal: 8 },
+  suggestion: { textAlign: "center" },
+  failure: { textAlign: "center", paddingVertical: 6 },
+  composer: { paddingBottom: 8 },
 });

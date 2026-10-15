@@ -1,22 +1,16 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { themes } from "@krizaka/orazaka-shared";
+import { Badge, Button, Header, Screen, Txt, useTheme } from "@krizaka/ui/native";
 import type { StudioDetail } from "@krizaka/orazaka-shared";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useApi } from "../core/useApi";
 import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
+import { errorText } from "../i18n/errorText";
 import { Loading, LoadError } from "../components/AsyncState";
-
-const c = themes.dark;
+import { StudioGlyph } from "../components/StudioGlyph";
+import { useI18n, type Key } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "StudioDetail">;
 
@@ -33,13 +27,17 @@ interface InstallationResponse {
  */
 export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Element {
   const { studioKey } = route.params;
+  const { t, locale } = useI18n();
+  const { theme } = useTheme();
   const bearer = useToken();
-  const { data, isLoading, error, reload } = useApi<StudioDetail>(`/api/v1/studios/${studioKey}`);
+  const { data, isLoading, error, reload } = useApi<StudioDetail>(`/api/v1/studios/${studioKey}?locale=${locale}`);
   const [isInstalling, setIsInstalling] = useState(false);
   const [installError, setInstallError] = useState<string | null>(null);
 
-  if (isLoading) return <Loading />;
-  if (error !== null || !data) return <LoadError message={error ?? "Studio introuvable"} onRetry={reload} />;
+  const header = <Header title={data?.label ?? t("screens.studio")} size="inline" backLabel={t("common.back")} onBack={() => navigation.goBack()} />;
+
+  if (isLoading) return <Screen header={header}><Loading /></Screen>;
+  if (error !== null || !data) return <Screen header={header}><LoadError message={error ?? t("studios.notFound")} onRetry={reload} /></Screen>;
 
   const isToolkit = data.kind === "TOOLKIT";
   const install = async () => {
@@ -55,86 +53,51 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
         `/api/v1/studios/${studioKey}/installations`,
         { method: "POST", token: bearer, body: { config: {} } },
       );
-      navigation.navigate("StudioRun", {
-        installationId: installation.id,
-        label: data.label,
-        studioKey,
-      });
+      navigation.navigate("StudioRun", { installationId: installation.id, label: data.label, studioKey });
     } catch (cause: unknown) {
-      setInstallError(cause instanceof Error ? cause.message : "Installation impossible");
+      setInstallError(errorText(cause, t, "studios.installFailed" as Key));
     } finally {
       setIsInstalling(false);
     }
   };
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{data.label}</Text>
-      {data.tagline !== null && data.tagline !== undefined && (
-        <Text style={styles.tagline}>{data.tagline}</Text>
-      )}
-
-      <View style={styles.row}>
-        <Text style={styles.meta}>{data.profession}</Text>
-        <Text style={styles.credits}>{data.estimatedCredits} crédits / run</Text>
+    <Screen header={header}>
+      <View style={styles.hero}>
+        <View style={[styles.glyph, { backgroundColor: theme.accentSoft }]}>
+          <StudioGlyph studioKey={studioKey} color={theme.accentText} size={30} />
+        </View>
+        <Txt variant="title">{data.label}</Txt>
+        {data.tagline ? <Txt tone="secondary">{data.tagline}</Txt> : null}
+        <View style={styles.badges}>
+          <Badge tone="accent">{t("studios.credits", { count: data.estimatedCredits })}</Badge>
+          <Badge>{t(`studios.pricing.${data.pricing}` as Key)}</Badge>
+        </View>
       </View>
 
-      {data.description !== null && data.description !== undefined && (
-        <Text style={styles.description}>{data.description}</Text>
-      )}
-
-      {installError !== null && <Text style={styles.error}>{installError}</Text>}
+      {data.description ? <Txt tone="secondary">{data.description}</Txt> : null}
+      {installError !== null && <Txt tone="danger" variant="caption">{installError}</Txt>}
 
       {data.locked ? (
         // A locked Studio keeps its page and loses its button: the actor must be able to see what
         // they would be buying, which is the whole reason locked entries stay in the catalogue.
-        <View style={styles.lockedNotice}>
-          <Text style={styles.lockedText}>
-            Ce Studio n&apos;est pas inclus dans votre offre.
-          </Text>
-        </View>
+        <Txt tone="secondary" style={styles.locked}>{t("studios.notIncluded")}</Txt>
       ) : (
-        <TouchableOpacity
-          style={[styles.primaryBtn, isInstalling && styles.primaryBtnDisabled]}
-          disabled={isInstalling}
+        <Button
+          testID="studio-open"
+          label={isToolkit ? t("studios.open") : t("studios.install")}
+          size="lg"
+          loading={isInstalling}
           onPress={() => void install()}
-        >
-          {isInstalling ? (
-            <ActivityIndicator color={c.onAccent} />
-          ) : (
-            <Text style={styles.primaryBtnText}>{isToolkit ? "Ouvrir" : "Installer"}</Text>
-          )}
-        </TouchableOpacity>
+        />
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: c.surface0 },
-  content: { padding: 20, gap: 10 },
-  title: { color: c.textPrimary, fontSize: 24, fontWeight: "800" },
-  tagline: { color: c.textSecondary, fontSize: 14 },
-  row: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  meta: { color: c.textMuted, fontSize: 11, textTransform: "uppercase" },
-  credits: { color: c.accent, fontSize: 12, fontWeight: "700" },
-  description: { color: c.textSecondary, fontSize: 14, lineHeight: 21, marginTop: 8 },
-  primaryBtn: {
-    backgroundColor: c.accent,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { color: c.onAccent, fontSize: 16, fontWeight: "700" },
-  lockedNotice: {
-    borderWidth: 1,
-    borderColor: c.surface3,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-  },
-  lockedText: { color: c.textSecondary, fontSize: 13, textAlign: "center" },
-  error: { color: c.accent, fontSize: 13, marginTop: 8 },
+  hero: { gap: 8, alignItems: "flex-start" },
+  glyph: { width: 56, height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  badges: { flexDirection: "row", gap: 8, marginTop: 4 },
+  locked: { textAlign: "center" },
 });

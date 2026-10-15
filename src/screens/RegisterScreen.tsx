@@ -1,20 +1,16 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { Button, TextField, Txt } from "@krizaka/ui/native";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { themes } from "@krizaka/orazaka-shared";
 import { useAuth } from "../core/AuthContext";
+import { errorText } from "../i18n/errorText";
+import { useI18n } from "../i18n";
+import { AuthShell } from "../ui/AuthShell";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Register">;
 
 export function RegisterScreen({ navigation }: Props): React.JSX.Element {
+  const { t, locale } = useI18n();
   const { register } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,150 +19,35 @@ export function RegisterScreen({ navigation }: Props): React.JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const canSubmit =
-    username.trim() !== "" && email.trim() !== "" && password !== "" && !isSubmitting;
+  const canSubmit = username.trim() !== "" && email.trim() !== "" && password !== "" && !isSubmitting;
 
   const submit = async () => {
     if (!canSubmit) return;
     setIsSubmitting(true);
     setError(null);
     try {
-      const outcome = await register(username.trim(), email.trim(), password);
+      const outcome = await register(username.trim(), email.trim(), password, locale);
       if (outcome.kind === "verification-required") {
         // No session was issued, so the navigator will not switch stacks. Saying so beats
         // leaving the actor on a form that looks like it did nothing.
-        setNotice(`Compte créé. Vérifiez ${outcome.email} pour l'activer, puis connectez-vous.`);
+        setNotice(t("auth.register.verify", { email: outcome.email }));
       }
     } catch (cause: unknown) {
-      setError(cause instanceof Error ? cause.message : "Registration failed");
+      setError(errorText(cause, t, "auth.register.failed"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Join the Orazaka ecosystem</Text>
-
-      <TextInput
-        id="register-username"
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor={c.textMuted}
-        autoCapitalize="none"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        id="register-email"
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor={c.textMuted}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        id="register-password"
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor={c.textMuted}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-
-      {notice !== null && <Text style={styles.notice}>{notice}</Text>}
-      {error !== null && <Text style={styles.error}>{error}</Text>}
-
-      <TouchableOpacity
-        id="register-submit"
-        style={[styles.primaryBtn, !canSubmit && styles.primaryBtnDisabled]}
-        disabled={!canSubmit}
-        onPress={() => void submit()}
-      >
-        {isSubmitting ? (
-          <ActivityIndicator color={c.onAccent} />
-        ) : (
-          <Text style={styles.primaryBtnText}>Create Account</Text>
-        )}
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.link}>Already have an account? Sign in</Text>
-      </TouchableOpacity>
-    </View>
+    <AuthShell title={t("auth.register.title")} subtitle={t("auth.register.subtitle")}>
+      <TextField testID="register-username" label={t("auth.username")} autoCapitalize="none" disabled={isSubmitting} value={username} onValueChange={setUsername} />
+      <TextField testID="register-email" label={t("auth.email")} keyboardType="email-address" autoCapitalize="none" disabled={isSubmitting} value={email} onValueChange={setEmail} />
+      <TextField testID="register-password" label={t("auth.password")} secureTextEntry disabled={isSubmitting} value={password} onValueChange={setPassword} />
+      {notice !== null && <Txt tone="secondary" variant="caption">{notice}</Txt>}
+      {error !== null && <Txt tone="danger" variant="caption">{error}</Txt>}
+      <Button testID="register-submit" label={t("auth.register.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <Button variant="ghost" label={t("auth.register.haveAccount")} onPress={() => navigation.navigate("Login")} />
+    </AuthShell>
   );
 }
-
-/** The one dark palette, shared with web through `orazaka-shared`. */
-const c = themes.dark;
-
-const styles = StyleSheet.create({
-  primaryBtnDisabled: {
-    opacity: 0.4,
-  },
-  notice: {
-    color: c.textSecondary,
-    fontSize: 13,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  error: {
-    color: c.accent,
-    fontSize: 13,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    paddingHorizontal: 28,
-    backgroundColor: c.surface0,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: c.textPrimary,
-    textAlign: "center",
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: c.textSecondary,
-    textAlign: "center",
-    marginBottom: 32,
-  },
-  input: {
-    backgroundColor: c.surface1,
-    borderWidth: 1,
-    borderColor: c.surface3,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: c.textPrimary,
-    marginBottom: 14,
-  },
-  primaryBtn: {
-    backgroundColor: c.accent,
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  primaryBtnText: {
-    color: c.onAccent,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  link: {
-    color: c.accent,
-    textAlign: "center",
-    fontSize: 14,
-    marginTop: 10,
-  },
-});

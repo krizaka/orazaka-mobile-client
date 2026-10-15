@@ -1,21 +1,27 @@
+# A short clip, watched playing (a subflow: it needs a video engine and its daily budget). Runs on the result screen of
+# the picture; goes back to the Studio, opens the video Studio and renders a clip.
 appId: com.krizaka.orazaka
 ---
-# A short clip, watched playing (a subflow: it needs a video engine and its daily budget).
-- tapOn: "Génération vidéo.*"
-- tapOn: "Ouvrir"
+- tapOn: "Back"
+- tapOn: "Back"
+- scrollUntilVisible:
+    element:
+      id: "studio-video-generation"
+- tapOn:
+    id: "studio-video-generation"
+- tapOn:
+    id: "studio-open"
 - tapOn:
     id: "field-prompt"
 - inputText: ${VIDEO_PROMPT}
-# Return closes the software keyboard of a single-line field: the Launch button is then reachable.
-- pressKey: Enter
-- tapOn: "16:9"
-- tapOn: "Lancer"
+- hideKeyboard
+- tapOn: "9:16"
+- tapOn:
+    id: "run-launch"
+- runScript: { file: lib/mark.js, env: { NAME: "wait:start", LABEL: "The clip is rendering on the GPU" } }
 - extendedWaitUntil:
-    visible: "Votre vidéo"
+    visible: "Generated video"
     timeout: 600000
+- runScript: { file: lib/mark.js, env: { NAME: "wait:end" } }
 - waitForAnimationToEnd:
     timeout: 8000
-- tapOn:
-    point: "14%,8%"
-- tapOn:
-    point: "14%,8%"

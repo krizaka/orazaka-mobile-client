@@ -1,13 +1,17 @@
-import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { themes } from "@krizaka/orazaka-shared";
+import { ActionSheet, Avatar, Badge, Button, Header, Screen, Segmented, Txt, useTheme, type Mode } from "@krizaka/ui/native";
+import { AutomationIcon, CreditsIcon, GlobeIcon, LogoutIcon, ServerIcon, ThemeIcon } from "@krizaka/icons/native";
+import { availableCredits, type Wallet } from "@krizaka/orazaka-shared";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useApi } from "../core/useApi";
 import { useAuth } from "../core/AuthContext";
+import { humanizeRole, roleName } from "../core/roles";
 import { Loading, LoadError } from "../components/AsyncState";
-
-const c = themes.dark;
+import { SettingsGroup, SettingsRow } from "../ui/SettingsRow";
+import { useI18n, type Key } from "../i18n";
+import type { LanguagePreference } from "../i18n/locale";
 
 /** What `/api/v1/profile` returns. */
 interface UserDescriptor {
@@ -25,91 +29,129 @@ type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
  *
  * The profile is re-read from the service rather than shown from the stored session: the token
  * carries who you were when you signed in, which is not the same as who you are now — a role
- * granted this morning would otherwise stay invisible until the next sign-in.
+ * granted this morning would otherwise stay invisible until the next sign-in. The credits row appears only when the
+ * billing service answers: nothing is shown in its place.
  */
 export function ProfileScreen({ navigation }: Props): React.JSX.Element {
+  const { t, locale, preference, setPreference } = useI18n();
+  const { theme, mode, setMode } = useTheme();
   const { signOut } = useAuth();
-  const { data, isLoading, error, reload } = useApi<UserDescriptor>("/api/v1/profile");
+  const profile = useApi<UserDescriptor>("/api/v1/profile");
+  const wallet = useApi<Wallet>("/api/v1/billing/wallets/me");
+  const [choosingLanguage, setChoosingLanguage] = useState(false);
 
-  if (isLoading) return <Loading />;
-  if (error !== null || !data) return <LoadError message={error ?? "Profil indisponible"} onRetry={reload} />;
+  const data = profile.data;
+  const roleWords = (authority: string): string => {
+    const key = `profile.roles.${roleName(authority)}` as Key;
+    const text = t(key);
+    return text === key ? humanizeRole(authority) : text;
+  };
+  const languageName = (p: LanguagePreference): string =>
+    p === "auto" ? t("profile.languageAuto") : p === "fr" ? "Français" : "English";
+  const credits = wallet.data ? availableCredits(wallet.data) : null;
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
-      <Text style={styles.name}>{data.username}</Text>
-      <Text style={styles.email}>{data.email}</Text>
+    <Screen header={<Header title={t("profile.title")} />}>
+      {profile.isLoading ? (
+        <Loading />
+      ) : profile.error !== null || !data ? (
+        <LoadError message={profile.error ?? t("profile.loadFailed")} onRetry={profile.reload} />
+      ) : (
+        <>
+          <View style={styles.identity}>
+            <Avatar size="xl" alt={t("profile.avatarOf", { name: data.username })} defaultAvatar={{ brand: "orazaka", seed: data.id }} />
+            <Txt variant="title" style={styles.centre}>
+              {data.username}
+            </Txt>
+            <Txt tone="secondary" style={styles.centre}>
+              {data.email}
+            </Txt>
+            <View style={styles.roles}>
+              {data.authorities.map((authority) => (
+                <Badge key={authority} tone="accent">
+                  {roleWords(authority)}
+                </Badge>
+              ))}
+            </View>
+          </View>
 
-      <Text style={styles.sectionTitle}>Rôles</Text>
-      <View style={styles.chips}>
-        {data.authorities.map((role) => (
-          <Text key={role} style={styles.chip}>
-            {role}
-          </Text>
-        ))}
-      </View>
+          {credits !== null && (
+            <SettingsGroup title={t("profile.account")}>
+              <SettingsRow
+                icon={(color) => <CreditsIcon size={20} color={color} />}
+                label={t("profile.credits")}
+                value={t("profile.creditsValue", { count: credits.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA") })}
+              />
+            </SettingsGroup>
+          )}
 
-      <Text style={styles.sectionTitle}>Plus</Text>
-      {([
-        ["Subscription", "Abonnement"],
-        ["Console", "Console d'intentions"],
-        ["AdminGovernance", "Gouvernance"],
-      ] as const).map(([route, label]) => (
-        <TouchableOpacity
-          key={route}
-          style={styles.linkRow}
-          onPress={() => navigation.navigate(route)}
-        >
-          <Text style={styles.linkText}>{label}</Text>
-          <Text style={styles.chevron}>›</Text>
-        </TouchableOpacity>
-      ))}
+          <SettingsGroup title={t("profile.workspace")}>
+            <SettingsRow
+              icon={(color) => <AutomationIcon size={20} color={color} />}
+              label={t("profile.connectors")}
+              hint={t("profile.connectorsHint")}
+              onPress={() => navigation.navigate("Connectors")}
+            />
+            <SettingsRow
+              icon={(color) => <ServerIcon size={20} color={color} />}
+              label={t("profile.system")}
+              hint={t("profile.systemHint")}
+              onPress={() => navigation.navigate("System")}
+            />
+          </SettingsGroup>
 
-      <TouchableOpacity style={styles.signOut} onPress={() => void signOut()}>
-        <Text style={styles.signOutText}>Se déconnecter</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <SettingsGroup title={t("profile.preferences")}>
+            <SettingsRow
+              icon={(color) => <GlobeIcon size={20} color={color} />}
+              label={t("profile.language")}
+              value={languageName(preference)}
+              onPress={() => setChoosingLanguage(true)}
+            />
+            <View style={styles.theme}>
+              <View style={styles.themeLabel}>
+                <ThemeIcon size={18} color={theme.accentText} />
+                <Txt>{t("profile.theme")}</Txt>
+              </View>
+              <Segmented<Mode>
+                aria-label={t("profile.theme")}
+                value={mode}
+                onValueChange={setMode}
+                options={[
+                  { value: "system", label: t("profile.themeSystem") },
+                  { value: "light", label: t("profile.themeLight") },
+                  { value: "dark", label: t("profile.themeDark") },
+                ]}
+              />
+            </View>
+          </SettingsGroup>
+
+          <Button
+            label={t("profile.signOut")}
+            variant="outline"
+            icon={<LogoutIcon size={18} color={theme.textPrimary} />}
+            onPress={() => void signOut()}
+          />
+
+          <ActionSheet
+            open={choosingLanguage}
+            onOpenChange={setChoosingLanguage}
+            title={t("profile.language")}
+            cancelLabel={t("common.cancel")}
+            actions={(["auto", "en", "fr"] as const).map((p) => ({
+              label: `${languageName(p)}${p === preference ? "  ✓" : ""}`,
+              onPress: () => setPreference(p),
+            }))}
+          />
+        </>
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: c.surface0 },
-  content: { padding: 20, gap: 8 },
-  name: { color: c.textPrimary, fontSize: 24, fontWeight: "800" },
-  email: { color: c.textSecondary, fontSize: 14 },
-  sectionTitle: {
-    color: c.textMuted,
-    fontSize: 11,
-    textTransform: "uppercase",
-    marginTop: 20,
-  },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: {
-    color: c.textPrimary,
-    fontSize: 12,
-    backgroundColor: c.surface2,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    overflow: "hidden",
-  },
-  linkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: c.surface1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  linkText: { color: c.textPrimary, fontSize: 14 },
-  chevron: { color: c.textMuted, fontSize: 18 },
-  signOut: {
-    borderWidth: 1,
-    borderColor: c.surface3,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 32,
-  },
-  signOutText: { color: c.accent, fontSize: 15, fontWeight: "700" },
+  identity: { alignItems: "center", gap: 6, paddingVertical: 8 },
+  centre: { textAlign: "center" },
+  roles: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 4 },
+  theme: { gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
+  themeLabel: { flexDirection: "row", alignItems: "center", gap: 10 },
 });
