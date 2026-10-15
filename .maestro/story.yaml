@@ -28,7 +28,8 @@ appId: com.krizaka.orazaka
 - tapOn:
     id: "field-prompt"
 - inputText: ${IMAGE_PROMPT}
-- hideKeyboard
+- tapOn:
+    point: "50%,17%"
 - tapOn: "Lancer"
 - extendedWaitUntil:
     visible: "Votre image"
@@ -44,7 +45,8 @@ appId: com.krizaka.orazaka
 - tapOn:
     id: "field-prompt"
 - inputText: ${VIDEO_PROMPT}
-- hideKeyboard
+- tapOn:
+    point: "50%,17%"
 - tapOn: "16:9"
 - tapOn: "Lancer"
 - extendedWaitUntil:
