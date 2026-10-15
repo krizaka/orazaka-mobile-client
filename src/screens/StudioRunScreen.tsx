@@ -15,7 +15,7 @@ import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
-import { Segmented } from "@krizaka/ui/native";
+import { Chip } from "@krizaka/ui/native";
 import { ArtefactCard } from "../components/ArtefactCard";
 import { isComplete, parseInputSchema, toInputs } from "../core/inputSchema";
 
@@ -113,14 +113,19 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
                 {field.required ? " *" : ""}
               </Text>
               {field.options ? (
-                <Segmented
+                <Chip.Group
+                  type="single"
                   aria-label={field.title}
-                  options={field.options.map((value) => ({ value, label: value }))}
                   value={answers[field.key] ?? field.options[0] ?? ""}
                   onValueChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
-                />
+                >
+                  {field.options.map((value) => (
+                    <Chip key={value} value={value}>{value}</Chip>
+                  ))}
+                </Chip.Group>
               ) : (
                 <TextInput
+                  testID={`field-${field.key}`}
                   style={[styles.input, field.isList && styles.inputMultiline]}
                   placeholder={field.isList ? "Une valeur par ligne" : ""}
                   placeholderTextColor={c.textMuted}
