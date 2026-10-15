@@ -15,6 +15,8 @@ import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
+import { Segmented } from "@krizaka/ui/native";
+import { ArtefactCard } from "../components/ArtefactCard";
 import { isComplete, parseInputSchema, toInputs } from "../core/inputSchema";
 
 const c = themes.dark;
@@ -38,7 +40,12 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
   // Studio, and beats sending {} and letting the run be refused with a 400 the actor cannot act on.
   const detail = useApi<{ inputSchema: string | null }>(`/api/v1/studios/${studioKey}`);
   const fields = parseInputSchema(detail.data?.inputSchema);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [typed, setAnswers] = useState<Record<string, string>>({});
+  // A field with a default (the video Studio's `aspect`) starts on it; what the person chose wins.
+  const answers = {
+    ...Object.fromEntries(fields.flatMap((f) => (f.defaultValue === undefined ? [] : [[f.key, f.defaultValue]]))),
+    ...typed,
+  };
   const [run, setRun] = useState<Run | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -101,16 +108,26 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
                 {field.title}
                 {field.required ? " *" : ""}
               </Text>
-              <TextInput
-                style={[styles.input, field.isList && styles.inputMultiline]}
-                placeholder={field.isList ? "Une valeur par ligne" : ""}
-                placeholderTextColor={c.textMuted}
-                multiline={field.isList}
-                maxLength={field.maxLength}
-                editable={!isStarting}
-                value={answers[field.key] ?? ""}
-                onChangeText={(text) => setAnswers((prev) => ({ ...prev, [field.key]: text }))}
-              />
+              {field.options ? (
+                <Segmented
+                  aria-label={field.title}
+                  options={field.options.map((value) => ({ value, label: value }))}
+                  value={answers[field.key] ?? field.options[0] ?? ""}
+                  onValueChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+                />
+              ) : (
+                <TextInput
+                  style={[styles.input, field.isList && styles.inputMultiline]}
+                  placeholder={field.isList ? "Une valeur par ligne" : ""}
+                  placeholderTextColor={c.textMuted}
+                  multiline={field.isList}
+                  keyboardType={field.isNumber ? "number-pad" : "default"}
+                  maxLength={field.maxLength}
+                  editable={!isStarting}
+                  value={answers[field.key] ?? ""}
+                  onChangeText={(text) => setAnswers((prev) => ({ ...prev, [field.key]: text }))}
+                />
+              )}
             </View>
           ))}
         <TouchableOpacity
@@ -143,13 +160,7 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
             <View style={styles.outputs}>
               <Text style={styles.sectionTitle}>Résultats</Text>
               {run.outputs.map((artefact) => (
-                <View key={artefact.key} style={styles.artefact}>
-                  <Text style={styles.artefactLabel}>{artefact.label}</Text>
-                  <Text style={styles.artefactValue}>{artefact.value}</Text>
-                  {artefact.type !== "TEXT" && (
-                    <Text style={styles.artefactType}>{artefact.type}</Text>
-                  )}
-                </View>
+                <ArtefactCard key={artefact.key} artefact={artefact} token={bearer} />
               ))}
             </View>
           )}
@@ -180,15 +191,6 @@ const styles = StyleSheet.create({
   stepStatus: { color: c.textMuted, fontSize: 11, textTransform: "uppercase" },
   outputs: { marginTop: 12, gap: 8 },
   sectionTitle: { color: c.textMuted, fontSize: 11, textTransform: "uppercase" },
-  artefact: {
-    backgroundColor: c.surface1,
-    borderRadius: 10,
-    padding: 12,
-    gap: 4,
-  },
-  artefactLabel: { color: c.textMuted, fontSize: 11, textTransform: "uppercase" },
-  artefactValue: { color: c.textPrimary, fontSize: 13 },
-  artefactType: { color: c.accent, fontSize: 10, fontWeight: "700" },
   field: { gap: 6, marginTop: 8 },
   fieldLabel: { color: c.textMuted, fontSize: 11, textTransform: "uppercase" },
   input: {

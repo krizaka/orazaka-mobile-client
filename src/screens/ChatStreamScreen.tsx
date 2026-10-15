@@ -12,6 +12,7 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { themes } from "@krizaka/orazaka-shared";
+import { Markdown } from "../components/Markdown";
 import { SovereignChatCard } from "../components/SovereignChatCard";
 import { useToken } from "../core/AuthContext";
 import { streamChat } from "../core/streamChat";
@@ -101,9 +102,13 @@ export function ChatStreamScreen(_props: Props): React.JSX.Element {
               item.role === "user" ? styles.userBubble : styles.assistantBubble,
             ]}
           >
-            <Text style={[styles.messageText, item.role === "user" && styles.userText]}>
-              {item.content === "" ? "…" : item.content}
-            </Text>
+            {item.role === "assistant" && item.content !== "" ? (
+              <Markdown text={item.content} />
+            ) : (
+              <Text style={[styles.messageText, item.role === "user" && styles.userText]}>
+                {item.content === "" ? "…" : item.content}
+              </Text>
+            )}
           </View>
         )}
       />
@@ -238,12 +243,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: 8,
   },
-  sendBtnDisabled: {
-    opacity: 0.4,
-  },
-  sendBtnText: {
-    color: c.onAccent,
-    fontSize: 20,
-    fontWeight: "700",
-  },
+  sendBtnDisabled: { opacity: 0.4 },
+  sendBtnText: { color: c.onAccent, fontSize: 20, fontWeight: "700" },
 });

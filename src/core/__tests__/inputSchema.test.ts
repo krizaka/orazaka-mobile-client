@@ -93,3 +93,25 @@ describe("isComplete", () => {
     expect(isComplete(fields, { trade: "   ", photos: "photo-1" })).toBe(false);
   });
 });
+
+describe("the video Studio's inputs (orazaka-mobile-client#22)", () => {
+  const schema = JSON.stringify({
+    required: ["prompt"],
+    properties: {
+      prompt: { type: "string", title: "Prompt" },
+      aspect: { type: "string", title: "Format", enum: ["9:16", "16:9", "1:1"], default: "16:9" },
+      seed: { type: "integer", title: "Seed" },
+    },
+  });
+
+  it("reads an enum as options with its default, and an integer as a number field", () => {
+    const fields = parseInputSchema(schema);
+    expect(fields.find((f) => f.key === "aspect")).toMatchObject({ options: ["9:16", "16:9", "1:1"], defaultValue: "16:9" });
+    expect(fields.find((f) => f.key === "seed")?.isNumber).toBe(true);
+  });
+
+  it("sends the seed as a number and the aspect as chosen", () => {
+    const fields = parseInputSchema(schema);
+    expect(toInputs(fields, { prompt: "une lampe", aspect: "9:16", seed: "42" })).toEqual({ prompt: "une lampe", aspect: "9:16", seed: 42 });
+  });
+});
