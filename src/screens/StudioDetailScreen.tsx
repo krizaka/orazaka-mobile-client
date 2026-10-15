@@ -41,7 +41,13 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
   if (isLoading) return <Loading />;
   if (error !== null || !data) return <LoadError message={error ?? "Studio introuvable"} onRetry={reload} />;
 
+  const isToolkit = data.kind === "TOOLKIT";
   const install = async () => {
+    // A toolkit Studio is part of the plan, there is nothing to install: its run starts on its key.
+    if (isToolkit) {
+      navigation.navigate("StudioRun", { installationId: null, label: data.label, studioKey });
+      return;
+    }
     setIsInstalling(true);
     setInstallError(null);
     try {
@@ -96,7 +102,7 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
           {isInstalling ? (
             <ActivityIndicator color={c.onAccent} />
           ) : (
-            <Text style={styles.primaryBtnText}>Installer</Text>
+            <Text style={styles.primaryBtnText}>{isToolkit ? "Ouvrir" : "Installer"}</Text>
           )}
         </TouchableOpacity>
       )}

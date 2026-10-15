@@ -56,4 +56,23 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     const start = calls.find((c) => c.method === "POST");
     expect(start?.body).toEqual({ inputs: { prompt: "une lampe en chêne", aspect: "9:16" } });
   });
+
+  it("starts a TOOLKIT Studio (no installation) on its own key", async () => {
+    const calls = answerFetch({
+      "/api/v1/studios/video-generation": { inputSchema },
+      "/api/v1/studios/video-generation/runs": finished,
+    });
+    const route = { params: { installationId: null, label: "Vidéo", studioKey: "video-generation" } };
+    await render(
+      <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
+        <AuthProvider>
+          <StudioRunScreen route={route as never} navigation={{} as never} />
+        </AuthProvider>
+      </ThemeProvider>,
+    );
+    await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "une lampe");
+    await fireEvent.press(screen.getByText("Lancer"));
+    expect(await screen.findByLabelText("Clip")).toBeTruthy();
+    expect(calls.find((c) => c.method === "POST")?.path).toBe("/api/v1/studios/video-generation/runs");
+  });
 });

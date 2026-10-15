@@ -21,6 +21,10 @@ import { isComplete, parseInputSchema, toInputs } from "../core/inputSchema";
 
 const c = themes.dark;
 
+/** Where a run starts: an installed Studio's installation, or — a TOOLKIT Studio has none — its own key. */
+export const runPath = (installationId: string | null, studioKey: string): string =>
+  installationId === null ? `/api/v1/studios/${studioKey}/runs` : `/api/v1/studios/installations/${installationId}/runs`;
+
 /** How often a live run is re-read. The DAG advances on job outcomes, not on a clock. */
 const POLL_MS = 2000;
 
@@ -79,7 +83,7 @@ export function StudioRunScreen({ route }: Props): React.JSX.Element {
     setError(null);
     try {
       const started = await apiRequest<Run>(
-        `/api/v1/studios/installations/${installationId}/runs`,
+        runPath(installationId, studioKey),
         { method: "POST", token: bearer, body: { inputs: toInputs(fields, answers) } },
       );
       setRun(started);

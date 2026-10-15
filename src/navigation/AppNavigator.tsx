@@ -60,7 +60,8 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   Tabs: undefined;
   StudioDetail: { studioKey: string };
-  StudioRun: { installationId: string; label: string; studioKey: string };
+  /** `installationId` is null for a TOOLKIT Studio (image, video, voice…): it has no installation, a run is started on its key. */
+  StudioRun: { installationId: string | null; label: string; studioKey: string };
   Subscription: undefined;
   AdminGovernance: undefined;
   Console: undefined;
