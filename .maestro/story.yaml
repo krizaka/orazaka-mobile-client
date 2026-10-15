@@ -26,8 +26,7 @@ appId: com.krizaka.orazaka
 - tapOn: "Génération d.image.*"
 - tapOn: "Ouvrir"
 - tapOn:
-    text: ".*"
-    index: 0
+    id: "field-prompt"
 - inputText: ${IMAGE_PROMPT}
 - hideKeyboard
 - tapOn: "Lancer"
@@ -43,8 +42,7 @@ appId: com.krizaka.orazaka
 - tapOn: "Génération vidéo.*"
 - tapOn: "Ouvrir"
 - tapOn:
-    text: ".*"
-    index: 0
+    id: "field-prompt"
 - inputText: ${VIDEO_PROMPT}
 - hideKeyboard
 - tapOn: "16:9"
