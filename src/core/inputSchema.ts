@@ -6,10 +6,17 @@ export interface SchemaField {
   /** A `string[]` field is entered as one value per line. */
   readonly isList: boolean;
   readonly maxLength?: number;
+  /** An `enum` field (the video Studio's `aspect`) is chosen, not typed. */
+  readonly options?: readonly string[];
+  /** An `integer`/`number` field (`seed`) is sent as a number. */
+  readonly isNumber: boolean;
+  readonly defaultValue?: string;
 }
 
 interface RawProperty {
   readonly type?: string;
+  readonly enum?: readonly (string | number)[];
+  readonly default?: string | number;
   readonly title?: string;
   readonly maxLength?: number;
   readonly items?: { readonly type?: string };
@@ -50,6 +57,9 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
     required: required.has(key),
     isList: property.type === "array",
     maxLength: property.maxLength,
+    ...(property.enum ? { options: property.enum.map(String) } : {}),
+    isNumber: property.type === "integer" || property.type === "number",
+    ...(property.default === undefined ? {} : { defaultValue: String(property.default) }),
   }));
 
   // Required first: on a phone the fields below the fold are the ones that get missed.
@@ -66,8 +76,8 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
 export function toInputs(
   fields: readonly SchemaField[],
   answers: Readonly<Record<string, string>>,
-): Record<string, string | string[]> {
-  const inputs: Record<string, string | string[]> = {};
+): Record<string, string | number | string[]> {
+  const inputs: Record<string, string | number | string[]> = {};
   for (const field of fields) {
     const answer = (answers[field.key] ?? "").trim();
     if (answer === "") {
@@ -78,7 +88,9 @@ export function toInputs(
           .split("\n")
           .map((line) => line.trim())
           .filter((line) => line !== "")
-      : answer;
+      : field.isNumber && Number.isFinite(Number(answer))
+        ? Number(answer)
+        : answer;
   }
   return inputs;
 }

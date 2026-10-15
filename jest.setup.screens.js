@@ -5,3 +5,10 @@ jest.mock("expo/src/winter/ImportMetaRegistry", () => ({ ImportMetaRegistry: { g
 if (typeof global.structuredClone !== "function") {
   global.structuredClone = (value) => JSON.parse(JSON.stringify(value));
 }
+
+// expo-video is a native module (a player has no JS to run under Jest): screens render a plain View in its place.
+jest.mock("expo-video", () => {
+  const { View } = jest.requireActual("react-native");
+  const player = { loop: false, play: () => undefined };
+  return { useVideoPlayer: () => player, VideoView: (props) => require("react").createElement(View, props) };
+});
