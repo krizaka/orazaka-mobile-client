@@ -39,7 +39,7 @@ export function ResetPasswordScreen({ route, navigation }: Props): React.JSX.Ele
       <TextField testID="reset-new-password" label={t("auth.reset.newPassword")} secureTextEntry value={newPassword} onValueChange={setNewPassword} />
       <TextField testID="reset-confirm-password" label={t("auth.reset.confirm")} secureTextEntry value={confirmPassword} onValueChange={setConfirmPassword} error={mismatch ? t("auth.reset.mismatch") : undefined} />
       {error !== null && <Txt tone="danger" variant="caption">{error}</Txt>}
-      <Button testID="reset-submit" label={t("auth.reset.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <Button testID="reset-submit" variant="primary" label={t("auth.reset.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
       <Button variant="ghost" label={t("auth.forgotScreen.back")} onPress={() => navigation.navigate("Login")} />
     </AuthShell>
   );

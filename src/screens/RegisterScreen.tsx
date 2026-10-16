@@ -46,7 +46,7 @@ export function RegisterScreen({ navigation }: Props): React.JSX.Element {
       <TextField testID="register-password" label={t("auth.password")} secureTextEntry disabled={isSubmitting} value={password} onValueChange={setPassword} />
       {notice !== null && <Txt tone="secondary" variant="caption">{notice}</Txt>}
       {error !== null && <Txt tone="danger" variant="caption">{error}</Txt>}
-      <Button testID="register-submit" label={t("auth.register.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <Button testID="register-submit" variant="primary" label={t("auth.register.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
       <Button variant="ghost" label={t("auth.register.haveAccount")} onPress={() => navigation.navigate("Login")} />
     </AuthShell>
   );

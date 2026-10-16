@@ -28,6 +28,7 @@ import { ConnectorsScreen } from "../screens/ConnectorsScreen";
 import { SystemScreen } from "../screens/SystemScreen";
 import { AppTabBar } from "./AppTabBar";
 import { useAuth } from "../core/AuthContext";
+import { useKeepAlive } from "../core/keepAlive";
 
 /** Routes reachable without a session. */
 export type AuthStackParamList = {
@@ -81,6 +82,7 @@ function TabNavigator(): React.JSX.Element {
 export function AppNavigator(): React.JSX.Element {
   const { session, isRestoring } = useAuth();
   const { theme: c, scheme } = useTheme();
+  useKeepAlive(session?.token ?? null);
 
   const navTheme = useMemo<NavTheme>(
     () => ({

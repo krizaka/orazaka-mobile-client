@@ -14,7 +14,7 @@ appId: com.krizaka.orazaka
 - tapOn:
     id: "field-prompt"
 - inputText: ${VIDEO_PROMPT}
-- hideKeyboard
+- pressKey: Enter
 - tapOn: "9:16"
 - tapOn:
     id: "run-launch"

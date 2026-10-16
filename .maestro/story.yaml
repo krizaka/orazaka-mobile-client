@@ -43,10 +43,16 @@ appId: com.krizaka.orazaka
 - runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${IMAGE_PROMPT}
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
-- hideKeyboard
+- pressKey: Enter
+# The dev GPU is on demand: ask for the hosted image model so the run is certain to finish.
+- tapOn: "More options"
+- tapOn:
+    id: "field-model"
+- inputText: ${IMAGE_MODEL}
+- pressKey: Enter
 - tapOn:
     id: "run-launch"
-- runScript: { file: lib/mark.js, env: { NAME: "wait:start", LABEL: "The image is rendering on the GPU" } }
+- runScript: { file: lib/mark.js, env: { NAME: "wait:start", LABEL: "The image is rendering" } }
 - extendedWaitUntil:
     visible: "Generated image"
     timeout: 300000
@@ -73,7 +79,7 @@ appId: com.krizaka.orazaka
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - tapOn: "Send"
 - extendedWaitUntil:
-    visible: "Safety"
+    visible: "User context"
     timeout: 60000
 - waitForAnimationToEnd:
     timeout: 25000

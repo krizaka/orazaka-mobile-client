@@ -18,6 +18,12 @@ interface StreamHandlers {
   readonly onError: (failure: StreamFailure) => void;
 }
 
+/** How many times a request lost before its first byte is sent again, and the pause before each (it grows). */
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 300;
+/** How long a request may stay silent before it is judged lost (the ack normally comes within milliseconds). */
+const FIRST_BYTE_MS = 5000;
+
 interface StreamOptions {
   /** A catalogue model name; absent or null: the platform's default. */
   readonly model?: string | null;
@@ -74,7 +80,9 @@ export function streamChat(
   handlers: StreamHandlers,
   options: StreamOptions = {},
 ): () => void {
-  const request = new XMLHttpRequest();
+  let request = new XMLHttpRequest();
+  let aborted = false;
+  let retries = 0;
   let consumed = 0;
   let pending = "";
   let currentEvent = "message";
@@ -123,33 +131,70 @@ export function streamChat(
     }
   };
 
-  request.open("POST", edgeUrl(`/api/v1/chat/stream/${conversationId}`));
-  request.setRequestHeader("Content-Type", "application/json");
-  request.setRequestHeader("Accept", "text/event-stream");
-  if (token !== null) {
-    request.setRequestHeader("Authorization", `Bearer ${token}`);
-  }
+  const attach = (): void => {
+    const mine = request;
+    let silence: ReturnType<typeof setTimeout> | null = null;
+    /** This attempt was replaced by a newer one: whatever it still reports is ignored. */
+    const stale = (): boolean => mine !== request || aborted;
+    const retry = (): boolean => {
+      if (retries >= MAX_RETRIES || stale() || consumed > 0) return false;
+      retries += 1;
+      mine.abort();
+      // The new request replaces this one at once (whatever this one still reports is ignored); a short pause lets
+      // the dead connection be torn down before the new one opens a fresh one.
+      request = new XMLHttpRequest();
+      setTimeout(() => {
+        if (!aborted) attach();
+      }, RETRY_DELAY_MS);
+      return true;
+    };
 
-  request.onreadystatechange = () => {
-    // 3 = LOADING: the body is still arriving, which is the whole point.
-    if (request.readyState >= 3) {
-      const text = request.responseText;
-      if (text.length > consumed) {
-        consume(text.slice(consumed));
-        consumed = text.length;
-      }
+    mine.open("POST", edgeUrl(`/api/v1/chat/stream/${conversationId}`));
+    mine.setRequestHeader("Content-Type", "application/json");
+    mine.setRequestHeader("Accept", "text/event-stream");
+    if (token !== null) {
+      mine.setRequestHeader("Authorization", `Bearer ${token}`);
     }
-    if (request.readyState === 4) {
-      if (request.status >= 200 && request.status < 300) {
-        handlers.onDone();
-      } else {
-        handlers.onError(request.status === 401 ? { kind: "unauthorized" } : { kind: "interrupted", status: request.status });
+
+    mine.onreadystatechange = () => {
+      if (stale()) return;
+      // 3 = LOADING: the body is still arriving, which is the whole point.
+      if (mine.readyState >= 3) {
+        const text = mine.responseText;
+        if (text.length > consumed) {
+          if (silence !== null) clearTimeout(silence);
+          consume(text.slice(consumed));
+          consumed = text.length;
+        }
       }
-    }
+      if (mine.readyState === 4) {
+        if (silence !== null) clearTimeout(silence);
+        if (mine.status >= 200 && mine.status < 300) {
+          handlers.onDone();
+        } else {
+          handlers.onError(mine.status === 401 ? { kind: "unauthorized" } : { kind: "interrupted", status: mine.status });
+        }
+      }
+    };
+
+    // iOS reuses an idle HTTP/3 connection that the edge has already dropped and waits ~6 s before reporting "The
+    // network connection was lost"; it never retries a POST. The router acknowledges a request within milliseconds
+    // (`pipeline-ack`), so a request that has heard nothing after FIRST_BYTE_MS is on a dead connection: nothing was
+    // received, so sending it again on a fresh one is safe — the difference between an answer and a false error.
+    mine.onerror = () => {
+      if (stale()) return;
+      if (silence !== null) clearTimeout(silence);
+      if (!retry()) handlers.onError({ kind: "unreachable" });
+    };
+    mine.send(JSON.stringify({ prompt, assetIds: [], model: options.model ?? null }));
+    silence = setTimeout(() => {
+      if (consumed === 0) retry();
+    }, FIRST_BYTE_MS);
   };
+  attach();
 
-  request.onerror = () => handlers.onError({ kind: "unreachable" });
-  request.send(JSON.stringify({ prompt, assetIds: [], model: options.model ?? null }));
-
-  return () => request.abort();
+  return () => {
+    aborted = true;
+    request.abort();
+  };
 }

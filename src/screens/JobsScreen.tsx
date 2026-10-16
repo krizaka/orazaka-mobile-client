@@ -75,9 +75,9 @@ function JobCard({ job }: Readonly<{ job: JobRecord }>): React.JSX.Element {
           {formatDistanceToNow(parseISO(job.createdAt), { addSuffix: true, locale: locale === "fr" ? frCA : enCA })}
         </Txt>
         {running && <Progress size="sm" label={t("jobs.running", { kind })} value={job.progress && job.progress > 0 ? job.progress : null} />}
-        {job.errorMessage ? (
+        {job.status === "FAILED" ? (
           <Txt variant="caption" tone="danger">
-            {job.errorMessage}
+            {t("jobs.failedHint")}
           </Txt>
         ) : null}
       </Card.Body>

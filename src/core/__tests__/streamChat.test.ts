@@ -55,6 +55,7 @@ class FakeXhr {
 }
 
 beforeEach(() => {
+  jest.useFakeTimers();
   FakeXhr.instances = [];
   (globalThis as { XMLHttpRequest: unknown }).XMLHttpRequest = FakeXhr;
 });
@@ -196,6 +197,65 @@ describe("streamChat", () => {
     xhr.finish(503);
 
     expect(errors[0]).toEqual({ kind: "interrupted", status: 503 });
+  });
+
+  it("sends the request once more when the connection is lost before anything arrived", () => {
+    const { content, errors } = start();
+
+    FakeXhr.instances[0]?.onerror?.();
+    jest.advanceTimersByTime(400);
+    expect(FakeXhr.instances).toHaveLength(2);
+    expect(errors).toEqual([]);
+
+    FakeXhr.instances[1]?.push('data: {"content":"ok"}\n\n');
+    expect(content).toEqual(["ok"]);
+  });
+
+  it("says the platform is unreachable when every attempt fails", () => {
+    const { errors } = start();
+
+    FakeXhr.instances[0]?.onerror?.();
+    jest.advanceTimersByTime(400);
+    FakeXhr.instances[1]?.onerror?.();
+    jest.advanceTimersByTime(400);
+    FakeXhr.instances[2]?.onerror?.();
+
+    expect(errors).toEqual([{ kind: "unreachable" }]);
+    expect(FakeXhr.instances).toHaveLength(3);
+  });
+
+  it("judges a request that stays silent on a dead connection lost, and sends it again", () => {
+    const { content } = start();
+
+    jest.advanceTimersByTime(5100);
+    expect(FakeXhr.instances[0]?.aborted).toBe(true);
+    jest.advanceTimersByTime(400);
+    expect(FakeXhr.instances).toHaveLength(2);
+
+    // Whatever the abandoned request reports later is ignored.
+    FakeXhr.instances[0]?.push('data: {"content":"ghost"}\n\n');
+    FakeXhr.instances[1]?.push('data: {"content":"real"}\n\n');
+    expect(content).toEqual(["real"]);
+  });
+
+  it("does not time out a request whose acknowledgement arrived", () => {
+    const { xhr } = start();
+
+    xhr.push("event:pipeline-ack\ndata:{\"coreInterceptorIds\":[\"a\"]}\n\n");
+    jest.advanceTimersByTime(20000);
+
+    expect(FakeXhr.instances).toHaveLength(1);
+    expect(xhr.aborted).toBe(false);
+  });
+
+  it("does not resend once words have arrived — the answer would be duplicated", () => {
+    const { xhr, errors } = start();
+
+    xhr.push('data: {"content":"Bon"}\n\n');
+    xhr.onerror?.();
+
+    expect(FakeXhr.instances).toHaveLength(1);
+    expect(errors).toEqual([{ kind: "unreachable" }]);
   });
 
   it("aborts the underlying request when the caller stops listening", () => {

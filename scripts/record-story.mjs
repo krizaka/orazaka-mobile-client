@@ -62,6 +62,7 @@ const args = [
   "-e", `ORAZAKA_PASSWORD=${env.ORAZAKA_PASSWORD}`,
   "-e", `IMAGE_PROMPT=${arg("image-prompt", "A ceramic table lamp on a walnut desk, warm evening light, product photograph")}`,
   "-e", `VIDEO_PROMPT=${arg("video-prompt", "Slow push-in on a ceramic lamp being switched on in a quiet studio, warm light spreading across the wall")}`,
+  "-e", `IMAGE_MODEL=${arg("image-model", "stable-diffusion-3.5-large")}`,
   "-e", `CHAT_PROMPT=${arg("chat-prompt", "Draft a short, polite reply to a customer whose lamp arrived late.")}`,
   "-e", `WITH_VIDEO=${withVideo}`,
 ];

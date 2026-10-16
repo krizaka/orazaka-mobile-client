@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, Keyboard, StyleSheet, View } from "react-native";
 import {
   ActionSheet,
   Card,
@@ -99,6 +99,8 @@ export function ChatStreamScreen(): React.JSX.Element {
         { id: replyId, role: "assistant", content: "", planned: [], steps: [], settled: false },
       ]);
       setInput("");
+      // The answer streams in view: the keyboard steps aside (and the tab bar is reachable again).
+      Keyboard.dismiss();
       setIsSending(true);
       setFailure(null);
       answered.current = false;

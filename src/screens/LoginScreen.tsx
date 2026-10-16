@@ -63,7 +63,7 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
           {error}
         </Txt>
       )}
-      <Button testID="login-submit" label={t("auth.signIn")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <Button testID="login-submit" variant="primary" label={t("auth.signIn")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
       <Button variant="ghost" label={t("auth.forgot")} disabled={isSubmitting} onPress={() => navigation.navigate("ForgotPassword")} />
       <Button variant="ghost" label={t("auth.create")} disabled={isSubmitting} onPress={() => navigation.navigate("Register")} />
     </AuthShell>

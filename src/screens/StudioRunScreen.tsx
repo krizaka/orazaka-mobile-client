@@ -166,6 +166,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           )}
           <Button
             testID="run-launch"
+            variant="primary"
             label={t("studios.launch")}
             size="lg"
             loading={isStarting}
@@ -195,7 +196,8 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
             </View>
           )}
 
-          {run.errorMessage !== null && <Txt tone="danger" variant="caption">{run.errorMessage}</Txt>}
+          {/* The platform's own error text is a stack trace: it is never shown, the person gets a sentence they can act on. */}
+          {run.status === "FAILED" && <Txt tone="danger" variant="caption">{t("studios.failedHint")}</Txt>}
           {!live && <Button variant="secondary" label={t("studios.runAgain")} onPress={() => { setRun(null); setError(null); }} />}
         </>
       )}

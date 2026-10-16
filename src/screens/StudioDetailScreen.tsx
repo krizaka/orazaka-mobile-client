@@ -85,6 +85,7 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
       ) : (
         <Button
           testID="studio-open"
+          variant="primary"
           label={isToolkit ? t("studios.open") : t("studios.install")}
           size="lg"
           loading={isInstalling}

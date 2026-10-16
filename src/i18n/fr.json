@@ -126,7 +126,8 @@
     "generating": "En cours…",
     "runAgain": "Nouvelle exécution",
     "moreOptions": "Plus d’options",
-    "fewerOptions": "Moins d’options"
+    "fewerOptions": "Moins d’options",
+    "failedHint": "La plateforme n’a pas pu terminer cette exécution. Réessayez, ou choisissez un autre modèle dans Plus d’options."
   },
   "artefact": {
     "image": "Image générée",
@@ -158,7 +159,8 @@
       "PROCESSING": "En cours",
       "COMPLETED": "Terminé",
       "FAILED": "Échec"
-    }
+    },
+    "failedHint": "Cette tâche n’a pas abouti."
   },
   "chat": {
     "title": "Chat",
