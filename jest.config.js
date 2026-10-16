@@ -54,6 +54,7 @@ module.exports = {
         "^react$": reactDir,
         "^react/(.*)$": `${reactDir}/$1`,
         "^@krizaka/ui/native$": krizaka("ui", "dist/native.js"),
+        "^@krizaka/ui/native/(.*)$": krizaka("ui", "dist/native/$1.js"),
         "^@krizaka/tokens/native$": krizaka("tokens", "dist/native.js"),
         "^@krizaka/charts/native$": krizaka("charts", "dist/native.js"),
         ...esmMap,

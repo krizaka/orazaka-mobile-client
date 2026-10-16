@@ -11,6 +11,8 @@ export interface SchemaField {
   /** An `integer`/`number` field (`seed`) is sent as a number. */
   readonly isNumber: boolean;
   readonly defaultValue?: string;
+  /** The field takes an uploaded file (`format: asset:image`): a picker, never a typed asset id. Only photos are picked on the phone. */
+  readonly assetKind?: "image" | "video" | "audio";
 }
 
 interface RawProperty {
@@ -20,6 +22,22 @@ interface RawProperty {
   readonly title?: string;
   readonly maxLength?: number;
   readonly items?: { readonly type?: string };
+  readonly format?: string;
+  readonly contentMediaType?: string;
+}
+
+/**
+ * The kind of file a field takes: `format: asset:image|video|audio` (orazaka-packs#30), or `asset-id` read with its
+ * `contentMediaType`. A blueprint published before the pack declared anything still has `image` as its starting
+ * image: that key alone is read as an image.
+ */
+export function assetKindOf(key: string, property: RawProperty): SchemaField["assetKind"] {
+  if (property.type !== undefined && property.type !== "string") return undefined;
+  const declared = /^asset:(image|video|audio)$/.exec(property.format ?? "");
+  if (declared) return declared[1] as SchemaField["assetKind"];
+  const media = /^(image|video|audio)\//.exec(property.contentMediaType ?? "");
+  if (property.format === "asset-id" && media) return media[1] as SchemaField["assetKind"];
+  return property.format === undefined && key === "image" ? "image" : undefined;
 }
 
 interface RawSchema {
@@ -57,6 +75,7 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
     required: required.has(key),
     isList: property.type === "array",
     maxLength: property.maxLength,
+    ...(assetKindOf(key, property) ? { assetKind: assetKindOf(key, property) } : {}),
     ...(property.enum ? { options: property.enum.map(String) } : {}),
     isNumber: property.type === "integer" || property.type === "number",
     ...(property.default === undefined ? {} : { defaultValue: String(property.default) }),
