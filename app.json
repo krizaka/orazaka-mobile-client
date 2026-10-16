@@ -19,7 +19,14 @@
       "package": "com.krizaka.orazaka"
     },
     "plugins": [
-      "./plugins/with-xcode27"
+      "./plugins/with-xcode27",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Orazaka reads the photos you choose to start a creation from.",
+          "cameraPermission": "Orazaka uses the camera when you take a photo to start a creation from."
+        }
+      ]
     ],
     "extra": {
       "eas": {
