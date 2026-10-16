@@ -1,13 +1,16 @@
 import { formatISO, parseISO, startOfDay, subDays } from "date-fns";
 import type { JobRecord } from "@krizaka/orazaka-shared";
 
-/** The kind of work, from the capability key (`orazaka.core.media.image` → `Images`). */
-export function jobKind(featureKey: string): "Images" | "Vidéos" | "Voix" | "Texte" {
+/** What a job made. The screen words it (`jobs.kind.image` → "Images" / "Images"): a key, never a sentence. */
+export type JobKind = "image" | "video" | "voice" | "text";
+
+/** The kind of work, from the capability key (`orazaka.core.media.image` → `image`). */
+export function jobKind(featureKey: string): JobKind {
   const key = featureKey.toLowerCase();
-  if (key.includes("video")) return "Vidéos";
-  if (key.includes("image")) return "Images";
-  if (key.includes("speech") || key.includes("audio")) return "Voix";
-  return "Texte";
+  if (key.includes("video")) return "video";
+  if (key.includes("image")) return "image";
+  if (key.includes("speech") || key.includes("audio") || key.includes("sound")) return "voice";
+  return "text";
 }
 
 const dayKey = (date: Date) => formatISO(startOfDay(date), { representation: "date" });

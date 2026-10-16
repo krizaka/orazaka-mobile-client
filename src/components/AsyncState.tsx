@@ -1,12 +1,14 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { Button, EmptyState, Spinner } from "@krizaka/ui/native";
+import { useT } from "../i18n";
 
 /** The waiting state, identical on every screen that loads: the @krizaka/ui/native spinner. */
 export function Loading(): React.JSX.Element {
+  const t = useT();
   return (
     <View style={styles.centre}>
-      <Spinner label="Loading" />
+      <Spinner label={t("common.loading")} />
     </View>
   );
 }
@@ -24,9 +26,10 @@ interface LoadErrorProps {
  * that history here.
  */
 export function LoadError({ message, onRetry }: Readonly<LoadErrorProps>): React.JSX.Element {
+  const t = useT();
   return (
     <View style={styles.centre}>
-      <EmptyState title={message} action={<Button label="Retry" variant="outline" size="sm" onPress={onRetry} />} />
+      <EmptyState title={message} action={<Button label={t("common.retry")} variant="outline" size="sm" onPress={onRetry} />} />
     </View>
   );
 }

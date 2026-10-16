@@ -1,0 +1,265 @@
+{
+  "common": {
+    "retry": "Réessayer",
+    "loading": "Chargement",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "back": "Retour",
+    "unavailable": "Indisponible pour le moment",
+    "requestFailed": "La requête a échoué ({status})",
+    "unreachable": "La plateforme est injoignable.",
+    "sessionExpired": "Votre session a expiré. Reconnectez-vous.",
+    "streamInterrupted": "La réponse a été interrompue ({status}).",
+    "emptyJobs": "Aucune tâche pour l’instant."
+  },
+  "tabs": {
+    "studios": "Studios",
+    "chat": "Chat",
+    "jobs": "Tâches",
+    "profile": "Profil",
+    "label": "Sections principales"
+  },
+  "screens": {
+    "studio": "Studio",
+    "run": "Exécution",
+    "connectors": "Connecteurs",
+    "system": "Système"
+  },
+  "auth": {
+    "tagline": "Connectez-vous à votre compte",
+    "email": "Courriel",
+    "emailAddress": "Adresse courriel",
+    "password": "Mot de passe",
+    "username": "Nom d’utilisateur",
+    "signIn": "Se connecter",
+    "signInFailed": "La connexion a échoué",
+    "forgot": "Mot de passe oublié ?",
+    "create": "Créer un compte",
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez Orazaka",
+      "submit": "Créer le compte",
+      "haveAccount": "Déjà un compte ? Se connecter",
+      "failed": "L’inscription a échoué",
+      "verify": "Vérifiez votre boîte de réception : un lien de vérification a été envoyé à {email}."
+    },
+    "forgotScreen": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Saisissez votre courriel, nous vous enverrons un lien de récupération.",
+      "submit": "Envoyer le lien",
+      "sent": "Si cette adresse a un compte, un lien de réinitialisation est en route.",
+      "failed": "La demande a échoué",
+      "back": "Retour à la connexion"
+    },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Saisissez votre nouveau mot de passe ci-dessous.",
+      "newPassword": "Nouveau mot de passe",
+      "confirm": "Confirmer le mot de passe",
+      "mismatch": "Les deux mots de passe ne correspondent pas.",
+      "submit": "Réinitialiser le mot de passe",
+      "failed": "Le mot de passe n’a pas pu être réinitialisé",
+      "done": "Votre mot de passe a été réinitialisé. Vous pouvez vous connecter."
+    },
+    "invalidCredentials": "Courriel ou mot de passe invalide.",
+    "name": "Orazaka"
+  },
+  "studios": {
+    "empty": "Aucun Studio au catalogue pour l’instant.",
+    "locked": "Verrouillé",
+    "pricing": {
+      "FREE": "Gratuit",
+      "INCLUDED": "Inclus",
+      "PAID": "Payant"
+    },
+    "credits": "{count} crédits par exécution",
+    "notIncluded": "Ce Studio n’est pas inclus dans votre offre.",
+    "open": "Ouvrir",
+    "install": "Installer",
+    "notFound": "Studio introuvable",
+    "installFailed": "Le Studio n’a pas pu être installé",
+    "launch": "Lancer",
+    "listPlaceholder": "Une valeur par ligne",
+    "startFailed": "L’exécution n’a pas pu démarrer",
+    "followFailed": "Le suivi de l’exécution a été interrompu",
+    "results": "Résultats",
+    "progress": "Avancement",
+    "stepsDone": "{done} étapes sur {total}",
+    "run": {
+      "PENDING_APPROVAL": "En attente d’approbation",
+      "RUNNING": "En cours",
+      "AWAITING_INPUT": "En attente de votre réponse",
+      "SUCCEEDED": "Terminé",
+      "FAILED": "Échec",
+      "CANCELLED": "Annulé",
+      "COMPENSATING": "Annulation en cours"
+    },
+    "step": {
+      "PENDING": "En attente",
+      "RUNNING": "En cours",
+      "SUCCEEDED": "Terminé",
+      "FAILED": "Échec",
+      "SKIPPED": "Ignoré",
+      "CANCELLED": "Annulé"
+    },
+    "fields": {
+      "image-generation": {
+        "prompt": "Ce que vous voulez voir"
+      },
+      "video-generation": {
+        "prompt": "Ce qui doit se passer à l’écran"
+      },
+      "speech-synthesis": {
+        "text": "Le texte à lire"
+      },
+      "seed": "Graine (facultatif)",
+      "size": "Format",
+      "model": "Modèle (facultatif)",
+      "negativePrompt": "À éviter (facultatif)",
+      "image": "Image d’amorce (facultatif)",
+      "aspect": "Format",
+      "durationSeconds": "Durée (secondes)",
+      "voice": "Voix",
+      "prompt": "Description",
+      "text": "Texte"
+    },
+    "generating": "En cours…",
+    "runAgain": "Nouvelle exécution",
+    "moreOptions": "Plus d’options",
+    "fewerOptions": "Moins d’options",
+    "failedHint": "La plateforme n’a pas pu terminer cette exécution. Réessayez, ou choisissez un autre modèle dans Plus d’options."
+  },
+  "artefact": {
+    "image": "Image générée",
+    "video": "Vidéo générée",
+    "audio": "Audio généré",
+    "facts": {
+      "provider": "Fournisseur",
+      "model": "Modèle",
+      "durationMs": "Durée",
+      "seed": "Graine",
+      "runId": "Exécution",
+      "generationMs": "Temps de génération"
+    }
+  },
+  "jobs": {
+    "perDay": "Tâches par jour",
+    "succeeded": "Réussies",
+    "failed": "Échecs",
+    "byKind": "Par type",
+    "running": "{kind} en cours",
+    "kind": {
+      "image": "Images",
+      "video": "Vidéos",
+      "voice": "Voix",
+      "text": "Texte"
+    },
+    "status": {
+      "PENDING": "En attente",
+      "PROCESSING": "En cours",
+      "COMPLETED": "Terminé",
+      "FAILED": "Échec"
+    },
+    "failedHint": "Cette tâche n’a pas abouti."
+  },
+  "chat": {
+    "title": "Chat",
+    "placeholder": "Écrire à Orazaka",
+    "send": "Envoyer",
+    "newChat": "Nouvelle conversation",
+    "emptyTitle": "Que puis-je faire pour vous ?",
+    "emptyDescription": "Posez une question, rédigez un texte ou confiez une tâche.",
+    "suggestionsLabel": "Essayez",
+    "suggestions": {
+      "contract": "Résumer un contrat et signaler les risques",
+      "reply": "Rédiger une réponse polie à un client",
+      "law25": "Expliquer la Loi 25 du Québec en cinq points"
+    },
+    "model": "Modèle",
+    "chooseModel": "Choisir un modèle",
+    "defaultModel": "Modèle par défaut",
+    "noEgress": "0 octet n’a quitté votre réseau",
+    "thinking": "Orazaka répond",
+    "steps": "{count} étapes du pipeline",
+    "you": "Vous",
+    "assistant": "Orazaka",
+    "noAnswer": "Aucune réponse n’est revenue. Réessayez ou choisissez un autre modèle."
+  },
+  "pipeline": {
+    "UserContextResolver": "Contexte utilisateur",
+    "SystemContextInjector": "Contexte système",
+    "RagInterceptor": "Connaissances",
+    "SafetyInterceptor": "Sécurité",
+    "ScopeGuardInterceptor": "Garde de périmètre",
+    "EntitlementInterceptor": "Droits",
+    "McpInterceptor": "Outils (MCP)",
+    "BrandContextInterceptor": "Contexte de marque",
+    "MemoryInterceptor": "Mémoire",
+    "RefinerInterceptor": "Raffineur",
+    "RouterInterceptor": "Routage",
+    "ToolInterceptor": "Outils",
+    "MediaInterceptor": "Médias",
+    "UserContextInterceptor": "Contexte utilisateur"
+  },
+  "provider": {
+    "ollama": "Sur votre serveur",
+    "localai": "Sur votre serveur",
+    "do-inference": "Inférence infonuagique",
+    "other": "Autre fournisseur"
+  },
+  "profile": {
+    "title": "Profil",
+    "loadFailed": "Profil indisponible",
+    "avatarOf": "Avatar de {name}",
+    "account": "Compte",
+    "credits": "Crédits",
+    "creditsValue": "{count} disponibles",
+    "workspace": "Espace de travail",
+    "connectors": "Connecteurs",
+    "connectorsHint": "Les services qu’Orazaka peut utiliser pour vous",
+    "system": "Système",
+    "systemHint": "Connexion et version",
+    "preferences": "Préférences",
+    "language": "Langue",
+    "theme": "Apparence",
+    "languageAuto": "Langue de l’appareil",
+    "themeSystem": "Système",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "signOut": "Se déconnecter",
+    "roles": {
+      "USER": "Membre",
+      "ADMIN": "Administrateur",
+      "MODERATOR": "Modérateur",
+      "OPERATOR": "Opérateur"
+    }
+  },
+  "connectors": {
+    "empty": "Aucun connecteur configuré.",
+    "configured": "Configuré",
+    "notConfigured": "Non configuré"
+  },
+  "system": {
+    "server": "Serveur",
+    "status": "État",
+    "reachable": "Joignable · {ms} ms",
+    "unreachable": "Injoignable",
+    "version": "Version de l’app",
+    "account": "Connecté en tant que",
+    "interceptions": "Intercepteurs actifs",
+    "none": "Aucun",
+    "refresh": "Vérifier à nouveau"
+  },
+  "report": {
+    "verdict": {
+      "PASS": "Conforme",
+      "FAIL": "Non conforme",
+      "CONSISTENT": "Cohérent",
+      "INCONSISTENT": "Incohérent",
+      "INFO": "À titre informatif",
+      "NOT-EXAMINED": "Non examiné",
+      "NOT_EXAMINED": "Non examiné",
+      "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
+    }
+  }
+}

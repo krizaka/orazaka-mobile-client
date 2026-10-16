@@ -1,10 +1,41 @@
 import { edgeUrl } from "../config/api";
+import { pipelineOfAck, stepOf } from "./pipeline";
+
+/** Why a stream ended badly — the screen words it in the person's language. */
+export type StreamFailure =
+  | { readonly kind: "unauthorized" }
+  | { readonly kind: "interrupted"; readonly status: number }
+  | { readonly kind: "unreachable" };
 
 interface StreamHandlers {
   /** Called with the full text so far, each time it grows. */
   readonly onContent: (accumulated: string) => void;
+  /** The interceptor chain the router will run (from `pipeline-ack`), before the model answers. */
+  readonly onPipeline?: (interceptorIds: readonly string[]) => void;
+  /** One interceptor just finished (from `pipeline-step`). */
+  readonly onStep?: (interceptorId: string) => void;
   readonly onDone: () => void;
-  readonly onError: (message: string) => void;
+  readonly onError: (failure: StreamFailure) => void;
+}
+
+/** How many times a request lost before its first byte is sent again, and the pause before each (it grows). */
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 300;
+/** How long a request may stay silent before it is judged lost (the ack normally comes within milliseconds). */
+const FIRST_BYTE_MS = 5000;
+
+interface StreamOptions {
+  /** A catalogue model name; absent or null: the platform's default. */
+  readonly model?: string | null;
+}
+
+/** Parses one SSE `data:` payload that is JSON; `undefined` when it is not. */
+function jsonOf(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -15,17 +46,14 @@ interface StreamHandlers {
  * plain-text chunk from being dropped as unparseable.
  */
 function chunkOf(raw: string): string {
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    if (typeof parsed === "object" && parsed !== null) {
-      const record = parsed as Record<string, unknown>;
-      const text = record.content ?? record.text;
-      return typeof text === "string" ? text : "";
-    }
-    return typeof parsed === "string" ? parsed : "";
-  } catch {
-    return raw;
+  const parsed = jsonOf(raw);
+  if (parsed === undefined) return raw;
+  if (typeof parsed === "object" && parsed !== null) {
+    const record = parsed as Record<string, unknown>;
+    const text = record.content ?? record.text;
+    return typeof text === "string" ? text : "";
   }
+  return typeof parsed === "string" ? parsed : "";
 }
 
 /**
@@ -41,7 +69,8 @@ function chunkOf(raw: string): string {
  * @param conversationId the conversation to append to
  * @param prompt what the actor typed
  * @param token the bearer JWT
- * @param handlers content / done / error callbacks
+ * @param handlers content / pipeline / done / error callbacks
+ * @param options the model to answer with
  * @returns a function that aborts the stream
  */
 export function streamChat(
@@ -49,8 +78,11 @@ export function streamChat(
   prompt: string,
   token: string | null,
   handlers: StreamHandlers,
+  options: StreamOptions = {},
 ): () => void {
-  const request = new XMLHttpRequest();
+  let request = new XMLHttpRequest();
+  let aborted = false;
+  let retries = 0;
   let consumed = 0;
   let pending = "";
   let currentEvent = "message";
@@ -75,12 +107,23 @@ export function streamChat(
       if (!cleaned.startsWith("data:")) {
         continue;
       }
-      // pipeline-ack / pipeline-step describe the interceptor pipeline, not the answer. The web
-      // console visualises them; on a phone they would be noise in the middle of a reply.
+      const raw = cleaned.slice(5).trim();
+      // pipeline-ack / pipeline-step describe the interceptor pipeline, not the answer: they feed the
+      // pipeline chips and never land in the reply.
+      if (currentEvent === "pipeline-ack") {
+        const ids = pipelineOfAck(jsonOf(raw));
+        if (ids.length > 0) handlers.onPipeline?.(ids);
+        continue;
+      }
+      if (currentEvent === "pipeline-step") {
+        const id = stepOf(jsonOf(raw));
+        if (id !== null) handlers.onStep?.(id);
+        continue;
+      }
       if (currentEvent !== "message") {
         continue;
       }
-      const chunk = chunkOf(cleaned.slice(5).trim());
+      const chunk = chunkOf(raw);
       if (chunk !== "") {
         accumulated += chunk;
         handlers.onContent(accumulated);
@@ -88,37 +131,70 @@ export function streamChat(
     }
   };
 
-  request.open("POST", edgeUrl(`/api/v1/chat/stream/${conversationId}`));
-  request.setRequestHeader("Content-Type", "application/json");
-  request.setRequestHeader("Accept", "text/event-stream");
-  if (token !== null) {
-    request.setRequestHeader("Authorization", `Bearer ${token}`);
-  }
+  const attach = (): void => {
+    const mine = request;
+    let silence: ReturnType<typeof setTimeout> | null = null;
+    /** This attempt was replaced by a newer one: whatever it still reports is ignored. */
+    const stale = (): boolean => mine !== request || aborted;
+    const retry = (): boolean => {
+      if (retries >= MAX_RETRIES || stale() || consumed > 0) return false;
+      retries += 1;
+      mine.abort();
+      // The new request replaces this one at once (whatever this one still reports is ignored); a short pause lets
+      // the dead connection be torn down before the new one opens a fresh one.
+      request = new XMLHttpRequest();
+      setTimeout(() => {
+        if (!aborted) attach();
+      }, RETRY_DELAY_MS);
+      return true;
+    };
 
-  request.onreadystatechange = () => {
-    // 3 = LOADING: the body is still arriving, which is the whole point.
-    if (request.readyState >= 3) {
-      const text = request.responseText;
-      if (text.length > consumed) {
-        consume(text.slice(consumed));
-        consumed = text.length;
-      }
+    mine.open("POST", edgeUrl(`/api/v1/chat/stream/${conversationId}`));
+    mine.setRequestHeader("Content-Type", "application/json");
+    mine.setRequestHeader("Accept", "text/event-stream");
+    if (token !== null) {
+      mine.setRequestHeader("Authorization", `Bearer ${token}`);
     }
-    if (request.readyState === 4) {
-      if (request.status >= 200 && request.status < 300) {
-        handlers.onDone();
-      } else {
-        handlers.onError(
-          request.status === 401
-            ? "Session expirée — reconnectez-vous."
-            : `Le flux s'est interrompu (${String(request.status)})`,
-        );
+
+    mine.onreadystatechange = () => {
+      if (stale()) return;
+      // 3 = LOADING: the body is still arriving, which is the whole point.
+      if (mine.readyState >= 3) {
+        const text = mine.responseText;
+        if (text.length > consumed) {
+          if (silence !== null) clearTimeout(silence);
+          consume(text.slice(consumed));
+          consumed = text.length;
+        }
       }
-    }
+      if (mine.readyState === 4) {
+        if (silence !== null) clearTimeout(silence);
+        if (mine.status >= 200 && mine.status < 300) {
+          handlers.onDone();
+        } else {
+          handlers.onError(mine.status === 401 ? { kind: "unauthorized" } : { kind: "interrupted", status: mine.status });
+        }
+      }
+    };
+
+    // iOS reuses an idle HTTP/3 connection that the edge has already dropped and waits ~6 s before reporting "The
+    // network connection was lost"; it never retries a POST. The router acknowledges a request within milliseconds
+    // (`pipeline-ack`), so a request that has heard nothing after FIRST_BYTE_MS is on a dead connection: nothing was
+    // received, so sending it again on a fresh one is safe — the difference between an answer and a false error.
+    mine.onerror = () => {
+      if (stale()) return;
+      if (silence !== null) clearTimeout(silence);
+      if (!retry()) handlers.onError({ kind: "unreachable" });
+    };
+    mine.send(JSON.stringify({ prompt, assetIds: [], model: options.model ?? null }));
+    silence = setTimeout(() => {
+      if (consumed === 0) retry();
+    }, FIRST_BYTE_MS);
   };
+  attach();
 
-  request.onerror = () => handlers.onError("Impossible de joindre la plateforme.");
-  request.send(JSON.stringify({ prompt, assetIds: [], model: null }));
-
-  return () => request.abort();
+  return () => {
+    aborted = true;
+    request.abort();
+  };
 }

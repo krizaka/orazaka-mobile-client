@@ -35,28 +35,32 @@ describe("the app, on recorded edge responses", () => {
   it("signs in with e-mail and password, keeps the session in the keychain and opens the Studios", async () => {
     const calls = answerFetch({ "/api/v1/auth/login": login, ...signedIn });
     await app();
-    await fireEvent.changeText(await screen.findByPlaceholderText("Email"), " eric.morel@example.com ");
-    await fireEvent.changeText(screen.getByPlaceholderText("Password"), "secret");
-    await fireEvent.press(screen.getByText("Sign In"));
+    await fireEvent.changeText(await screen.findByTestId("login-email"), " eric.morel@example.com ");
+    await fireEvent.changeText(screen.getByTestId("login-password"), "secret");
+    await fireEvent.press(screen.getByText("Sign in"));
 
     expect(await screen.findByText("Vitrine Artisan")).toBeTruthy();
     expect(screen.getByText("Génération d'image")).toBeTruthy();
     // A locked Studio is listed, not hidden.
-    expect(screen.getByText("Verrouillé")).toBeTruthy();
+    expect(screen.getByText("Locked")).toBeTruthy();
 
     const signIn = calls.find((c) => c.path === "/api/v1/auth/login");
     expect(signIn?.body).toEqual({ email: "eric.morel@example.com", password: "secret" });
     expect(JSON.parse(mockKeychain.get("orazaka.session") ?? "{}").token).toBe("recorded-token");
-    expect(calls.find((c) => c.path === "/api/v1/studios")?.headers.Authorization).toBe("Bearer recorded-token");
+    const catalogue = calls.find((c) => c.path.startsWith("/api/v1/studios"));
+    expect(catalogue?.headers.Authorization).toBe("Bearer recorded-token");
+    // The platform is asked in the app's language — for the names, and in the header.
+    expect(catalogue?.path).toBe("/api/v1/studios?locale=en");
+    expect(catalogue?.headers["Accept-Language"]).toBe("en");
   });
 
   it("shows the edge's refusal on a wrong password and stays on the sign-in screen", async () => {
     answerFetch({ "/api/v1/auth/login": { status: 401, body: { error: "Invalid email or password" } } });
     await app();
-    await fireEvent.changeText(await screen.findByPlaceholderText("Email"), "eric.morel@example.com");
-    await fireEvent.changeText(screen.getByPlaceholderText("Password"), "wrong");
-    await fireEvent.press(screen.getByText("Sign In"));
-    expect(await screen.findByText("Invalid email or password")).toBeTruthy();
+    await fireEvent.changeText(await screen.findByTestId("login-email"), "eric.morel@example.com");
+    await fireEvent.changeText(screen.getByTestId("login-password"), "wrong");
+    await fireEvent.press(screen.getByText("Sign in"));
+    expect(await screen.findByText("Invalid email or password.")).toBeTruthy();
     expect(mockKeychain.size).toBe(0);
   });
 
@@ -66,13 +70,16 @@ describe("the app, on recorded edge responses", () => {
     await app();
     expect(await screen.findByText("Vitrine Artisan")).toBeTruthy();
 
-    await fireEvent.press(screen.getByRole("button", { name: /Jobs/ }));
-    expect(await screen.findByText("Tâches par jour")).toBeTruthy();
-    expect(screen.getAllByText("Terminé").length).toBeGreaterThan(0);
+    await fireEvent.press(screen.getByRole("tab", { name: /Jobs/ }));
+    expect(await screen.findByText("Jobs per day")).toBeTruthy();
+    expect(screen.getAllByText("Done").length).toBeGreaterThan(0);
 
-    await fireEvent.press(screen.getByRole("button", { name: /Profil/ }));
+    await fireEvent.press(screen.getByRole("tab", { name: /Profile/ }));
     expect(await screen.findByText("eric.morel@example.com")).toBeTruthy();
-    await fireEvent.press(screen.getByText("Se déconnecter"));
+    // Roles are words, never the platform's codes.
+    expect(screen.getByText("Member")).toBeTruthy();
+    expect(screen.queryByText(/ROLE_/)).toBeNull();
+    await fireEvent.press(screen.getByText("Sign out"));
     expect(await screen.findByText("Sign in to your account")).toBeTruthy();
     expect(mockKeychain.size).toBe(0);
   });
@@ -81,6 +88,6 @@ describe("the app, on recorded edge responses", () => {
     mockKeychain.set("orazaka.session", JSON.stringify(login));
     answerFetch({});
     await app();
-    expect(await screen.findByText(/Network request failed/)).toBeTruthy();
+    expect(await screen.findByText("The platform cannot be reached.")).toBeTruthy();
   });
 });

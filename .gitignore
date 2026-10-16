@@ -43,3 +43,4 @@ scratch/
 # Native folders are generated (Continuous Native Generation: npx expo prebuild)
 /ios
 /android
+recordings/

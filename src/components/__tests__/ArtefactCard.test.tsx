@@ -62,6 +62,6 @@ describe("ArtefactCard", () => {
 
     await wrap(<ArtefactCard token={null} artefact={{ key: "t", label: "Note", type: "TEXT", value: JSON.stringify({ content: "**Nom :** Morel", provider: "ollama" }) }} />);
     expect(screen.getByText("Nom :")).toBeTruthy();
-    expect(screen.getByText("provider · ollama")).toBeTruthy();
+    expect(screen.getByText("Provider · On your server")).toBeTruthy();
   });
 });

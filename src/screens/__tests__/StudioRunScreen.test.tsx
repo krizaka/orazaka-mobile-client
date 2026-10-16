@@ -48,7 +48,7 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     );
     await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "une lampe en chêne");
     await fireEvent.press(screen.getByText("9:16"));
-    await fireEvent.press(screen.getByText("Lancer"));
+    await fireEvent.press(screen.getByText("Launch"));
 
     expect(await screen.findByLabelText("Clip")).toBeTruthy();
     expect(screen.getByText("Plan :")).toBeTruthy();
@@ -71,7 +71,7 @@ describe("StudioRunScreen — start, then the result as the phone should show it
       </ThemeProvider>,
     );
     await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "une lampe");
-    await fireEvent.press(screen.getByText("Lancer"));
+    await fireEvent.press(screen.getByText("Launch"));
     expect(await screen.findByLabelText("Clip")).toBeTruthy();
     expect(calls.find((c) => c.method === "POST")?.path).toBe("/api/v1/studios/video-generation/runs");
   });

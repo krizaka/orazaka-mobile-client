@@ -1,8 +1,9 @@
-# The story recorded for krizaka.com/mobile and /docs/orazaka/mobile — on a simulator against the local Orazaka
-# stack (edge :8088), signed in as the demo persona (`orazaka demo seed`):
-#   xcrun simctl io booted recordVideo --codec h264 story.mp4 &
-#   maestro test .maestro/story.yaml -e ORAZAKA_EMAIL=eric.morel@example.com -e ORAZAKA_PASSWORD=<password>
-# sign in → generate a picture from the phone → a short clip, watched playing → a streamed chat answer → the jobs.
+# The story recorded for the Orazaka site (home "On your phone", /gallery "A day of work", /docs/orazaka/mobile): the
+# real app on an iOS simulator, signed in as the QA user, against the dev platform the app points at. Run it through
+# scripts/record-story.mjs, which records the screen and receives the marks below (typing is sped up and waits are cut
+# afterwards, labelled — never faked).
+#   node scripts/record-story.mjs --appearance dark
+# Needs -e ORAZAKA_EMAIL / ORAZAKA_PASSWORD (read from the QA file by the script, never printed).
 appId: com.krizaka.orazaka
 ---
 - launchApp:
@@ -11,50 +12,93 @@ appId: com.krizaka.orazaka
 - extendedWaitUntil:
     visible: "Sign in to your account"
     timeout: 60000
-- tapOn: "Email"
+
+# 1. Sign in
+- runScript: { file: lib/mark.js, env: { NAME: "clip:sign-in:start" } }
+- tapOn:
+    id: "login-email"
+- runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${ORAZAKA_EMAIL}
-- tapOn: "Password"
+- tapOn:
+    id: "login-password"
 - inputText: ${ORAZAKA_PASSWORD}
+- runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - pressKey: Enter
 - tapOn:
     text: "Not Now"
     optional: true
 - extendedWaitUntil:
-    visible: "Génération d.image.*"
+    visible:
+      id: "studio-image-generation"
     timeout: 30000
-# A picture, from the phone.
-- tapOn: "Génération d.image.*"
-- tapOn: "Ouvrir"
+- waitForAnimationToEnd
+- runScript: { file: lib/mark.js, env: { NAME: "clip:sign-in:end" } }
+
+# 2. Run a Studio: a picture, from the phone
+- runScript: { file: lib/mark.js, env: { NAME: "clip:studio-run:start" } }
+- tapOn:
+    id: "studio-image-generation"
+- tapOn:
+    id: "studio-open"
 - tapOn:
     id: "field-prompt"
+- runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${IMAGE_PROMPT}
-# Return closes the software keyboard of a single-line field: the Launch button is then reachable.
+- runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - pressKey: Enter
-- tapOn: "Lancer"
-- extendedWaitUntil:
-    visible: "Votre image"
-    timeout: 240000
-- extendedWaitUntil:
-    notVisible: "RUNNING"
-    timeout: 5000
+# The dev GPU is on demand: ask for the hosted image model so the run is certain to finish.
+- tapOn: "More options"
 - tapOn:
-    point: "14%,8%"
+    id: "field-model"
+- inputText: ${IMAGE_MODEL}
+- pressKey: Enter
 - tapOn:
-    point: "14%,8%"
-# A short clip, watched playing — only where a video engine is available (-e WITH_VIDEO=true).
+    id: "run-launch"
+- runScript: { file: lib/mark.js, env: { NAME: "wait:start", LABEL: "The image is rendering" } }
+- extendedWaitUntil:
+    visible: "Generated image"
+    timeout: 300000
+- runScript: { file: lib/mark.js, env: { NAME: "wait:end" } }
+- waitForAnimationToEnd:
+    timeout: 4000
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- runScript: { file: lib/mark.js, env: { NAME: "clip:studio-run:end" } }
 - runFlow:
     file: story-video.yaml
     when:
       true: ${WITH_VIDEO == 'true'}
-# A streamed answer.
-- tapOn: "Chat.*"
-- tapOn: "Message Orazaka…"
+- tapOn: "Back"
+- tapOn: "Back"
+
+# 3. Ask: one real chat, streamed
+- tapOn: "Chat"
+- runScript: { file: lib/mark.js, env: { NAME: "clip:ask:start" } }
+- tapOn: "Message Orazaka"
+- runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${CHAT_PROMPT}
-- tapOn: "↑"
-- waitForAnimationToEnd:
-    timeout: 20000
-# The jobs.
-- tapOn: "Jobs.*"
+- runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
+- tapOn: "Send"
 - extendedWaitUntil:
-    visible: "Tâches par jour"
-    timeout: 20000
+    visible:
+      id: "answer-complete"
+    timeout: 120000
+- waitForAnimationToEnd:
+    timeout: 3000
+- runScript: { file: lib/mark.js, env: { NAME: "clip:ask:end" } }
+
+# 4. Follow the jobs, then the profile
+- tapOn: "Jobs"
+- runScript: { file: lib/mark.js, env: { NAME: "clip:jobs:start" } }
+- extendedWaitUntil:
+    visible: "Jobs per day"
+    timeout: 30000
+- waitForAnimationToEnd
+- scroll
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn: "Profile"
+- waitForAnimationToEnd:
+    timeout: 3000
+- runScript: { file: lib/mark.js, env: { NAME: "clip:jobs:end" } }
