@@ -9,6 +9,7 @@ import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
 import { ArtefactCard } from "../components/ArtefactCard";
+import { PhotoField } from "../components/PhotoField";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
 import { initialAnswers, runPercent, splitFields } from "../core/runForm";
 import { errorText } from "../i18n/errorText";
@@ -46,6 +47,9 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   const [run, setRun] = useState<Run | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
+  // Photos being sent: the run waits for them (an asset id that is not there yet is a run started without its image).
+  const [sending, setSending] = useState<Record<string, boolean>>({});
+  const isSending = Object.values(sending).some(Boolean);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopPolling = useCallback(() => {
@@ -103,7 +107,19 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   };
 
   const renderField = (field: SchemaField): React.JSX.Element =>
-    field.options ? (
+    field.assetKind === "image" ? (
+      <View key={field.key} style={styles.field} testID={`field-${field.key}`}>
+        <Txt variant="label" tone="secondary">
+          {`${titleOf(field)}${field.required ? " *" : ""}`}
+        </Txt>
+        <PhotoField
+          title={titleOf(field)}
+          token={bearer}
+          onAssetChange={(assetId) => setAnswers((prev) => ({ ...prev, [field.key]: assetId }))}
+          onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
+        />
+      </View>
+    ) : field.options ? (
       <View key={field.key} style={styles.field}>
         <Txt variant="label" tone="secondary">
           {titleOf(field)}
@@ -167,7 +183,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
             label={t("studios.launch")}
             size="lg"
             loading={isStarting}
-            disabled={!isComplete(fields, answers)}
+            disabled={!isComplete(fields, answers) || isSending}
             onPress={() => void start()}
           />
         </>

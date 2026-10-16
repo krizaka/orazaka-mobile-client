@@ -14,10 +14,10 @@ const isAnswer = (r: unknown): r is Answer => typeof r === "object" && r !== nul
 
 export function answerFetch(routes: Record<string, unknown>): Call[] {
   const calls: Call[] = [];
-  global.fetch = jest.fn(async (input: unknown, init?: { method?: string; headers?: Record<string, string>; body?: string }) => {
+  global.fetch = jest.fn(async (input: unknown, init?: { method?: string; headers?: Record<string, string>; body?: unknown }) => {
     const url = new URL(String(input));
     const path = url.pathname + url.search;
-    calls.push({ path, method: init?.method ?? "GET", headers: init?.headers ?? {}, body: init?.body ? JSON.parse(init.body) : undefined });
+    calls.push({ path, method: init?.method ?? "GET", headers: init?.headers ?? {}, body: typeof init?.body === "string" && init.body !== "" ? JSON.parse(init.body) : undefined });
     const key = Object.keys(routes)
       .filter((k) => path.startsWith(k))
       .sort((a, b) => b.length - a.length)[0];

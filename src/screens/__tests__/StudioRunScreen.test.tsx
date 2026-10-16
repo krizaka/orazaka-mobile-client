@@ -13,6 +13,20 @@ jest.mock("expo-secure-store", () => ({
   deleteItemAsync: async () => undefined,
 }));
 
+// The picker is the kit's (tested there) and needs the device's photo library: a stand-in that "picks" one photo.
+jest.mock("@krizaka/ui/native/media-picker", () => {
+  const { Pressable, Text } = jest.requireActual("react-native");
+  const photo = { uri: "file:///photos/me.png", kind: "image", width: 800, height: 600, fileName: "me.png" };
+  return {
+    MediaPicker: ({ value, onValueChange, labels }: { value: unknown[]; onValueChange: (m: unknown[]) => void; labels: { add: string; remove: () => string } }) => (
+      <>
+        <Pressable accessibilityRole="button" onPress={() => onValueChange([photo])}><Text>{labels.add}</Text></Pressable>
+        {value.length > 0 && <Pressable accessibilityRole="button" onPress={() => onValueChange([])}><Text>{labels.remove()}</Text></Pressable>}
+      </>
+    ),
+  };
+});
+
 const inputSchema = JSON.stringify({
   required: ["prompt"],
   properties: {
@@ -74,5 +88,35 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     await fireEvent.press(screen.getByText("Launch"));
     expect(await screen.findByLabelText("Clip")).toBeTruthy();
     expect(calls.find((c) => c.method === "POST")?.path).toBe("/api/v1/studios/video-generation/runs");
+  });
+
+  it("picks a photo for the starting image, uploads it, and starts the run with its asset id — never a typed id", async () => {
+    const schema = JSON.stringify({
+      required: ["prompt"],
+      properties: { prompt: { type: "string", title: "Prompt" }, image: { type: "string", format: "asset:image", title: "Image d'amorce (facultatif)" } },
+    });
+    const calls = answerFetch({
+      "/api/v1/studios/video-generation/runs": finished,
+      "/api/v1/studios/video-generation": { inputSchema: schema },
+      "/api/v1/media/upload": { assetId: "asset-9" },
+    });
+    const route = { params: { installationId: null, label: "Vidéo", studioKey: "video-generation" } };
+    await render(
+      <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
+        <AuthProvider>
+          <StudioRunScreen route={route as never} navigation={{} as never} />
+        </AuthProvider>
+      </ThemeProvider>,
+    );
+    await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "une lampe");
+    await fireEvent.press(screen.getByText("More options"));
+    expect(screen.getByText("Starting image (optional)")).toBeTruthy();
+    expect(screen.queryByTestId("field-image-input")).toBeNull(); // no text field for the asset id
+    await fireEvent.press(screen.getByText("Add a photo"));
+    expect(await screen.findByText("Remove the photo")).toBeTruthy();
+    await fireEvent.press(screen.getByText("Launch"));
+    expect(await screen.findByLabelText("Clip")).toBeTruthy();
+    expect(calls.some((c) => c.path === "/api/v1/media/upload" && c.method === "POST")).toBe(true);
+    expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({ inputs: { prompt: "une lampe", image: "asset-9" } });
   });
 });
