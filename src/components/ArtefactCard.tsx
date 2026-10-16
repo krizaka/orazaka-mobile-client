@@ -15,16 +15,18 @@ import { useT, type Key } from "../i18n";
 export function ArtefactCard({ artefact, token }: Readonly<{ artefact: RunArtefact; token: string | null }>): React.JSX.Element {
   const { theme } = useTheme();
   const t = useT();
-  const media = artefact.type !== "TEXT" && artefact.value !== "";
-  const report = artefact.type === "TEXT" ? asReport(artefact.value) : null;
-  const text = artefact.type === "TEXT" && report === null ? asTextResult(artefact.value) : null;
-  /** A picture, a clip or a sound is named by what it is; a text keeps the platform's own title. */
-  const title = artefact.type === "IMAGE" ? t("artefact.image") : artefact.type === "VIDEO" ? t("artefact.video") : artefact.type === "AUDIO" ? t("artefact.audio") : artefact.label;
   const factName = (key: string): string => {
     const k = `artefact.facts.${key}` as Key;
     const text = t(k);
     return text === k ? key : text;
   };
+  const media = artefact.type !== "TEXT" && artefact.value !== "";
+  const value = artefact.key === "generationMs" && /^\d+$/.test(artefact.value) ? `${(Number(artefact.value) / 1000).toFixed(1)} s` : artefact.value;
+  const report = artefact.type === "TEXT" ? asReport(value) : null;
+  const text = artefact.type === "TEXT" && report === null ? asTextResult(value) : null;
+  /** A picture, a clip or a sound is named by what it is; a text keeps the platform's own title. */
+  const known = artefact.type === "TEXT" && ["seed", "model", "generationMs"].includes(artefact.key);
+  const title = known ? factName(artefact.key) : artefact.type === "IMAGE" ? t("artefact.image") : artefact.type === "VIDEO" ? t("artefact.video") : artefact.type === "AUDIO" ? t("artefact.audio") : artefact.label;
   const factValue = (key: string, value: string): string => {
     if (key !== "provider") return value;
     const k = `provider.${value}` as Key;

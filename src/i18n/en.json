@@ -137,7 +137,8 @@
       "model": "Model",
       "durationMs": "Duration",
       "seed": "Seed",
-      "runId": "Run"
+      "runId": "Run",
+      "generationMs": "Generation time"
     }
   },
   "jobs": {
