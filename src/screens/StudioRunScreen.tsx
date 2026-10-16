@@ -10,7 +10,7 @@ import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
 import { ArtefactCard } from "../components/ArtefactCard";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
-import { runPercent, splitFields } from "../core/runForm";
+import { initialAnswers, runPercent, splitFields } from "../core/runForm";
 import { errorText } from "../i18n/errorText";
 import { useI18n, type Key } from "../i18n";
 
@@ -42,10 +42,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   const [typed, setAnswers] = useState<Record<string, string>>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
   // A field with a default (the video Studio's `aspect`) starts on it; what the person chose wins.
-  const answers = {
-    ...Object.fromEntries(fields.flatMap((f) => (f.defaultValue === undefined ? [] : [[f.key, f.defaultValue]]))),
-    ...typed,
-  };
+  const answers = { ...initialAnswers(fields), ...typed };
   const [run, setRun] = useState<Run | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);

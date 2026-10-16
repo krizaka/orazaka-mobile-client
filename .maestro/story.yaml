@@ -15,10 +15,12 @@ appId: com.krizaka.orazaka
 
 # 1. Sign in
 - runScript: { file: lib/mark.js, env: { NAME: "clip:sign-in:start" } }
-- tapOn: "Email"
+- tapOn:
+    id: "login-email"
 - runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${ORAZAKA_EMAIL}
-- tapOn: "Password"
+- tapOn:
+    id: "login-password"
 - inputText: ${ORAZAKA_PASSWORD}
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - pressKey: Enter
@@ -79,10 +81,11 @@ appId: com.krizaka.orazaka
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - tapOn: "Send"
 - extendedWaitUntil:
-    visible: "User context"
-    timeout: 60000
+    visible:
+      id: "answer-complete"
+    timeout: 120000
 - waitForAnimationToEnd:
-    timeout: 25000
+    timeout: 3000
 - runScript: { file: lib/mark.js, env: { NAME: "clip:ask:end" } }
 
 # 4. Follow the jobs, then the profile

@@ -16,7 +16,7 @@ export function AssistantMessage({ message }: Readonly<{ message: ChatMessage }>
   const t = useT();
   const waiting = message.content === "" && !message.settled;
   return (
-    <View style={styles.row}>
+    <View style={styles.row} testID={message.settled ? "answer-complete" : "answer-streaming"}>
       {waiting ? (
         <TypingIndicator label={t("chat.thinking")} />
       ) : message.content !== "" ? (

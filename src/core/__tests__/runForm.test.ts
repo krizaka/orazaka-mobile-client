@@ -1,4 +1,4 @@
-import { isAdvanced, runPercent, splitFields } from "../runForm";
+import { initialAnswers, isAdvanced, runPercent, splitFields } from "../runForm";
 import type { SchemaField } from "../inputSchema";
 
 const field = (key: string, required = false): SchemaField => ({ key, title: key, required, isList: false, isNumber: false });
@@ -22,5 +22,16 @@ describe("run progress", () => {
 
   it("counts the steps that are over, skipped ones included", () => {
     expect(runPercent([{ status: "SUCCEEDED" }, { status: "SKIPPED" }, { status: "RUNNING" }, { status: "PENDING" }])).toBe(50);
+  });
+});
+
+describe("what a form sends before the person touches it", () => {
+  it("is the declared default, else the first option of a choice — the one shown selected", () => {
+    const fields: SchemaField[] = [
+      { ...field("aspect"), options: ["9:16", "16:9"], defaultValue: "16:9" },
+      { ...field("model"), options: ["wan2-2-t2v-a14b", "wan2.1-t2v-1.3b"] },
+      field("prompt", true),
+    ];
+    expect(initialAnswers(fields)).toEqual({ aspect: "16:9", model: "wan2-2-t2v-a14b" });
   });
 });

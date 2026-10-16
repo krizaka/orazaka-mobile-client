@@ -2,7 +2,8 @@
 /**
  * Records the real Orazaka app on the booted iOS simulator and cuts it into the clips of the site.
  *
- *   node scripts/record-story.mjs --appearance dark|light --out <dir> [--video]
+ *   node scripts/record-story.mjs --appearance dark|light --out <dir> [--video] [--recut]
+ *   (--recut cuts again from the raw recording and marks already in <dir>, without touching the simulator)
  *
  * What it does, nothing more: set the simulator's appearance and status bar, start `simctl io recordVideo`, run
  * `.maestro/story.yaml` (which reports named moments to a local marker server), stop, then cut with ffmpeg — the
@@ -31,9 +32,14 @@ const secret = (key) =>
   execFileSync(path.join(os.homedir(), ".krizaka-worktrees/tools/secret.sh"), [path.join(os.homedir(), "Documents/krizaka/qa.env"), key], { encoding: "utf8" });
 
 fs.mkdirSync(out, { recursive: true });
-const raw = path.join(out, `raw-${appearance}.mp4`);
-const marks = [];
+const raw = path.join(out, `raw-${arg("name", appearance)}.mp4`);
+const recut = process.argv.includes("--recut");
+let marks = [];
+let startedAt = 0;
 
+if (recut) {
+  ({ startedAt, marks } = JSON.parse(fs.readFileSync(path.join(out, `marks-${arg("name", appearance)}.json`), "utf8")));
+} else {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://localhost");
   marks.push({ name: url.searchParams.get("name") ?? "", label: url.searchParams.get("label") ?? "", t: Date.now() / 1000 });
@@ -46,7 +52,7 @@ execFileSync("xcrun", ["simctl", "ui", "booted", "appearance", appearance]);
 execFileSync("xcrun", ["simctl", "status_bar", "booted", "override", "--time", "9:41", "--batteryState", "charged", "--batteryLevel", "100", "--cellularBars", "4", "--wifiBars", "3"]);
 
 const recorder = spawn("xcrun", ["simctl", "io", "booted", "recordVideo", "--codec", "h264", "--force", raw], { stdio: "ignore" });
-const startedAt = Date.now() / 1000;
+startedAt = Date.now() / 1000;
 await new Promise((r) => setTimeout(r, 2500));
 
 const env = {
@@ -56,7 +62,7 @@ const env = {
   ORAZAKA_PASSWORD: secret("ORAZAKA_USER_PASSWORD"),
 };
 const args = [
-  "test", ".maestro/story.yaml",
+  "test", arg("flow", ".maestro/story.yaml"),
   "-e", `MARK_URL=${markUrl}`,
   "-e", `ORAZAKA_EMAIL=${env.ORAZAKA_EMAIL}`,
   "-e", `ORAZAKA_PASSWORD=${env.ORAZAKA_PASSWORD}`,
@@ -72,10 +78,12 @@ recorder.kill("SIGINT");
 await new Promise((r) => recorder.on("exit", r));
 server.close();
 execFileSync("xcrun", ["simctl", "status_bar", "booted", "clear"]);
-fs.writeFileSync(path.join(out, `marks-${appearance}.json`), JSON.stringify({ startedAt, marks }, null, 2));
+fs.writeFileSync(path.join(out, `marks-${arg("name", appearance)}.json`), JSON.stringify({ startedAt, marks }, null, 2));
 if (code !== 0) {
   console.error(`maestro exited with ${code}; raw recording kept at ${raw}`);
   process.exit(code ?? 1);
+}
+
 }
 
 // ---- cutting -------------------------------------------------------------------------------------------------------
@@ -84,12 +92,31 @@ const offset = (m) => Math.max(0, m.t - startedAt - 0.4); // simctl's first fram
 const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate", "-of", "json", raw], { encoding: "utf8" })).streams[0];
 console.log(`raw recording ${probe.width}x${probe.height} @ ${probe.r_frame_rate}`);
 
-const clips = ["sign-in", "studio-run", "ask", "jobs"];
+const LABEL_PY = `
+import sys
+from PIL import Image, ImageDraw, ImageFont
+out, text, w, h = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
+img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+d = ImageDraw.Draw(img)
+font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", int(h * 0.021))
+l, t, r, b = d.textbbox((0, 0), text, font=font)
+tw, th, pad = r - l, b - t, int(h * 0.014)
+x, y = (w - tw) // 2, int(h * 0.5)
+d.rounded_rectangle((x - pad * 2, y - pad, x + tw + pad * 2, y + th + pad * 1.6), radius=pad * 2, fill=(0, 0, 0, 170))
+d.text((x, y), text, font=font, fill=(255, 255, 255, 255))
+img.save(out)
+`;
+const clips = arg("clips", "sign-in,studio-run,ask,jobs").split(",");
 for (const id of clips) {
   const s = marks.findIndex((m) => m.name === `clip:${id}:start`);
   const e = marks.findIndex((m) => m.name === `clip:${id}:end`);
   if (s === -1 || e === -1) throw new Error(`no marks for ${id}`);
-  const t0 = offset(marks[s]);
+  let t0 = offset(marks[s]);
+  // The sign-in opens on a still login screen while the test driver finds the field: begin just before the typing.
+  if (id === "sign-in" || id === "ask") {
+    const first = marks.find((m, i) => i > s && m.name === "type:start");
+    if (first) t0 = Math.max(t0, offset(first) - (id === "ask" ? 2 : 1.2));
+  }
   const t1 = offset(marks[e]);
   // Pieces between t0 and t1: normal, typing (sped up), wait (cut → hold).
   const pieces = [];
@@ -109,24 +136,35 @@ for (const id of clips) {
   pieces.push({ kind: "normal", a: cursor, b: t1 });
   const parts = [];
   const filters = [];
+  const labels = [];
   pieces.filter((p) => p.b - p.a > 0.05).forEach((p, n) => {
     const v = `v${n}`;
     if (p.kind === "normal") filters.push(`[0:v]trim=start=${p.a}:end=${p.b},setpts=PTS-STARTPTS,fps=60[${v}]`);
     else if (p.kind === "type") filters.push(`[0:v]trim=start=${p.a}:end=${p.b},setpts=(PTS-STARTPTS)/${SPEED},fps=60[${v}]`);
     else {
+      // A hold of the screen as it was when the wait began, carrying a label that says how long was cut.
       const cut = Math.round(p.b - p.a);
-      const text = `${p.label ? `${p.label} - ` : ""}${cut} s cut`.replace(/'/g, "");
+      const text = `${p.label ? `${p.label} \u00b7 ` : ""}${cut} s cut`;
+      const png = path.join(out, `label-${id}-${n}.png`);
+      execFileSync("python3", ["-I", "-c", LABEL_PY, png, text, String(probe.width), String(probe.height)]);
+      labels.push(png);
+      const input = labels.length; // ffmpeg input 0 is the recording
       filters.push(
-        `[0:v]trim=start=${p.a}:end=${p.a + 0.05},setpts=PTS-STARTPTS,loop=loop=${Math.round(HOLD * 60)}:size=1:start=0,fps=60,` +
-          `drawtext=fontfile=/System/Library/Fonts/Helvetica.ttc:text='${text}':fontsize=h/46:fontcolor=white:box=1:boxcolor=black@0.62:boxborderw=14:x=(w-text_w)/2:y=h*0.08[${v}]`,
+        `[0:v]trim=start=${p.a}:end=${p.a + 0.05},setpts=PTS-STARTPTS,loop=loop=${Math.round(HOLD * 60)}:size=1:start=0,fps=60[h${n}];` +
+          `[h${n}][${input}:v]overlay=0:0[${v}]`,
       );
     }
     parts.push(`[${v}]`);
   });
+  const inputs = ["-i", raw, ...labels.flatMap((l) => ["-i", l])];
   const graph = `${filters.join(";")};${parts.join("")}concat=n=${parts.length}:v=1:a=0,scale=720:1566:flags=lanczos,format=yuv420p[out]`;
   const base = path.join(out, `clip-${id}-${appearance}`);
-  execFileSync("ffmpeg", ["-y", "-v", "error", "-i", raw, "-filter_complex", graph, "-map", "[out]", "-r", "60", "-c:v", "libx264", "-crf", "20", "-preset", "slow", "-movflags", "+faststart", `${base}.mp4`]);
+  execFileSync("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", graph, "-map", "[out]", "-r", "60", "-c:v", "libx264", "-crf", "20", "-preset", "slow", "-movflags", "+faststart", `${base}.mp4`]);
   execFileSync("ffmpeg", ["-y", "-v", "error", "-i", `${base}.mp4`, "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1", `${base}.webm`]);
-  execFileSync("ffmpeg", ["-y", "-v", "error", "-ss", "1.2", "-i", `${base}.mp4`, "-frames:v", "1", `${base}-poster.webp`]);
+  // The poster: a frame from the clip (ffmpeg here has no webp encoder, Pillow writes it).
+  execFileSync("ffmpeg", ["-y", "-v", "error", "-ss", arg("poster-at", "3"), "-i", `${base}.mp4`, "-frames:v", "1", `${base}-poster.png`]);
+  execFileSync("python3", ["-I", "-c", "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], 'WEBP', quality=82)", `${base}-poster.png`, `${base}-poster.webp`]);
+  fs.rmSync(`${base}-poster.png`);
+  for (const l of labels) fs.rmSync(l);
   console.log(`clip-${id}-${appearance}: ${pieces.length} pieces`);
 }

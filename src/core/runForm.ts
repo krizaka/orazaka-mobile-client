@@ -19,3 +19,16 @@ export function runPercent(steps: readonly { readonly status: string }[]): numbe
   const done = steps.filter((s) => s.status === "SUCCEEDED" || s.status === "SKIPPED").length;
   return Math.round((done / steps.length) * 100);
 }
+
+/**
+ * What each field holds before the person touches it: its declared default, else — for a choice — the first option,
+ * which is the one the chips show as selected. What is shown selected is what is sent, never a silent platform default.
+ */
+export function initialAnswers(fields: readonly SchemaField[]): Record<string, string> {
+  return Object.fromEntries(
+    fields.flatMap((f) => {
+      const value = f.defaultValue ?? f.options?.[0];
+      return value === undefined ? [] : [[f.key, value]];
+    }),
+  );
+}
