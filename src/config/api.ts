@@ -17,6 +17,12 @@
 
 const DEFAULT_EDGE_URL = "http://localhost:8088";
 
+/**
+ * The edge of the public dev site. dev.orazaka.com itself is the Next.js BFF (a cookie session a native app cannot
+ * hold); its edge answers a bearer client under `/edge`. The EAS `development` and `preview` profiles build against it.
+ */
+export const DEV_EDGE_URL = "https://dev.orazaka.com/edge";
+
 /** Absolute base URL of the edge. */
 export const EDGE_BASE_URL: string = (
   process.env.EXPO_PUBLIC_EDGE_URL ?? DEFAULT_EDGE_URL
@@ -108,7 +114,15 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   }
 
   if (!response.ok) {
-    throw new ApiError(response.status, messageOf(parsed, `Request failed (${response.status})`));
+    const message = messageOf(parsed, `Request failed (${response.status})`);
+    // The website's BFF answers a bearer client like this: the address is the website, not the API.
+    if (response.status === 401 && message.includes("Missing active security context")) {
+      throw new ApiError(
+        response.status,
+        `${EDGE_BASE_URL} is the website, not the edge: set EXPO_PUBLIC_EDGE_URL to ${DEV_EDGE_URL} (or your own edge).`,
+      );
+    }
+    throw new ApiError(response.status, message);
   }
   return parsed as T;
 }
