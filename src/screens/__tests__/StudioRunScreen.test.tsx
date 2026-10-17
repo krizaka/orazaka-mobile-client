@@ -1,5 +1,5 @@
 import React from "react";
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import { ThemeProvider } from "@krizaka/ui/native";
 import { brands } from "@krizaka/tokens/native";
 import { AuthProvider } from "../../core/AuthContext";
@@ -114,8 +114,11 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     expect(screen.queryByTestId("field-image-input")).toBeNull(); // no text field for the asset id
     await fireEvent.press(screen.getByText("Add a photo"));
     expect(await screen.findByText("Remove the photo")).toBeTruthy();
+    // The run waits for the photo to be sent: pressing Launch before the upload ends does nothing (slow CI raced it).
+    await waitFor(() => expect(calls.some((c) => c.path === "/api/v1/media/upload")).toBe(true));
+    await waitFor(() => expect(screen.getByTestId("run-launch").props.accessibilityState?.disabled).toBeFalsy());
     await fireEvent.press(screen.getByText("Launch"));
-    expect(await screen.findByLabelText("Clip")).toBeTruthy();
+    expect(await screen.findByLabelText("Clip", {}, { timeout: 5000 })).toBeTruthy();
     expect(calls.some((c) => c.path === "/api/v1/media/upload" && c.method === "POST")).toBe(true);
     expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({ inputs: { prompt: "une lampe", image: "asset-9" } });
   });
