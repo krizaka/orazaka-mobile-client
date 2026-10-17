@@ -120,9 +120,9 @@
       "speech-synthesis": {
         "text": "Le texte à lire"
       },
-      "seed": "Graine (facultatif)",
+      "seed": "Graine",
       "size": "Format",
-      "model": "Modèle (facultatif)",
+      "model": "Modèle",
       "negativePrompt": "À éviter (facultatif)",
       "image": "Image d’amorce (facultatif)",
       "aspect": "Format",
@@ -135,7 +135,39 @@
     "runAgain": "Nouvelle exécution",
     "moreOptions": "Plus d’options",
     "fewerOptions": "Moins d’options",
-    "failedHint": "La plateforme n’a pas pu terminer cette exécution. Réessayez, ou choisissez un autre modèle dans Plus d’options."
+    "failedHint": "La plateforme n’a pas pu terminer cette exécution. Réessayez, ou choisissez un autre modèle dans Plus d’options.",
+    "form": {
+      "automatic": "Automatique · {name}",
+      "automaticPlain": "Automatique (recommandé)",
+      "automaticHint": "La plateforme choisit pour vous la meilleure option disponible.",
+      "seedRandom": "Au hasard",
+      "seedRandomHint": "Un nouveau résultat à chaque fois. Désactivez pour en refaire un avec sa graine.",
+      "seedPlaceholder": "Numéro de graine",
+      "searchOptions": "Chercher ou choisir",
+      "local": "Local",
+      "cloud": "Infonuagique",
+      "fast": "Rapide",
+      "balanced": "Équilibré",
+      "slow": "Lent",
+      "about": "environ {n} s",
+      "perRun": "{price} par essai",
+      "free": "Gratuit",
+      "choicesUnreachable": "La liste n’a pas pu être chargée ; la plateforme choisira pour vous."
+    },
+    "choices": {
+      "size": {
+        "1024x1024": "Carré · 1024×1024",
+        "1024x1280": "Portrait 4:5 · 1024×1280",
+        "1360x768": "Paysage 16:9 · 1360×768",
+        "768x1360": "Vertical 9:16 · 768×1360",
+        "512x512": "Aperçu rapide · 512×512"
+      },
+      "aspect": {
+        "9:16": "Vertical 9:16",
+        "16:9": "Large 16:9",
+        "1:1": "Carré 1:1"
+      }
+    }
   },
   "artefact": {
     "image": "Image générée",

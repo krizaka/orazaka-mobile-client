@@ -61,7 +61,7 @@ describe("StudioRunScreen — start, then the result as the phone should show it
       </ThemeProvider>,
     );
     await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "une lampe en chêne");
-    await fireEvent.press(screen.getByText("9:16"));
+    await fireEvent.press(screen.getByText("Vertical 9:16"));
     await fireEvent.press(screen.getByText("Launch"));
 
     expect(await screen.findByLabelText("Clip")).toBeTruthy();
@@ -118,5 +118,71 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     expect(await screen.findByLabelText("Clip")).toBeTruthy();
     expect(calls.some((c) => c.path === "/api/v1/media/upload" && c.method === "POST")).toBe(true);
     expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({ inputs: { prompt: "une lampe", image: "asset-9" } });
+  });
+
+  describe("closed sets are picked from a list, never typed", () => {
+    const imageSchema = JSON.stringify({
+      required: ["prompt"],
+      properties: {
+        prompt: { type: "string", title: "Prompt" },
+        model: {
+          type: "string",
+          title: "Model",
+          "x-advanced": true,
+          "x-options": { source: "models", category: "image" },
+          default: "sd-hosted",
+          oneOf: [
+            { const: "sd-hosted", title: "Stable Diffusion 3.5 Large", description: "Hosted.", "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true } },
+            { const: "z-image", title: "Z-Image Turbo", "x-meta": { runsOn: "local", speed: "slow", typicalSeconds: 157, available: true } },
+            { const: "flux", title: "FLUX.2 [klein] 4B", "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX.2 is not running" } },
+          ],
+        },
+        seed: { type: "string", title: "Seed", "x-control": "seed", "x-advanced": true },
+      },
+    });
+
+    const open = async (calls = answerFetch({ "/api/v1/studios/image-generation": { inputSchema: imageSchema }, "/api/v1/studios/image-generation/runs": finished })) => {
+      const route = { params: { installationId: null, label: "Image", studioKey: "image-generation" } };
+      await render(
+        <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
+          <AuthProvider>
+            <StudioRunScreen route={route as never} navigation={{} as never} />
+          </AuthProvider>
+        </ThemeProvider>,
+      );
+      await fireEvent.changeText((await screen.findAllByDisplayValue(""))[0]!, "a fox");
+      await fireEvent.press(screen.getByText("More options"));
+      return calls;
+    };
+
+    it("shows the model as a picker set to automatic, naming the model that will run, and sends none", async () => {
+      const calls = await open();
+      expect(screen.getByText("Automatic · Stable Diffusion 3.5 Large")).toBeTruthy();
+      await fireEvent.press(screen.getByText("Launch"));
+      expect(await screen.findByLabelText("Clip")).toBeTruthy();
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ inputs: { prompt: "a fox" } });
+    });
+
+    it("opens the list with place, speed, time and price, then sends the model that was picked", async () => {
+      const calls = await open();
+      await fireEvent.press(screen.getByText("Automatic · Stable Diffusion 3.5 Large"));
+      expect(await screen.findByText("Cloud · Fast · about 8 s · $0.08 per run")).toBeTruthy();
+      expect(screen.getByText("Local · Slow · about 157 s · Free")).toBeTruthy();
+      expect(screen.getByText("FLUX.2 is not running")).toBeTruthy();
+      await fireEvent.press(screen.getByText("Z-Image Turbo"));
+      await fireEvent.press(screen.getByText("Launch"));
+      expect(await screen.findByLabelText("Clip")).toBeTruthy();
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ inputs: { prompt: "a fox", model: "z-image" } });
+    });
+
+    it("has a seed that is random by default, and a number once random is turned off", async () => {
+      const calls = await open();
+      expect(screen.getByLabelText("Random")).toBeTruthy();
+      await fireEvent.press(screen.getByLabelText("Random"));
+      await fireEvent.changeText(screen.getByPlaceholderText("Seed number"), "42x7");
+      await fireEvent.press(screen.getByText("Launch"));
+      expect(await screen.findByLabelText("Clip")).toBeTruthy();
+      expect(calls.find((c) => c.method === "POST")?.body).toEqual({ inputs: { prompt: "a fox", seed: "427" } });
+    });
   });
 });
