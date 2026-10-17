@@ -13,6 +13,57 @@ export interface SchemaField {
   readonly defaultValue?: string;
   /** The field takes an uploaded file (`format: asset:image`): a picker, never a typed asset id. Only photos are picked on the phone. */
   readonly assetKind?: "image" | "video" | "audio";
+  /** A labelled list the server wrote in (`oneOf` of `const`): the catalogue's models, with what a picker shows. */
+  readonly choices?: readonly Choice[];
+  /** The values come from the model catalogue (`x-options`): a picker even when the list could not be loaded. */
+  readonly fedByCatalogue?: boolean;
+  /** `seed`: a number with a "random" toggle, never a text line. */
+  readonly control?: "seed";
+  /** The blueprint says this is rarely needed: it goes behind "More options". */
+  readonly advanced?: boolean;
+}
+
+/** One entry of a closed list, with the catalogue's facts (every one optional: what is unknown is left out). */
+export interface Choice {
+  readonly value: string;
+  readonly label: string;
+  readonly hint: string | null;
+  readonly runsOn: "local" | "cloud" | null;
+  readonly speed: "fast" | "balanced" | "slow" | null;
+  readonly typicalSeconds: number | null;
+  readonly priceCents: number | null;
+  readonly available: boolean;
+  readonly unavailableReason: string | null;
+}
+
+interface RawChoice {
+  readonly const?: unknown;
+  readonly title?: string;
+  readonly description?: string;
+  readonly "x-meta"?: Record<string, unknown>;
+}
+
+/** The `oneOf` of `const` entries the server writes for a catalogue-fed field; undefined for anything else. */
+function choicesOf(oneOf: unknown): Choice[] | undefined {
+  if (!Array.isArray(oneOf) || oneOf.length === 0 || !oneOf.every((entry) => entry !== null && typeof entry === "object" && "const" in entry)) {
+    return undefined;
+  }
+  return (oneOf as RawChoice[]).map((entry) => {
+    const meta = entry["x-meta"] ?? {};
+    const text = (value: unknown): string | null => (typeof value === "string" ? value : null);
+    const num = (value: unknown): number | null => (typeof value === "number" ? value : null);
+    return {
+      value: String(entry.const),
+      label: entry.title ?? String(entry.const),
+      hint: entry.description ?? null,
+      runsOn: meta.runsOn === "local" || meta.runsOn === "cloud" ? meta.runsOn : null,
+      speed: meta.speed === "fast" || meta.speed === "balanced" || meta.speed === "slow" ? meta.speed : null,
+      typicalSeconds: num(meta.typicalSeconds),
+      priceCents: num(meta.priceCents),
+      available: meta.available !== false,
+      unavailableReason: text(meta.unavailableReason),
+    };
+  });
 }
 
 interface RawProperty {
@@ -24,6 +75,10 @@ interface RawProperty {
   readonly items?: { readonly type?: string };
   readonly format?: string;
   readonly contentMediaType?: string;
+  readonly oneOf?: unknown;
+  readonly "x-control"?: string;
+  readonly "x-advanced"?: boolean;
+  readonly "x-options"?: { readonly source?: string };
 }
 
 /**
@@ -77,6 +132,10 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
     maxLength: property.maxLength,
     ...(assetKindOf(key, property) ? { assetKind: assetKindOf(key, property) } : {}),
     ...(property.enum ? { options: property.enum.map(String) } : {}),
+    ...(choicesOf(property.oneOf) ? { choices: choicesOf(property.oneOf) } : {}),
+    ...(property["x-options"]?.source === "models" ? { fedByCatalogue: true } : {}),
+    ...(property["x-control"] === "seed" ? { control: "seed" as const } : {}),
+    ...(property["x-advanced"] === true ? { advanced: true } : {}),
     isNumber: property.type === "integer" || property.type === "number",
     ...(property.default === undefined ? {} : { defaultValue: String(property.default) }),
   }));

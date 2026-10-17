@@ -9,7 +9,9 @@ import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
 import { ArtefactCard } from "../components/ArtefactCard";
+import { ChoiceField } from "../components/ChoiceField";
 import { PhotoField } from "../components/PhotoField";
+import { SeedField } from "../components/SeedField";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
 import { initialAnswers, runPercent, splitFields } from "../core/runForm";
 import { errorText } from "../i18n/errorText";
@@ -106,6 +108,13 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
     return field.title;
   };
 
+  /** A readable name for a value the blueprint lists itself (« Square · 1024×1024 »), else the value. */
+  const choiceLabel = (fieldKey: string, value: string): string => {
+    const key = `studios.choices.${fieldKey}.${value}` as Key;
+    const text = t(key);
+    return text === key ? value : text;
+  };
+
   const renderField = (field: SchemaField): React.JSX.Element =>
     field.assetKind === "image" ? (
       <View key={field.key} style={styles.field} testID={`field-${field.key}`}>
@@ -119,6 +128,10 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
         />
       </View>
+    ) : field.choices !== undefined || field.fedByCatalogue === true ? (
+      <ChoiceField key={field.key} field={field} title={titleOf(field)} value={answers[field.key] ?? ""} disabled={isStarting} onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))} />
+    ) : field.control === "seed" ? (
+      <SeedField key={field.key} title={titleOf(field)} value={answers[field.key] ?? ""} disabled={isStarting} onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))} />
     ) : field.options ? (
       <View key={field.key} style={styles.field}>
         <Txt variant="label" tone="secondary">
@@ -132,7 +145,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         >
           {field.options.map((value) => (
             <Chip key={value} value={value}>
-              {value}
+              {choiceLabel(field.key, value)}
             </Chip>
           ))}
         </Chip.Group>
