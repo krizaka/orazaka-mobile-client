@@ -166,6 +166,8 @@
       "PENDING": "Waiting",
       "PROCESSING": "In progress",
       "COMPLETED": "Done",
+      "CANCELLED": "Cancelled",
+      "DELETED": "Deleted",
       "FAILED": "Failed"
     },
     "failedHint": "This job did not finish."

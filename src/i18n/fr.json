@@ -166,6 +166,8 @@
       "PENDING": "En attente",
       "PROCESSING": "En cours",
       "COMPLETED": "Terminé",
+      "CANCELLED": "Annulé",
+      "DELETED": "Supprimé",
       "FAILED": "Échec"
     },
     "failedHint": "Cette tâche n’a pas abouti."
