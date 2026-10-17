@@ -20,6 +20,19 @@
         "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
       }
     },
-    "production": {}
+    "production": {},
+    "testflight": {
+      "extends": "production",
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+      },
+      "credentialsSource": "local"
+    }
+  },
+  "submit": {
+    "testflight": {
+      "ios": {}
+    }
   }
 }
