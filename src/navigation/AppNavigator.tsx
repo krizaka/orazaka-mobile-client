@@ -3,7 +3,7 @@
  * @description Root navigation for the Orazaka mobile client.
  *
  * Two stacks, chosen by whether a session exists: the auth flow, or the app. Inside the app, four tabs — Studios, Chat,
- * Jobs, Profile — drawn by the kit's TabBar with @krizaka/icons; Connectors and System are reached from Profile. The
+ * Jobs, Settings — drawn by the kit's TabBar with @krizaka/icons; Connectors and System are reached from Settings. The
  * navigation theme is the kit's, so light and dark are the same code.
  */
 

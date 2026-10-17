@@ -16,7 +16,7 @@
     "studios": "Studios",
     "chat": "Chat",
     "jobs": "Tâches",
-    "profile": "Profil",
+    "settings": "Paramètres",
     "label": "Sections principales"
   },
   "screens": {
@@ -216,7 +216,7 @@
     "other": "Autre fournisseur"
   },
   "profile": {
-    "title": "Profil",
+    "title": "Paramètres",
     "loadFailed": "Profil indisponible",
     "avatarOf": "Avatar de {name}",
     "account": "Compte",

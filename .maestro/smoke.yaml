@@ -35,7 +35,7 @@ appId: com.krizaka.orazaka
 - assertNotVisible: "Your sovereign AI, on this device."
 - tapOn: "Jobs"
 - assertVisible: "Jobs per day"
-- tapOn: "Profile"
+- tapOn: "Settings"
 - assertVisible: "Sign out"
 - assertNotVisible: "ROLE_USER"
 - tapOn: "Sign out"

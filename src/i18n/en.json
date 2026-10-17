@@ -16,7 +16,7 @@
     "studios": "Studios",
     "chat": "Chat",
     "jobs": "Jobs",
-    "profile": "Profile",
+    "settings": "Settings",
     "label": "Main sections"
   },
   "screens": {
@@ -216,7 +216,7 @@
     "other": "Other provider"
   },
   "profile": {
-    "title": "Profile",
+    "title": "Settings",
     "loadFailed": "Profile unavailable",
     "avatarOf": "Avatar of {name}",
     "account": "Account",

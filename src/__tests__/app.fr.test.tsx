@@ -34,7 +34,7 @@ const app = () =>
 beforeEach(() => mockKeychain.clear());
 
 describe("on a French phone, in light mode", () => {
-  it("speaks French everywhere — tabs, sign-in, profile — and asks the platform for French", async () => {
+  it("speaks French everywhere — tabs, sign-in, settings — and asks the platform for French", async () => {
     mockKeychain.set("orazaka.session", JSON.stringify(login));
     const calls = answerFetch({ "/api/v1/studios": studios, "/api/v1/jobs": jobs, "/api/v1/profile": profile });
     await app();
@@ -42,11 +42,11 @@ describe("on a French phone, in light mode", () => {
     expect(calls.find((c) => c.path.startsWith("/api/v1/studios"))?.path).toBe("/api/v1/studios?locale=fr");
 
     // Four tabs, in the phone's language, never truncated to a code.
-    for (const name of ["Studios", "Chat", "Tâches", "Profil"]) expect(screen.getByRole("tab", { name })).toBeTruthy();
+    for (const name of ["Studios", "Chat", "Tâches", "Paramètres"]) expect(screen.getByRole("tab", { name })).toBeTruthy();
     expect(screen.getAllByRole("tab")).toHaveLength(4);
     expect(screen.getByText("Verrouillé")).toBeTruthy();
 
-    await fireEvent.press(screen.getByRole("tab", { name: "Profil" }));
+    await fireEvent.press(screen.getByRole("tab", { name: "Paramètres" }));
     expect(await screen.findByText("eric.morel@example.com")).toBeTruthy();
     expect(screen.getByText("Membre")).toBeTruthy();
     expect(screen.queryByText(/ROLE_/)).toBeNull();
