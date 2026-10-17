@@ -15,6 +15,8 @@ const TONE: Record<JobStatus, BadgeTone> = {
   PROCESSING: "accent",
   COMPLETED: "success",
   FAILED: "danger",
+  CANCELLED: "neutral",
+  DELETED: "neutral",
 };
 
 /** The two native charts above the list: the last 7 days by outcome, and the kinds of work. */

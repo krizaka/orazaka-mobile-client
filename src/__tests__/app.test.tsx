@@ -64,7 +64,7 @@ describe("the app, on recorded edge responses", () => {
     expect(mockKeychain.size).toBe(0);
   });
 
-  it("opens on the Studios when a session is stored, then lists the jobs and the profile", async () => {
+  it("opens on the Studios when a session is stored, then lists the jobs and the settings (the web rail's word)", async () => {
     mockKeychain.set("orazaka.session", JSON.stringify(login));
     answerFetch(signedIn);
     await app();
@@ -74,7 +74,7 @@ describe("the app, on recorded edge responses", () => {
     expect(await screen.findByText("Jobs per day")).toBeTruthy();
     expect(screen.getAllByText("Done").length).toBeGreaterThan(0);
 
-    await fireEvent.press(screen.getByRole("tab", { name: /Profile/ }));
+    await fireEvent.press(screen.getByRole("tab", { name: /Settings/ }));
     expect(await screen.findByText("eric.morel@example.com")).toBeTruthy();
     // Roles are words, never the platform's codes.
     expect(screen.getByText("Member")).toBeTruthy();

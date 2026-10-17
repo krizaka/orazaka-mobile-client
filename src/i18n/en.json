@@ -16,7 +16,7 @@
     "studios": "Studios",
     "chat": "Chat",
     "jobs": "Jobs",
-    "profile": "Profile",
+    "settings": "Settings",
     "label": "Main sections"
   },
   "screens": {
@@ -166,6 +166,8 @@
       "PENDING": "Waiting",
       "PROCESSING": "In progress",
       "COMPLETED": "Done",
+      "CANCELLED": "Cancelled",
+      "DELETED": "Deleted",
       "FAILED": "Failed"
     },
     "failedHint": "This job did not finish."
@@ -216,7 +218,7 @@
     "other": "Other provider"
   },
   "profile": {
-    "title": "Profile",
+    "title": "Settings",
     "loadFailed": "Profile unavailable",
     "avatarOf": "Avatar of {name}",
     "account": "Account",
