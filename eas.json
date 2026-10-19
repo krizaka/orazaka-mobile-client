@@ -1,8 +1,38 @@
 {
-  "cli": { "version": ">= 16.0.0", "appVersionSource": "local" },
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal" },
-    "preview": { "distribution": "internal", "android": { "buildType": "apk" } },
-    "production": {}
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+      }
+    },
+    "production": {},
+    "testflight": {
+      "extends": "production",
+      "distribution": "store",
+      "env": {
+        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+      },
+      "credentialsSource": "local"
+    }
+  },
+  "submit": {
+    "testflight": {
+      "ios": {}
+    }
   }
 }

@@ -10,11 +10,14 @@ import { jobKind, jobsByKind, jobsPerDay } from "../core/jobStats";
 import { Loading, LoadError, Empty } from "../components/AsyncState";
 import { useI18n, type Key } from "../i18n";
 
-const TONE: Record<JobStatus, BadgeTone> = {
+// Partial: a status the kit adds later (CANCELLED, DELETED) reads as neutral instead of breaking the build.
+const TONE: Partial<Record<JobStatus, BadgeTone>> = {
   PENDING: "neutral",
   PROCESSING: "accent",
   COMPLETED: "success",
   FAILED: "danger",
+  CANCELLED: "neutral",
+  DELETED: "neutral",
 };
 
 /** The two native charts above the list: the last 7 days by outcome, and the kinds of work. */
@@ -67,7 +70,7 @@ function JobCard({ job }: Readonly<{ job: JobRecord }>): React.JSX.Element {
           <Txt variant="label" numberOfLines={1} style={styles.kind}>
             {kind}
           </Txt>
-          <Badge tone={TONE[job.status]} dot={running}>
+          <Badge tone={TONE[job.status] ?? "neutral"} dot={running}>
             {t(`jobs.status.${job.status}` as Key)}
           </Badge>
         </View>

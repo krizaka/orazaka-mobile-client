@@ -35,6 +35,15 @@ The Expo SDK 53 client (port `8081`). Native clients call the edge (`:8088`) wit
 npm install && npm start
 ```
 
+Against the public dev site, point the app at its edge, **not** at the website (`https://dev.orazaka.com` is the
+Next.js BFF and answers a bearer client `401 Missing active security context`):
+
+```bash
+EXPO_PUBLIC_EDGE_URL=https://dev.orazaka.com/edge npx expo run:ios
+```
+
+The EAS `development` and `preview` profiles already set it.
+
 Running it on a simulator against the local stack, what each screen does today and what is missing:
 [docs/MOBILE.md](https://github.com/krizaka/orazaka/blob/main/docs/MOBILE.md) of the workspace.
 

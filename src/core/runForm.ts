@@ -5,7 +5,7 @@ const ADVANCED = new Set(["seed", "model", "image", "negativePrompt"]);
 
 /** True for an optional tuning field (seed, model, starting image, things to avoid). */
 export function isAdvanced(field: SchemaField): boolean {
-  return !field.required && ADVANCED.has(field.key);
+  return !field.required && (field.advanced === true || ADVANCED.has(field.key));
 }
 
 /** Splits a Studio's fields into the ones always shown and the ones behind "More options". */
@@ -27,6 +27,9 @@ export function runPercent(steps: readonly { readonly status: string }[]): numbe
 export function initialAnswers(fields: readonly SchemaField[]): Record<string, string> {
   return Object.fromEntries(
     fields.flatMap((f) => {
+      // A catalogue-fed choice starts on "Automatic" (nothing chosen): the platform keeps picking the best available
+      // model when the run starts, and says so if its first choice is off. Its default is shown, not sent.
+      if (f.fedByCatalogue === true || f.choices !== undefined) return [];
       const value = f.defaultValue ?? f.options?.[0];
       return value === undefined ? [] : [[f.key, value]];
     }),

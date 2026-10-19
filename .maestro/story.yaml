@@ -98,7 +98,7 @@ appId: com.krizaka.orazaka
 - scroll
 - waitForAnimationToEnd:
     timeout: 3000
-- tapOn: "Profile"
+- tapOn: "Settings"
 - waitForAnimationToEnd:
     timeout: 3000
 - runScript: { file: lib/mark.js, env: { NAME: "clip:jobs:end" } }

@@ -16,7 +16,7 @@
     "studios": "Studios",
     "chat": "Chat",
     "jobs": "Jobs",
-    "profile": "Profile",
+    "settings": "Settings",
     "label": "Main sections"
   },
   "screens": {
@@ -120,9 +120,9 @@
       "speech-synthesis": {
         "text": "The text to read"
       },
-      "seed": "Seed (optional)",
+      "seed": "Seed",
       "size": "Format",
-      "model": "Model (optional)",
+      "model": "Model",
       "negativePrompt": "Avoid (optional)",
       "image": "Starting image (optional)",
       "aspect": "Format",
@@ -135,7 +135,39 @@
     "runAgain": "New run",
     "moreOptions": "More options",
     "fewerOptions": "Fewer options",
-    "failedHint": "The platform could not finish this run. Try again, or pick another model under More options."
+    "failedHint": "The platform could not finish this run. Try again, or pick another model under More options.",
+    "form": {
+      "automatic": "Automatic · {name}",
+      "automaticPlain": "Automatic (recommended)",
+      "automaticHint": "The platform picks the best available option for you.",
+      "seedRandom": "Random",
+      "seedRandomHint": "A new result every time. Turn off to repeat one with its seed.",
+      "seedPlaceholder": "Seed number",
+      "searchOptions": "Search or choose",
+      "local": "Local",
+      "cloud": "Cloud",
+      "fast": "Fast",
+      "balanced": "Balanced",
+      "slow": "Slow",
+      "about": "about {n} s",
+      "perRun": "{price} per run",
+      "free": "Free",
+      "choicesUnreachable": "The list could not be loaded; the platform will choose for you."
+    },
+    "choices": {
+      "size": {
+        "1024x1024": "Square · 1024×1024",
+        "1024x1280": "Portrait 4:5 · 1024×1280",
+        "1360x768": "Landscape 16:9 · 1360×768",
+        "768x1360": "Vertical 9:16 · 768×1360",
+        "512x512": "Quick preview · 512×512"
+      },
+      "aspect": {
+        "9:16": "Vertical 9:16",
+        "16:9": "Wide 16:9",
+        "1:1": "Square 1:1"
+      }
+    }
   },
   "artefact": {
     "image": "Generated image",
@@ -166,6 +198,8 @@
       "PENDING": "Waiting",
       "PROCESSING": "In progress",
       "COMPLETED": "Done",
+      "CANCELLED": "Cancelled",
+      "DELETED": "Deleted",
       "FAILED": "Failed"
     },
     "failedHint": "This job did not finish."
@@ -216,7 +250,7 @@
     "other": "Other provider"
   },
   "profile": {
-    "title": "Profile",
+    "title": "Settings",
     "loadFailed": "Profile unavailable",
     "avatarOf": "Avatar of {name}",
     "account": "Account",

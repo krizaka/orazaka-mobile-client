@@ -35,3 +35,21 @@ describe("what a form sends before the person touches it", () => {
     expect(initialAnswers(fields)).toEqual({ aspect: "16:9", model: "wan2-2-t2v-a14b" });
   });
 });
+
+describe("what the schema says is rare is behind More options", () => {
+  it("honours the blueprint's own x-advanced, beyond the well-known names", () => {
+    const { basic, advanced } = splitFields([field("prompt", true), { ...field("quality"), advanced: true }]);
+    expect(basic.map((f) => f.key)).toEqual(["prompt"]);
+    expect(advanced.map((f) => f.key)).toEqual(["quality"]);
+  });
+});
+
+describe("a catalogue-fed choice starts on automatic", () => {
+  it("does not pre-select a model: the platform keeps choosing the best available one when the run starts", () => {
+    const fields: SchemaField[] = [
+      { ...field("model"), defaultValue: "sd-hosted", fedByCatalogue: true, choices: [{ value: "sd-hosted", label: "SD", hint: null, runsOn: "cloud", speed: null, typicalSeconds: null, priceCents: null, available: true, unavailableReason: null }] },
+      { ...field("aspect"), options: ["9:16", "16:9"], defaultValue: "16:9" },
+    ];
+    expect(initialAnswers(fields)).toEqual({ aspect: "16:9" });
+  });
+});

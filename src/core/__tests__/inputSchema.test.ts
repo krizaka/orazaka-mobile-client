@@ -115,3 +115,41 @@ describe("the video Studio's inputs (orazaka-mobile-client#22)", () => {
     expect(toInputs(fields, { prompt: "une lampe", aspect: "9:16", seed: "42" })).toEqual({ prompt: "une lampe", aspect: "9:16", seed: 42 });
   });
 });
+
+describe("parseInputSchema — closed sets are choices", () => {
+  const schema = JSON.stringify({
+    properties: {
+      model: {
+        type: "string",
+        title: "Model",
+        "x-advanced": true,
+        "x-options": { source: "models", category: "image" },
+        default: "sd-hosted",
+        oneOf: [
+          { const: "sd-hosted", title: "SD hosted", description: "Hosted.", "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true } },
+          { const: "flux", title: "FLUX", "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX is not running" } },
+        ],
+      },
+      seed: { type: "string", "x-control": "seed", "x-advanced": true },
+      unloaded: { type: "string", "x-options": { source: "models", category: "video" } },
+    },
+  });
+  const field = (key: string) => parseInputSchema(schema).find((f) => f.key === key)!;
+
+  it("reads the labelled list the server wrote, with what a picker shows", () => {
+    expect(field("model").choices).toEqual([
+      { value: "sd-hosted", label: "SD hosted", hint: "Hosted.", runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true, unavailableReason: null },
+      { value: "flux", label: "FLUX", hint: null, runsOn: "local", speed: null, typicalSeconds: null, priceCents: null, available: false, unavailableReason: "FLUX is not running" },
+    ]);
+    expect(field("model")).toMatchObject({ defaultValue: "sd-hosted", advanced: true, fedByCatalogue: true });
+  });
+
+  it("keeps a catalogue-fed field a picker when its list did not load", () => {
+    expect(field("unloaded")).toMatchObject({ fedByCatalogue: true });
+    expect(field("unloaded").choices).toBeUndefined();
+  });
+
+  it("reads the seed control", () => {
+    expect(field("seed")).toMatchObject({ control: "seed", advanced: true });
+  });
+});
