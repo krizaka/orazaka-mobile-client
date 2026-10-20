@@ -19,7 +19,7 @@ describe("the dev edge address", () => {
     expect(DEV_EDGE_URL).toBe("https://dev.orazaka.com/edge");
   });
 
-  it.each(["development", "preview"])("is what the EAS %s profile builds against", (profile) => {
+  it.each(["development", "preview", "production"])("is what the EAS %s profile builds against", (profile) => {
     expect(eas.build[profile].env?.EXPO_PUBLIC_EDGE_URL).toBe(DEV_EDGE_URL);
   });
 });

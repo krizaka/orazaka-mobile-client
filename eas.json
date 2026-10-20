@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 16.0.0",
-    "appVersionSource": "local"
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -20,18 +20,19 @@
         "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
       }
     },
-    "production": {},
-    "testflight": {
-      "extends": "production",
-      "distribution": "store",
+    "production": {
+      "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
-      },
-      "credentialsSource": "local"
+      }
+    },
+    "testflight": {
+      "extends": "production",
+      "distribution": "store"
     }
   },
   "submit": {
-    "testflight": {
+    "production": {
       "ios": {}
     }
   }
