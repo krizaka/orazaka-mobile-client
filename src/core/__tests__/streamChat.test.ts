@@ -60,7 +60,7 @@ beforeEach(() => {
   (globalThis as { XMLHttpRequest: unknown }).XMLHttpRequest = FakeXhr;
 });
 
-function start(token: string | null = "jwt-123", options: { model?: string | null } = {}) {
+function start(token: string | null = "jwt-123", options: { model?: string | null; assetIds?: readonly string[] } = {}) {
   const content: string[] = [];
   const errors: StreamFailure[] = [];
   const pipeline: string[][] = [];
@@ -278,5 +278,39 @@ describe("streamChat", () => {
     const { xhr } = start();
 
     expect(JSON.parse(xhr.sentBody ?? "{}")).toMatchObject({ prompt: "Bonjour" });
+  });
+
+  // orazaka-mobile-client#68
+  it("sends the attachments the prompt refers to instead of an empty list", () => {
+    const { xhr } = start("jwt-123", { assetIds: ["a-1", "a-2"] });
+
+    expect(JSON.parse(xhr.sentBody ?? "{}")).toMatchObject({ assetIds: ["a-1", "a-2"] });
+  });
+
+  it("sends an empty attachment list when there is none", () => {
+    const { xhr } = start();
+
+    expect(JSON.parse(xhr.sentBody ?? "{}")).toMatchObject({ assetIds: [] });
+  });
+
+  it("a cancel before the first byte leaves no timer behind: no retry fires afterwards", () => {
+    const { abort } = start();
+
+    abort();
+    jest.advanceTimersByTime(60_000);
+
+    expect(FakeXhr.instances).toHaveLength(1);
+    expect(jest.getTimerCount()).toBe(0);
+  });
+
+  it("a cancel during the pause before a retry stops the retry", () => {
+    const { xhr, abort } = start();
+    xhr.onerror?.();
+    abort();
+    jest.advanceTimersByTime(60_000);
+
+    // The replacement request was created by the retry, but it is never opened or sent.
+    expect(FakeXhr.instances.filter((instance) => instance.sentBody !== null)).toHaveLength(1);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });

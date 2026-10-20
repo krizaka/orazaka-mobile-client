@@ -27,6 +27,8 @@ const FIRST_BYTE_MS = 5000;
 interface StreamOptions {
   /** A catalogue model name; absent or null: the platform's default. */
   readonly model?: string | null;
+  /** The ids of the uploaded attachments this prompt refers to (images, files). */
+  readonly assetIds?: readonly string[];
 }
 
 /** Parses one SSE `data:` payload that is JSON; `undefined` when it is not. */
@@ -87,6 +89,13 @@ export function streamChat(
   let pending = "";
   let currentEvent = "message";
   let accumulated = "";
+  /** The two timers a cancel must stop: the silence watchdog of the live attempt and the pause before a retry. */
+  let silence: ReturnType<typeof setTimeout> | null = null;
+  let retryPause: ReturnType<typeof setTimeout> | null = null;
+  const clearSilence = () => {
+    if (silence !== null) clearTimeout(silence);
+    silence = null;
+  };
 
   const consume = (text: string) => {
     pending += text;
@@ -133,7 +142,6 @@ export function streamChat(
 
   const attach = (): void => {
     const mine = request;
-    let silence: ReturnType<typeof setTimeout> | null = null;
     /** This attempt was replaced by a newer one: whatever it still reports is ignored. */
     const stale = (): boolean => mine !== request || aborted;
     const retry = (): boolean => {
@@ -143,7 +151,8 @@ export function streamChat(
       // The new request replaces this one at once (whatever this one still reports is ignored); a short pause lets
       // the dead connection be torn down before the new one opens a fresh one.
       request = new XMLHttpRequest();
-      setTimeout(() => {
+      retryPause = setTimeout(() => {
+        retryPause = null;
         if (!aborted) attach();
       }, RETRY_DELAY_MS);
       return true;
@@ -162,13 +171,13 @@ export function streamChat(
       if (mine.readyState >= 3) {
         const text = mine.responseText;
         if (text.length > consumed) {
-          if (silence !== null) clearTimeout(silence);
+          clearSilence();
           consume(text.slice(consumed));
           consumed = text.length;
         }
       }
       if (mine.readyState === 4) {
-        if (silence !== null) clearTimeout(silence);
+        clearSilence();
         if (mine.status >= 200 && mine.status < 300) {
           handlers.onDone();
         } else {
@@ -183,10 +192,10 @@ export function streamChat(
     // received, so sending it again on a fresh one is safe — the difference between an answer and a false error.
     mine.onerror = () => {
       if (stale()) return;
-      if (silence !== null) clearTimeout(silence);
+      clearSilence();
       if (!retry()) handlers.onError({ kind: "unreachable" });
     };
-    mine.send(JSON.stringify({ prompt, assetIds: [], model: options.model ?? null }));
+    mine.send(JSON.stringify({ prompt, assetIds: options.assetIds ?? [], model: options.model ?? null }));
     silence = setTimeout(() => {
       if (consumed === 0) retry();
     }, FIRST_BYTE_MS);
@@ -195,6 +204,9 @@ export function streamChat(
 
   return () => {
     aborted = true;
+    clearSilence();
+    if (retryPause !== null) clearTimeout(retryPause);
+    retryPause = null;
     request.abort();
   };
 }
