@@ -20,7 +20,11 @@
         "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
       }
     },
-    "production": {},
+    "production": {
+      "ios": {
+        "image": "latest"
+      }
+    },
     "testflight": {
       "extends": "production",
       "distribution": "store",
