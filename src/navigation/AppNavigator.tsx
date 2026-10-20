@@ -29,6 +29,7 @@ import { SystemScreen } from "../screens/SystemScreen";
 import { AppTabBar } from "./AppTabBar";
 import { useAuth } from "../core/AuthContext";
 import { useKeepAlive } from "../core/keepAlive";
+import { linking } from "./linking";
 
 /** Routes reachable without a session. */
 export type AuthStackParamList = {
@@ -114,7 +115,7 @@ export function AppNavigator(): React.JSX.Element {
   const screenOptions = { headerShown: false, contentStyle: { backgroundColor: c.surface0 } } as const;
 
   return (
-    <NavigationContainer theme={navTheme}>
+    <NavigationContainer theme={navTheme} linking={linking}>
       {session === null ? (
         <AuthStack.Navigator screenOptions={screenOptions}>
           <AuthStack.Screen name="Login" component={LoginScreen} />

@@ -9,8 +9,9 @@
     "ios": "expo run:ios",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "validate": "npm run lint && npm run typecheck && npm run test",
-    "test": "jest"
+    "validate": "npm run lint && npm run typecheck && npm run test && npm run test:links",
+    "test": "jest",
+    "test:links": "node --test scripts/app-links.test.mjs"
   },
   "dependencies": {
     "@krizaka/charts": "^0.6.0",
@@ -20,8 +21,8 @@
     "@krizaka/query": "^0.2.1",
     "@shopify/flash-list": "^2.0.0",
     "@krizaka/orazaka-shared": "*",
-    "@krizaka/tokens": "^3.26.0",
-    "@krizaka/ui": "^3.26.0",
+    "@krizaka/tokens": "^3.28.0",
+    "@krizaka/ui": "^3.28.0",
     "@react-navigation/bottom-tabs": "^7.18.16",
     "@react-navigation/native": "^7.1.0",
     "@react-navigation/native-stack": "^7.3.0",
