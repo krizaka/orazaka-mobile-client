@@ -13,13 +13,48 @@
       "bundleIdentifier": "com.krizaka.orazaka",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": [
+        "applinks:dev.orazaka.com"
+      ]
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#0a0e14"
       },
-      "package": "com.krizaka.orazaka"
+      "package": "com.krizaka.orazaka",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "dev.orazaka.com",
+              "pathPrefix": "/chat"
+            },
+            {
+              "scheme": "https",
+              "host": "dev.orazaka.com",
+              "pathPrefix": "/jobs"
+            },
+            {
+              "scheme": "https",
+              "host": "dev.orazaka.com",
+              "pathPrefix": "/settings"
+            },
+            {
+              "scheme": "https",
+              "host": "dev.orazaka.com",
+              "pathPrefix": "/studios"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "plugins": [
       "./plugins/with-xcode27",
