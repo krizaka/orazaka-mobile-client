@@ -9,8 +9,9 @@
     "ios": "expo run:ios",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "validate": "npm run lint && npm run typecheck && npm run test",
-    "test": "jest"
+    "validate": "npm run lint && npm run typecheck && npm run test && npm run test:links",
+    "test": "jest",
+    "test:links": "node --test scripts/app-links.test.mjs"
   },
   "dependencies": {
     "@krizaka/charts": "^0.6.0",
