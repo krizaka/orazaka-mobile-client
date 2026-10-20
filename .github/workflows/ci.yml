@@ -25,7 +25,7 @@ jobs:
       # The shared component pipeline publishes npm packages with provenance (OIDC): a reusable
       # workflow cannot be granted more than its caller holds, so its absence fails at startup.
       id-token: write
-    uses: krizaka/orazaka/.github/workflows/component.yml@3ec94d6ec161ae34766c75f5953debf1cb669b9f # fix/component-dup (krizaka/orazaka#252); back to @main once it lands
+    uses: krizaka/orazaka/.github/workflows/component.yml@main
     with:
       component: orazaka-mobile-client
     secrets: inherit
