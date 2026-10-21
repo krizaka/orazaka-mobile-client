@@ -29,6 +29,16 @@
     "testflight": {
       "extends": "production",
       "distribution": "store"
+    },
+    "simulator": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "image": "latest"
+      },
+      "env": {
+        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+      }
     }
   },
   "submit": {

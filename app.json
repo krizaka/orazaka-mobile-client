@@ -20,7 +20,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0a0e14"
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#0d0d10"
       },
       "package": "com.krizaka.orazaka",
       "intentFilters": [
@@ -64,12 +67,25 @@
           "photosPermission": "Orazaka reads the photos you choose to start a creation from.",
           "cameraPermission": "Orazaka uses the camera when you take a photo to start a creation from."
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0d0d10",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 160,
+          "dark": {
+            "backgroundColor": "#0d0d10"
+          }
+        }
       ]
     ],
     "extra": {
       "eas": {
         "projectId": "27da30b2-57a8-4f97-a985-be044a5d2e09"
       }
-    }
+    },
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#0d0d10"
   }
 }
