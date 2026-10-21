@@ -18,6 +18,7 @@ const krizaka = (name, file) => path.join(path.dirname(require.resolve(`@krizaka
 /** The ES-module entries of the packages the kit and the app import (each has only an `import` condition). */
 const esmEntries = {
   pacer: ["", "react"],
+  discovery: ["", "react", "sign"],
   intl: ["", "plural", "number", "date", "money"],
   i18n: ["", "react"],
   icons: ["native"],
@@ -60,7 +61,7 @@ module.exports = {
         ...esmMap,
       },
       transformIgnorePatterns: [
-        "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@react-navigation/.*|react-navigation|@krizaka/.*|@tanstack/.*|react-native-svg))",
+        "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@react-navigation/.*|react-navigation|@krizaka/.*|@noble/.*|@tanstack/.*|react-native-svg))",
       ],
     },
   ],

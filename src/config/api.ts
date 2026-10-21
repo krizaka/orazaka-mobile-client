@@ -10,27 +10,39 @@
  * meant inventing a second, native-only authentication path inside a component whose whole purpose
  * is to serve the browser.
  *
- * Set `EXPO_PUBLIC_EDGE_URL` to an address the device can reach (e.g. `http://192.168.1.5:8088`
- * for a physical device, or `http://10.0.2.2:8088` for the Android emulator). The `localhost`
- * fallback works for the iOS simulator, which shares the host network.
+ * Where the edge lives is not a build-time constant: `config/discovery.ts` asks the signed manifest on krizaka.com
+ * (@krizaka/discovery, krizaka/.github ADR-003) and registers itself here with `setEdgeBase`, so moving the edge never
+ * needs a store release. Until it does (a unit test, the first frame), the dev edge below answers.
  */
-
-const DEFAULT_EDGE_URL = "http://localhost:8088";
 
 /**
  * The edge of the public dev site. dev.orazaka.com itself is the Next.js BFF (a cookie session a native app cannot
- * hold); its edge answers a bearer client under `/edge`. The EAS `development` and `preview` profiles build against it.
+ * hold); its edge answers a bearer client under `/edge`. It is the baked default and the legacy address of the app.
  */
 export const DEV_EDGE_URL = "https://dev.orazaka.com/edge";
 
-/** Absolute base URL of the edge. */
-export const EDGE_BASE_URL: string = (
-  process.env.EXPO_PUBLIC_EDGE_URL ?? DEFAULT_EDGE_URL
-).replace(/\/+$/, "");
+let edgeBaseProvider: () => string = () => DEV_EDGE_URL;
+
+/** Registers where the edge address comes from (discovery). Read at every request, never kept. */
+export function setEdgeBase(provider: () => string): void {
+  edgeBaseProvider = provider;
+}
+
+/** `https://host/edge///` → `https://host/edge` (a loop, not a regular expression: the input is a URL read from elsewhere). */
+export function trimSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value[end - 1] === "/") end -= 1;
+  return value.slice(0, end);
+}
+
+/** Absolute base URL of the edge, as of now. */
+export function edgeBase(): string {
+  return trimSlashes(edgeBaseProvider());
+}
 
 /** Joins the edge base with an API path (e.g. `"/api/v1/studios"`). */
 export function edgeUrl(path: string): string {
-  return `${EDGE_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${edgeBase()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 /**
@@ -119,7 +131,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     if (response.status === 401 && message.includes("Missing active security context")) {
       throw new ApiError(
         response.status,
-        `${EDGE_BASE_URL} is the website, not the edge: set EXPO_PUBLIC_EDGE_URL to ${DEV_EDGE_URL} (or your own edge).`,
+        `${edgeBase()} is the website, not the edge: its apiBase in the services manifest must be ${DEV_EDGE_URL} (or your own edge).`,
       );
     }
     throw new ApiError(response.status, message);

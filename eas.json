@@ -8,7 +8,7 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+        "EXPO_PUBLIC_APP_ENV": "dev"
       }
     },
     "preview": {
@@ -17,13 +17,13 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+        "EXPO_PUBLIC_APP_ENV": "dev"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+        "EXPO_PUBLIC_APP_ENV": "dev"
       }
     },
     "testflight": {
@@ -37,7 +37,7 @@
         "image": "latest"
       },
       "env": {
-        "EXPO_PUBLIC_EDGE_URL": "https://dev.orazaka.com/edge"
+        "EXPO_PUBLIC_APP_ENV": "dev"
       }
     }
   },
