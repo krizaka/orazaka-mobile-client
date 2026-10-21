@@ -3,7 +3,7 @@ import { mediaSource } from "../assets";
 describe("mediaSource", () => {
   it("resolves an edge path against the edge and sends the Bearer", () => {
     expect(mediaSource("/api/v1/assets/j1/video.mp4", "tok")).toEqual({
-      uri: "http://localhost:8088/api/v1/assets/j1/video.mp4",
+      uri: "https://dev.orazaka.com/edge/api/v1/assets/j1/video.mp4",
       headers: { Authorization: "Bearer tok" },
     });
   });

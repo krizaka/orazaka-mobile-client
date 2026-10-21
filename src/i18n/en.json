@@ -290,7 +290,16 @@
     "account": "Signed in as",
     "interceptions": "Active interceptors",
     "none": "None",
-    "refresh": "Check again"
+    "refresh": "Check again",
+    "website": "Website",
+    "source": "Addresses from",
+    "sources": {
+      "live": "Live manifest",
+      "cache": "Cached manifest",
+      "default": "Built-in default",
+      "legacy": "Built-in address",
+      "override": "Local override"
+    }
   },
   "report": {
     "verdict": {
@@ -303,5 +312,11 @@
       "NOT_EXAMINED": "Not examined",
       "INSUFFICIENT_EVIDENCE": "Insufficient evidence"
     }
+  },
+  "update": {
+    "forceTitle": "Update Orazaka to continue",
+    "version": "Version {version}",
+    "update": "Update",
+    "maintenanceTitle": "Orazaka is under maintenance"
   }
 }

@@ -290,7 +290,16 @@
     "account": "Connecté en tant que",
     "interceptions": "Intercepteurs actifs",
     "none": "Aucun",
-    "refresh": "Vérifier à nouveau"
+    "refresh": "Vérifier à nouveau",
+    "website": "Site web",
+    "source": "Adresses issues de",
+    "sources": {
+      "live": "Manifeste en direct",
+      "cache": "Manifeste en cache",
+      "default": "Valeur intégrée",
+      "legacy": "Adresse intégrée",
+      "override": "Surcharge locale"
+    }
   },
   "report": {
     "verdict": {
@@ -303,5 +312,11 @@
       "NOT_EXAMINED": "Non examiné",
       "INSUFFICIENT_EVIDENCE": "Preuves insuffisantes"
     }
+  },
+  "update": {
+    "forceTitle": "Mettez Orazaka à jour pour continuer",
+    "version": "Version {version}",
+    "update": "Mettre à jour",
+    "maintenanceTitle": "Orazaka est en maintenance"
   }
 }
