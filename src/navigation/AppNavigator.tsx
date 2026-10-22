@@ -44,7 +44,7 @@ export type AppStackParamList = {
   Tabs: undefined;
   StudioDetail: { studioKey: string };
   /** `installationId` is null for a TOOLKIT Studio (image, video, voice…): it has no installation, a run is started on its key. */
-  StudioRun: { installationId: string | null; label: string; studioKey: string };
+  StudioRun: { installationId?: string | null; label?: string; studioKey: string };
   Connectors: undefined;
   System: undefined;
 };

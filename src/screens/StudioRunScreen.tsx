@@ -10,6 +10,8 @@ import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
 import { ArtefactCard } from "../components/ArtefactCard";
 import { ChoiceField } from "../components/ChoiceField";
+import { DocumentField } from "../components/DocumentField";
+import { FileFieldBox } from "../components/FileFieldBox";
 import { PhotoField } from "../components/PhotoField";
 import { SeedField } from "../components/SeedField";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
@@ -34,7 +36,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "StudioRun">;
  * EventSource would need reconnection logic for a screen that finishes in minutes.
  */
 export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element {
-  const { installationId, label, studioKey } = route.params;
+  const { installationId = null, label: named, studioKey } = route.params;
+  const label = named ?? studioKey; // opened by address (orazaka://studios/<key>/run): the key, until the Studio says its name
   const { t, locale } = useI18n();
   const bearer = useToken();
   // The blueprint declares what a run needs; asking the server beats hardcoding a form per
@@ -116,18 +119,24 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   };
 
   const renderField = (field: SchemaField): React.JSX.Element =>
-    field.assetKind === "image" ? (
-      <View key={field.key} style={styles.field} testID={`field-${field.key}`}>
-        <Txt variant="label" tone="secondary">
-          {`${titleOf(field)}${field.required ? " *" : ""}`}
-        </Txt>
+    field.documentKind === "pdf" ? (
+      <FileFieldBox key={field.key} field={field} title={titleOf(field)}>
+        <DocumentField
+          title={titleOf(field)}
+          maxLength={field.maxLength}
+          onValueChange={(base64) => setAnswers((prev) => ({ ...prev, [field.key]: base64 }))}
+          onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
+        />
+      </FileFieldBox>
+    ) : field.assetKind === "image" ? (
+      <FileFieldBox key={field.key} field={field} title={titleOf(field)}>
         <PhotoField
           title={titleOf(field)}
           token={bearer}
           onAssetChange={(assetId) => setAnswers((prev) => ({ ...prev, [field.key]: assetId }))}
           onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
         />
-      </View>
+      </FileFieldBox>
     ) : field.choices !== undefined || field.fedByCatalogue === true ? (
       <ChoiceField key={field.key} field={field} title={titleOf(field)} value={answers[field.key] ?? ""} disabled={isStarting} onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))} />
     ) : field.control === "seed" ? (
