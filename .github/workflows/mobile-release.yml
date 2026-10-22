@@ -3,13 +3,14 @@
 name: Mobile release
 
 on:
+  push:
+    tags: ["mobile-v*"]
   workflow_dispatch:
     inputs:
-      platform:
-        description: "ios (TestFlight), android (APK on a GitHub release) or all"
-        default: all
-        type: choice
-        options: [all, ios, android]
+      build_id:
+        description: "iOS: the EAS build to submit to TestFlight (free). No cloud build is started from here."
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -20,7 +21,7 @@ concurrency:
 
 jobs:
   ios:
-    if: inputs.platform == 'all' || inputs.platform == 'ios'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
@@ -53,13 +54,15 @@ jobs:
                 eas.submit = { testflight: { ios: { ascAppId: id, ascApiKeyPath: process.env.RUNNER_TEMP + "/asc-key.txt", ascApiKeyIssuerId: process.env.ASC_ISSUER, ascApiKeyId: process.env.ASC_KEY, appleTeamId: process.env.TEAM } } };
                 fs.writeFileSync("eas.json", JSON.stringify(eas, null, 2));
               });'
-      - name: Build for TestFlight and submit
+      - name: Submit the build to TestFlight (free)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@latest build --platform ios --profile testflight --non-interactive --wait --auto-submit-with-profile=testflight
+          BUILD_ID: ${{ inputs.build_id }}
+        run: npx --yes eas-cli@latest submit --platform ios --id "$BUILD_ID" --profile testflight --non-interactive
 
   android:
-    if: inputs.platform == 'all' || inputs.platform == 'android'
+    # Expo's free plan has 15 cloud iOS builds a month: a cloud build only on a release tag, and only after asking.
+    if: startsWith(github.ref, 'refs/tags/mobile-v')
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
