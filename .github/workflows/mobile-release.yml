@@ -38,10 +38,21 @@ jobs:
           umask 077
           printf '%s' "$ASC_KEY_BODY" > "$RUNNER_TEMP/asc-key.txt"
           node -e '
-            const fs = require("fs");
-            const eas = JSON.parse(fs.readFileSync("eas.json", "utf8"));
-            eas.submit = { testflight: { ios: { ascApiKeyPath: process.env.RUNNER_TEMP + "/asc-key.txt", ascApiKeyIssuerId: process.env.ASC_ISSUER, ascApiKeyId: process.env.ASC_KEY, appleTeamId: process.env.TEAM } } };
-            fs.writeFileSync("eas.json", JSON.stringify(eas, null, 2));'
+            const fs = require("fs"), crypto = require("crypto");
+            const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
+            const now = Math.floor(Date.now() / 1000);
+            const head = b64({ alg: "ES256", kid: process.env.ASC_KEY, typ: "JWT" });
+            const body = b64({ iss: process.env.ASC_ISSUER, iat: now, exp: now + 600, aud: "appstoreconnect-v1" });
+            const sig = crypto.sign("sha256", Buffer.from(head + "." + body), { key: fs.readFileSync(process.env.RUNNER_TEMP + "/asc-key.txt"), dsaEncoding: "ieee-p1363" }).toString("base64url");
+            fetch("https://api.appstoreconnect.apple.com/v1/apps?filter[bundleId]=com.krizaka.orazaka", { headers: { Authorization: "Bearer " + head + "." + body + "." + sig } })
+              .then((r) => r.json())
+              .then((j) => {
+                const id = j.data && j.data[0] && j.data[0].id;
+                if (!id) { console.error("No App Store Connect app with bundle id com.krizaka.orazaka: create the app record once (App Store Connect, Apps, +)."); process.exit(1); }
+                const eas = JSON.parse(fs.readFileSync("eas.json", "utf8"));
+                eas.submit = { testflight: { ios: { ascAppId: id, ascApiKeyPath: process.env.RUNNER_TEMP + "/asc-key.txt", ascApiKeyIssuerId: process.env.ASC_ISSUER, ascApiKeyId: process.env.ASC_KEY, appleTeamId: process.env.TEAM } } };
+                fs.writeFileSync("eas.json", JSON.stringify(eas, null, 2));
+              });'
       - name: Build for TestFlight and submit
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
