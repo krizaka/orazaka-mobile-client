@@ -1,5 +1,5 @@
 # The story recorded for the Orazaka site (home "On your phone", /gallery "A day of work", /docs/orazaka/mobile): the
-# real app on an iOS simulator, signed in as the QA user, against the dev platform the app points at. Run it through
+# real app on an iOS simulator, signed in as the demo persona (Mira), against the dev platform the app points at. Run it through
 # scripts/record-story.mjs, which records the screen and receives the marks below (typing is sped up and waits are cut
 # afterwards, labelled — never faked).
 #   node scripts/record-story.mjs --appearance dark
@@ -31,6 +31,7 @@ appId: com.krizaka.orazaka
     visible:
       id: "studio-image-generation"
     timeout: 30000
+- runScript: { file: lib/mark.js, env: { NAME: "shown" } }
 - waitForAnimationToEnd
 - runScript: { file: lib/mark.js, env: { NAME: "clip:sign-in:end" } }
 
@@ -46,12 +47,8 @@ appId: com.krizaka.orazaka
 - inputText: ${IMAGE_PROMPT}
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
 - pressKey: Enter
-# The dev GPU is on demand: ask for the hosted image model so the run is certain to finish.
-- tapOn: "More options"
-- tapOn:
-    id: "field-model"
-- inputText: ${IMAGE_MODEL}
-- pressKey: Enter
+# The model is on Automatic: the hosted image model, so the run is certain to finish on dev.
+- hideKeyboard
 - tapOn:
     id: "run-launch"
 - runScript: { file: lib/mark.js, env: { NAME: "wait:start", LABEL: "The image is rendering" } }
@@ -88,17 +85,14 @@ appId: com.krizaka.orazaka
     timeout: 3000
 - runScript: { file: lib/mark.js, env: { NAME: "clip:ask:end" } }
 
-# 4. Follow the jobs, then the profile
+# 4. Follow the jobs (the profile is not shown: its credits line is wrong on dev, see the issue on the credits)
 - tapOn: "Jobs"
 - runScript: { file: lib/mark.js, env: { NAME: "clip:jobs:start" } }
 - extendedWaitUntil:
     visible: "Jobs per day"
     timeout: 30000
-- waitForAnimationToEnd
+# A steady look at the chart, then a scroll down to the list and a pause on it.
+- extendedWaitUntil: { visible: "never-on-screen", timeout: 2500, optional: true }
 - scroll
-- waitForAnimationToEnd:
-    timeout: 3000
-- tapOn: "Settings"
-- waitForAnimationToEnd:
-    timeout: 3000
+- extendedWaitUntil: { visible: "never-on-screen", timeout: 3000, optional: true }
 - runScript: { file: lib/mark.js, env: { NAME: "clip:jobs:end" } }

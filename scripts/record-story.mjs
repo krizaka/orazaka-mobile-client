@@ -26,10 +26,17 @@ const arg = (name, fallback) => {
 const appearance = arg("appearance", "dark");
 const out = path.resolve(arg("out", "recordings"));
 const withVideo = process.argv.includes("--video");
+// Your own simulator: never "booted" (other sessions may hold booted ones). --device <udid> or ORAZAKA_SIM_UDID.
+const DEVICE = arg("device", process.env.ORAZAKA_SIM_UDID);
+if (!DEVICE) throw new Error("Pass --device <udid> (or ORAZAKA_SIM_UDID): the simulator this session created.");
 const SPEED = 4;
 const HOLD = 1.4;
+// The persona (Mira by default) from @dev, never the QA account: its address is on screen at sign-in.
+const persona = arg("persona", "mira");
+const PERSONA_KEYS = { mira: "MIRA", eric: "PERSONA" };
+if (!PERSONA_KEYS[persona]) throw new Error(`unknown persona: ${persona}`);
 const secret = (key) =>
-  execFileSync(path.join(os.homedir(), ".krizaka-worktrees/tools/secret.sh"), [path.join(os.homedir(), "Documents/krizaka/qa.env"), key], { encoding: "utf8" });
+  execFileSync(path.join(os.homedir(), ".krizaka-worktrees/tools/secret.sh"), ["@dev", `APP_QA_ORAZAKA_${PERSONA_KEYS[persona]}_${key}`], { encoding: "utf8" }).trim();
 
 fs.mkdirSync(out, { recursive: true });
 const raw = path.join(out, `raw-${arg("name", appearance)}.mp4`);
@@ -48,28 +55,28 @@ const server = http.createServer((req, res) => {
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
 const markUrl = `http://127.0.0.1:${server.address().port}`;
 
-execFileSync("xcrun", ["simctl", "ui", "booted", "appearance", appearance]);
-execFileSync("xcrun", ["simctl", "status_bar", "booted", "override", "--time", "9:41", "--batteryState", "charged", "--batteryLevel", "100", "--cellularBars", "4", "--wifiBars", "3"]);
+execFileSync("xcrun", ["simctl", "ui", DEVICE, "appearance", appearance]);
+execFileSync("xcrun", ["simctl", "status_bar", DEVICE, "override", "--time", "9:41", "--batteryState", "charged", "--batteryLevel", "100", "--cellularBars", "4", "--wifiBars", "3"]);
 
-const recorder = spawn("xcrun", ["simctl", "io", "booted", "recordVideo", "--codec", "h264", "--force", raw], { stdio: "ignore" });
+const recorder = spawn("xcrun", ["simctl", "io", DEVICE, "recordVideo", "--codec", "h264", "--force", raw], { stdio: "ignore" });
 startedAt = Date.now() / 1000;
 await new Promise((r) => setTimeout(r, 2500));
 
 const env = {
   ...process.env,
   MARK_URL: markUrl,
-  ORAZAKA_EMAIL: secret("ORAZAKA_USER_EMAIL"),
-  ORAZAKA_PASSWORD: secret("ORAZAKA_USER_PASSWORD"),
+  ORAZAKA_EMAIL: secret("EMAIL"),
+  ORAZAKA_PASSWORD: secret("PASSWORD"),
 };
 const args = [
-  "test", arg("flow", ".maestro/story.yaml"),
+  "--device", DEVICE, "test", arg("flow", ".maestro/story.yaml"),
   "-e", `MARK_URL=${markUrl}`,
   "-e", `ORAZAKA_EMAIL=${env.ORAZAKA_EMAIL}`,
   "-e", `ORAZAKA_PASSWORD=${env.ORAZAKA_PASSWORD}`,
   "-e", `IMAGE_PROMPT=${arg("image-prompt", "A ceramic table lamp on a walnut desk, warm evening light, product photograph")}`,
   "-e", `VIDEO_PROMPT=${arg("video-prompt", "Slow push-in on a ceramic lamp being switched on in a quiet studio, warm light spreading across the wall")}`,
   "-e", `IMAGE_MODEL=${arg("image-model", "stable-diffusion-3.5-large")}`,
-  "-e", `CHAT_PROMPT=${arg("chat-prompt", "Draft a short, polite reply to a customer whose lamp arrived late.")}`,
+  "-e", `CHAT_PROMPT=${arg("chat-prompt", "In two sentences, thank a customer for her patience: her ceramic lamp arrived two days late. Sign as Mira, Lumen Atelier. No placeholders.")}`,
   "-e", `WITH_VIDEO=${withVideo}`,
 ];
 const code = await new Promise((resolve) => spawn("maestro", args, { stdio: "inherit" }).on("exit", resolve));
@@ -77,7 +84,7 @@ await new Promise((r) => setTimeout(r, 1500));
 recorder.kill("SIGINT");
 await new Promise((r) => recorder.on("exit", r));
 server.close();
-execFileSync("xcrun", ["simctl", "status_bar", "booted", "clear"]);
+execFileSync("xcrun", ["simctl", "status_bar", DEVICE, "clear"]);
 fs.writeFileSync(path.join(out, `marks-${arg("name", appearance)}.json`), JSON.stringify({ startedAt, marks }, null, 2));
 if (code !== 0) {
   console.error(`maestro exited with ${code}; raw recording kept at ${raw}`);
@@ -117,7 +124,12 @@ for (const id of clips) {
     const first = marks.find((m, i) => i > s && m.name === "type:start");
     if (first) t0 = Math.max(t0, offset(first) - (id === "ask" ? 2 : 1.2));
   }
-  const t1 = offset(marks[e]);
+  let t1 = offset(marks[e]);
+  // After signing in, hold the Studios list a moment, not for the whole settling time.
+  if (id === "sign-in") {
+    const shown = marks.find((m, i) => i > s && m.name === "shown");
+    if (shown) t1 = Math.min(t1, offset(shown) + 3);
+  }
   // Pieces between t0 and t1: normal, typing (sped up), wait (cut → hold).
   const pieces = [];
   let cursor = t0;
@@ -162,7 +174,8 @@ for (const id of clips) {
   execFileSync("ffmpeg", ["-y", "-v", "error", ...inputs, "-filter_complex", graph, "-map", "[out]", "-r", "60", "-c:v", "libx264", "-crf", "20", "-preset", "slow", "-movflags", "+faststart", `${base}.mp4`]);
   execFileSync("ffmpeg", ["-y", "-v", "error", "-i", `${base}.mp4`, "-c:v", "libvpx-vp9", "-crf", "34", "-b:v", "0", "-row-mt", "1", `${base}.webm`]);
   // The poster: a frame from the clip (ffmpeg here has no webp encoder, Pillow writes it).
-  execFileSync("ffmpeg", ["-y", "-v", "error", "-ss", arg("poster-at", "3"), "-i", `${base}.mp4`, "-frames:v", "1", `${base}-poster.png`]);
+  const len = Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", `${base}.mp4`], { encoding: "utf8" }));
+  execFileSync("ffmpeg", ["-y", "-v", "error", "-ss", arg("poster-at", String(Math.min(3, len / 2))), "-i", `${base}.mp4`, "-frames:v", "1", `${base}-poster.png`]);
   execFileSync("python3", ["-I", "-c", "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], 'WEBP', quality=82)", `${base}-poster.png`, `${base}-poster.webp`]);
   fs.rmSync(`${base}-poster.png`);
   for (const l of labels) fs.rmSync(l);
