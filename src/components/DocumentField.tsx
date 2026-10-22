@@ -3,8 +3,7 @@ import { StyleSheet, View } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { Button, Txt } from "@krizaka/ui/native";
-import { base64ToBytes } from "../core/preflight/bytes";
-import { createInspector, documentRules, maxPdfBytesFor, reasonKey } from "../core/preflight";
+import { base64ToBytes, createInspector, documentRules, maxPdfBytesFor, reasonKey } from "@krizaka/orazaka-shared";
 import { useI18n } from "../i18n";
 
 interface Props {
