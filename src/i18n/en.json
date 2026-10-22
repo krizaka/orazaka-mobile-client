@@ -167,6 +167,26 @@
         "16:9": "Wide 16:9",
         "1:1": "Square 1:1"
       }
+    },
+    "document": {
+      "choose": "Choose a PDF",
+      "replace": "Choose another PDF",
+      "remove": "Remove the file",
+      "reading": "Checking the file…",
+      "ready": "{name} is ready",
+      "size": "{size} MB",
+      "readFailed": "The file could not be read. Try another one.",
+      "refused": {
+        "EMPTY": "This file is empty.",
+        "TOO_LARGE": "This file is too large for this check ({max} MB at most).",
+        "UNSUPPORTED_TYPE": "Only a PDF can be checked here.",
+        "TYPE_MISMATCH": "This file is not what its name says. Choose a real PDF.",
+        "EXECUTABLE": "This file is a program, not a document.",
+        "CORRUPT": "This PDF is damaged and cannot be read.",
+        "TRUNCATED": "This PDF is incomplete: it was cut short when it was saved or sent.",
+        "ENCRYPTED": "This PDF is protected by a password. Remove the protection and try again.",
+        "ACTIVE_CONTENT": "This PDF contains active content (a script or a launched action) and cannot be checked."
+      }
     }
   },
   "artefact": {

@@ -13,6 +13,11 @@ export interface SchemaField {
   readonly defaultValue?: string;
   /** The field takes an uploaded file (`format: asset:image`): a picker, never a typed asset id. Only photos are picked on the phone. */
   readonly assetKind?: "image" | "video" | "audio";
+  /**
+   * The field takes a document, sent as its own base64 text (`contentMediaType: application/pdf`, or the document-validation
+   * pack's `documentBase64` while it declares nothing more): a file picker and a pre-flight, never a thousand-line text box.
+   */
+  readonly documentKind?: "pdf";
   /** A labelled list the server wrote in (`oneOf` of `const`): the catalogue's models, with what a picker shows. */
   readonly choices?: readonly Choice[];
   /** The values come from the model catalogue (`x-options`): a picker even when the list could not be loaded. */
@@ -95,6 +100,13 @@ export function assetKindOf(key: string, property: RawProperty): SchemaField["as
   return property.format === undefined && key === "image" ? "image" : undefined;
 }
 
+/** A string that carries a PDF as base64: by its standard JSON-Schema words, else by the one key the pack has used so far. */
+export function documentKindOf(key: string, property: RawProperty): SchemaField["documentKind"] {
+  if (property.type !== undefined && property.type !== "string") return undefined;
+  if (property.contentMediaType === "application/pdf") return "pdf";
+  return property.format === undefined && key === "documentBase64" ? "pdf" : undefined;
+}
+
 interface RawSchema {
   readonly required?: readonly string[];
   readonly properties?: Record<string, RawProperty>;
@@ -131,6 +143,7 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
     isList: property.type === "array",
     maxLength: property.maxLength,
     ...(assetKindOf(key, property) ? { assetKind: assetKindOf(key, property) } : {}),
+    ...(documentKindOf(key, property) ? { documentKind: documentKindOf(key, property) } : {}),
     ...(property.enum ? { options: property.enum.map(String) } : {}),
     ...(choicesOf(property.oneOf) ? { choices: choicesOf(property.oneOf) } : {}),
     ...(property["x-options"]?.source === "models" ? { fedByCatalogue: true } : {}),
