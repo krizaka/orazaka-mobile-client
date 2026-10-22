@@ -3,7 +3,8 @@ import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ActionSheet, Avatar, Badge, Button, Header, Screen, Segmented, Txt, useTheme, type Mode } from "@krizaka/ui/native";
 import { AutomationIcon, CreditsIcon, GlobeIcon, LogoutIcon, ServerIcon, ThemeIcon } from "@krizaka/icons/native";
-import { availableCredits, type Wallet } from "@krizaka/orazaka-shared";
+import { type Wallet } from "@krizaka/orazaka-shared";
+import { spendableCredits } from "../core/credits";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useApi } from "../core/useApi";
 import { useAuth } from "../core/AuthContext";
@@ -48,7 +49,7 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
   };
   const languageName = (p: LanguagePreference): string =>
     p === "auto" ? t("profile.languageAuto") : p === "fr" ? "Français" : "English";
-  const credits = wallet.data ? availableCredits(wallet.data) : null;
+  const credits = wallet.data ? spendableCredits(wallet.data) : null;
 
   return (
     <Screen header={<Header title={t("profile.title")} />}>
