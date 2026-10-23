@@ -222,7 +222,9 @@
       "DELETED": "Deleted",
       "FAILED": "Failed"
     },
-    "failedHint": "This job did not finish."
+    "failedHint": "This job did not finish.",
+    "open": "Open {kind}",
+    "nothing": "Nothing to show for this job."
   },
   "chat": {
     "title": "Chat",

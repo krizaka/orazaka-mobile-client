@@ -1,5 +1,7 @@
 import React from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { formatDistanceToNow, parseISO } from "date-fns";
 import { enCA, frCA } from "date-fns/locale";
 import { BarChart, DonutChart } from "@krizaka/charts/native";
@@ -9,9 +11,10 @@ import { useApi } from "../core/useApi";
 import { jobKind, jobsByKind, jobsPerDay } from "../core/jobStats";
 import { Loading, LoadError, Empty } from "../components/AsyncState";
 import { useI18n, type Key } from "../i18n";
+import type { RootStackParamList } from "../navigation/AppNavigator";
 
 // Partial: a status the kit adds later (CANCELLED, DELETED) reads as neutral instead of breaking the build.
-const TONE: Partial<Record<JobStatus, BadgeTone>> = {
+export const JOB_TONE: Partial<Record<JobStatus, BadgeTone>> = {
   PENDING: "neutral",
   PROCESSING: "accent",
   COMPLETED: "success",
@@ -58,19 +61,21 @@ function JobsCharts({ jobs }: Readonly<{ jobs: readonly JobRecord[] }>): React.J
   );
 }
 
-/** One job: its kind, its state in the platform's badge, its progress while it runs, why it failed. */
+/** One job: its kind, its state in the platform's badge, its progress while it runs, why it failed — one tap opens what it made. */
 function JobCard({ job }: Readonly<{ job: JobRecord }>): React.JSX.Element {
   const { t, locale } = useI18n();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const running = job.status === "PENDING" || job.status === "PROCESSING";
   const kind = t(`jobs.kind.${jobKind(job.featureKey)}` as Key);
   return (
+    <Pressable accessibilityRole="button" accessibilityLabel={t("jobs.open", { kind })} onPress={() => navigation.navigate("JobDetail", { jobId: job.id })}>
     <Card.Root>
       <Card.Body padding="sm" style={styles.job}>
         <View style={styles.header}>
           <Txt variant="label" numberOfLines={1} style={styles.kind}>
             {kind}
           </Txt>
-          <Badge tone={TONE[job.status] ?? "neutral"} dot={running}>
+          <Badge tone={JOB_TONE[job.status] ?? "neutral"} dot={running}>
             {t(`jobs.status.${job.status}` as Key)}
           </Badge>
         </View>
@@ -85,6 +90,7 @@ function JobCard({ job }: Readonly<{ job: JobRecord }>): React.JSX.Element {
         ) : null}
       </Card.Body>
     </Card.Root>
+    </Pressable>
   );
 }
 

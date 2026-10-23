@@ -22,6 +22,7 @@ import { ChatStreamScreen } from "../screens/ChatStreamScreen";
 import { StudioCatalogueScreen } from "../screens/StudioCatalogueScreen";
 import { StudioDetailScreen } from "../screens/StudioDetailScreen";
 import { StudioRunScreen } from "../screens/StudioRunScreen";
+import { JobDetailScreen } from "../screens/JobDetailScreen";
 import { JobsScreen } from "../screens/JobsScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { ConnectorsScreen } from "../screens/ConnectorsScreen";
@@ -45,6 +46,8 @@ export type AppStackParamList = {
   StudioDetail: { studioKey: string };
   /** `installationId` is null for a TOOLKIT Studio (image, video, voice…): it has no installation, a run is started on its key. */
   StudioRun: { installationId?: string | null; label?: string; studioKey: string };
+  /** One job, opened from the Jobs tab: what it made. */
+  JobDetail: { jobId: string };
   Connectors: undefined;
   System: undefined;
 };
@@ -128,6 +131,7 @@ export function AppNavigator(): React.JSX.Element {
           <AppStack.Screen name="Tabs" component={TabNavigator} />
           <AppStack.Screen name="StudioDetail" component={StudioDetailScreen} />
           <AppStack.Screen name="StudioRun" component={StudioRunScreen} />
+          <AppStack.Screen name="JobDetail" component={JobDetailScreen} />
           <AppStack.Screen name="Connectors" component={ConnectorsScreen} />
           <AppStack.Screen name="System" component={SystemScreen} />
         </AppStack.Navigator>
