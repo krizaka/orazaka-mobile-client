@@ -24,6 +24,8 @@ jobs:
     with:
       app-id: com.krizaka.orazaka
       package-manager: npm
+      # The reusable job always makes a demo account (a random password for this run); the ci flows do not sign in.
+      demo-email: eric@demo.orazaka.test
       relevant: '^(src/|assets/|plugins/|\.maestro/|app\.(json|config\.js)$|package(-lock)?\.json$|babel\.config\.js$|metro\.config\.js$|\.github/workflows/mobile-e2e\.yml$)'
       env: |
         EXPO_PUBLIC_APP_ENV=dev
