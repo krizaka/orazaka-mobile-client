@@ -1,6 +1,9 @@
 # A short clip, watched playing (a subflow: it needs a video engine and its daily budget). Runs on the result screen of
 # the picture; goes back to the Studio, opens the video Studio and renders a clip.
 appId: com.krizaka.orazaka
+# manual: needs the dev platform and a paid engine run, so mobile-e2e.yml (CI) does not run it.
+tags:
+  - manual
 ---
 - tapOn: "Back"
 - tapOn: "Back"

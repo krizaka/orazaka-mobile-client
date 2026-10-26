@@ -72,7 +72,14 @@ node scripts/workspace.mjs clone
 cd orazaka-apps/ui && npm install
 ```
 
-**Standalone**: add `@krizaka:registry=https://npm.pkg.github.com` to `.npmrc`, then `npm install`.
+**Standalone**: `npm ci` (the `@krizaka/*` packages are on the public npm registry).
+
+**End-to-end flows** (Maestro, `.maestro/`): `mobile-e2e.yml` runs the flows tagged `ci` on an Android emulator on
+every pull request, through the org's reusable workflow (the check is `mobile-e2e / gate`). A `ci` flow needs no backend
+and no account (`sign-in.yaml`: the first screen and its sign-in rule). The flows that sign in against the dev platform
+(`smoke`, `story`, `story-video`) are tagged `manual` and run by hand:
+`maestro test .maestro/smoke.yaml -e ORAZAKA_EMAIL=… -e ORAZAKA_PASSWORD=…`. `npm run test:flows` checks that every flow
+carries exactly one of the two tags.
 
 Requirements: Node.js 22+.
 
