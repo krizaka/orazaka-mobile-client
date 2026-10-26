@@ -25,10 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 22 }
-      - run: npm ci --legacy-peer-deps
+      - run: npm ci --legacy-peer-deps --ignore-scripts
       - name: App Store Connect access for EAS
         env:
           ASC_KEY_BODY: ${{ secrets.ASC_API_KEY_P8 }}
@@ -54,11 +54,13 @@ jobs:
                 eas.submit = { testflight: { ios: { ascAppId: id, ascApiKeyPath: process.env.RUNNER_TEMP + "/asc-key.txt", ascApiKeyIssuerId: process.env.ASC_ISSUER, ascApiKeyId: process.env.ASC_KEY, appleTeamId: process.env.TEAM } } };
                 fs.writeFileSync("eas.json", JSON.stringify(eas, null, 2));
               });'
+      - name: Install EAS CLI (pinned, no lifecycle scripts)
+        run: npm install --global --ignore-scripts eas-cli@25.3.0
       - name: Submit the build to TestFlight (free)
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           BUILD_ID: ${{ inputs.build_id }}
-        run: npx --yes eas-cli@latest submit --platform ios --id "$BUILD_ID" --profile testflight --non-interactive
+        run: eas submit --platform ios --id "$BUILD_ID" --profile testflight --non-interactive
 
   android:
     # Expo's free plan has 15 cloud iOS builds a month: a cloud build only on a release tag, and only after asking.
@@ -68,15 +70,17 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: 22 }
-      - run: npm ci --legacy-peer-deps
+      - run: npm ci --legacy-peer-deps --ignore-scripts
+      - name: Install EAS CLI (pinned, no lifecycle scripts)
+        run: npm install --global --ignore-scripts eas-cli@25.3.0
       - name: Build the APK
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
-          npx --yes eas-cli@latest build --platform android --profile preview --non-interactive --wait --json > build.json
+          eas build --platform android --profile preview --non-interactive --wait --json > build.json
           node -e 'const b = JSON.parse(require("fs").readFileSync("build.json", "utf8"))[0]; if (!b.artifacts?.buildUrl) process.exit(1); console.log(b.artifacts.buildUrl)' > url.txt
           curl -fsSL "$(cat url.txt)" -o orazaka-android.apk
       - name: Publish on a GitHub release
