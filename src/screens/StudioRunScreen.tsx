@@ -1,23 +1,24 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Badge, Button, Chip, Header, Progress, Screen, TextField, Txt } from "@krizaka/ui/native";
+import { Button, Chip, Header, Screen, TextField, Txt } from "@krizaka/ui/native";
 import { isTerminalRun } from "@krizaka/orazaka-shared";
 import type { Run } from "@krizaka/orazaka-shared";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
-import { ArtefactCard } from "../components/ArtefactCard";
 import { ChoiceField } from "../components/ChoiceField";
 import { DocumentField } from "../components/DocumentField";
 import { FileFieldBox } from "../components/FileFieldBox";
+import { RunResult } from "../components/RunResult";
 import { PhotoField } from "../components/PhotoField";
 import { SeedField } from "../components/SeedField";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
 import { initialAnswers, runPercent, splitFields } from "../core/runForm";
+import { fieldWords } from "../core/fieldWords";
 import { errorText } from "../i18n/errorText";
-import { useI18n, type Key } from "../i18n";
+import { useI18n } from "../i18n";
 
 /** Where a run starts: an installed Studio's installation, or — a TOOLKIT Studio has none — its own key. */
 export const runPath = (installationId: string | null, studioKey: string): string =>
@@ -105,21 +106,13 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   // A screen left behind must not keep polling — that is a request every two seconds, forever.
   useEffect(() => stopPolling, [stopPolling]);
 
-  /** The words of a field: the app's own for the fields it knows (by Studio, then by key), else the platform's. */
-  const titleOf = (field: SchemaField): string => {
-    for (const key of [`studios.fields.${studioKey}.${field.key}`, `studios.fields.${field.key}`] as Key[]) {
-      const text = t(key);
-      if (text !== key) return text;
-    }
-    return field.title;
-  };
+  const { titleOf, choiceLabel } = fieldWords(t, studioKey);
 
-  /** A readable name for a value the blueprint lists itself (« Square · 1024×1024 »), else the value. */
-  const choiceLabel = (fieldKey: string, value: string): string => {
-    const key = `studios.choices.${fieldKey}.${value}` as Key;
-    const text = t(key);
-    return text === key ? value : text;
-  };
+  /** The setter of one field's answer. */
+  const answerOf = (key: string) => (value: string) => setAnswers((prev) => ({ ...prev, [key]: value }));
+  /** The setter of one field's "being sent" flag. */
+  const busyOf = (key: string) => (busy: boolean) =>
+    setSending((prev) => (prev[key] === busy ? prev : { ...prev, [key]: busy }));
 
   const renderField = (field: SchemaField): React.JSX.Element =>
     field.documentKind === "pdf" ? (
@@ -127,10 +120,8 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         <DocumentField
           title={titleOf(field)}
           maxLength={field.maxLength}
-          onValueChange={(base64) => setAnswers((prev) => ({ ...prev, [field.key]: base64 }))}
-          onBusyChange={(busy) =>
-            setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))
-          }
+          onValueChange={answerOf(field.key)}
+          onBusyChange={busyOf(field.key)}
         />
       </FileFieldBox>
     ) : field.assetKind === "image" ? (
@@ -138,10 +129,8 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         <PhotoField
           title={titleOf(field)}
           token={bearer}
-          onAssetChange={(assetId) => setAnswers((prev) => ({ ...prev, [field.key]: assetId }))}
-          onBusyChange={(busy) =>
-            setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))
-          }
+          onAssetChange={answerOf(field.key)}
+          onBusyChange={busyOf(field.key)}
         />
       </FileFieldBox>
     ) : field.choices !== undefined || field.fedByCatalogue === true ? (
@@ -151,7 +140,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         title={titleOf(field)}
         value={answers[field.key] ?? ""}
         disabled={isStarting}
-        onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+        onChange={answerOf(field.key)}
       />
     ) : field.control === "seed" ? (
       <SeedField
@@ -159,7 +148,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         title={titleOf(field)}
         value={answers[field.key] ?? ""}
         disabled={isStarting}
-        onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+        onChange={answerOf(field.key)}
       />
     ) : field.options ? (
       <View key={field.key} style={styles.field}>
@@ -170,7 +159,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           type="single"
           aria-label={titleOf(field)}
           value={answers[field.key] ?? field.options[0] ?? ""}
-          onValueChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+          onValueChange={answerOf(field.key)}
         >
           {field.options.map((value) => (
             <Chip key={value} value={value}>
@@ -190,7 +179,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
         maxLength={field.maxLength}
         disabled={isStarting}
         value={answers[field.key] ?? ""}
-        onValueChange={(text) => setAnswers((prev) => ({ ...prev, [field.key]: text }))}
+        onValueChange={answerOf(field.key)}
         returnKeyType={field.key === "prompt" || field.key === "text" ? "done" : undefined}
         blurOnSubmit
       />
@@ -230,60 +219,17 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           />
         </>
       ) : (
-        <>
-          <View style={styles.status}>
-            <Badge
-              tone={
-                run.status === "SUCCEEDED"
-                  ? "success"
-                  : run.status === "FAILED" || run.status === "CANCELLED"
-                    ? "danger"
-                    : "accent"
-              }
-              dot={live}
-              pulse={live}
-            >
-              {t(`studios.run.${run.status}` as Key)}
-            </Badge>
-            {run.steps.length > 0 && (
-              <Txt variant="caption" tone="secondary">
-                {t("studios.stepsDone", { done, total: run.steps.length })}
-              </Txt>
-            )}
-          </View>
-          {live && (
-            <Progress
-              label={t("studios.progress")}
-              value={percent}
-              valueText={percent === null ? t("studios.generating") : `${String(percent)}%`}
-            />
-          )}
-
-          {run.outputs.length > 0 && (
-            <View style={styles.outputs}>
-              {run.outputs.map((artefact) => (
-                <ArtefactCard key={artefact.key} artefact={artefact} token={bearer} />
-              ))}
-            </View>
-          )}
-
-          {/* The platform's own error text is a stack trace: it is never shown, the person gets a sentence they can act on. */}
-          {run.status === "FAILED" && (
-            <Txt tone="danger" variant="caption">
-              {t("studios.failedHint")}
-            </Txt>
-          )}
-          {!live && (
-            <Button
-              variant="secondary"
-              label={t("studios.runAgain")}
-              onPress={() => {
-                setRun(null);
-                setError(null);
-              }}
-            />
-          )}
-        </>
+        <RunResult
+          run={run}
+          live={live}
+          done={done}
+          percent={percent}
+          token={bearer}
+          onRunAgain={() => {
+            setRun(null);
+            setError(null);
+          }}
+        />
       )}
 
       {error !== null && (
@@ -298,6 +244,4 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
 const styles = StyleSheet.create({
   content: { gap: 16 },
   field: { gap: 8 },
-  status: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  outputs: { gap: 12 },
 });
