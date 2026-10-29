@@ -6,7 +6,7 @@
  *
  * `screens`: the `jest-expo` preset with @testing-library/react-native — screens and the navigator rendered on API
  * responses recorded from the local Orazaka stack (`src/__fixtures__/api`, the demo persona). React is mapped to this
- * package's own copy (React 19.0.0, the version of React Native 0.79's renderer — see metro.config.js), never the
+ * package's own copy (React 19.2.3, the version of React Native 0.86 renderer — see metro.config.js), never the
  * workspace's hoisted 19.2.x.
  */
 const path = require("path");
@@ -41,7 +41,7 @@ module.exports = {
       preset: "ts-jest",
       testMatch: ["<rootDir>/src/**/__tests__/**/*.test.ts", "<rootDir>/plugins/__tests__/*.test.ts"],
       transform: {
-        "^.+\\.tsx?$": ["ts-jest", { tsconfig: { jsx: "react-jsx", esModuleInterop: true } }],
+        "^.+\\.tsx?$": ["ts-jest", { tsconfig: { jsx: "react-jsx", esModuleInterop: true, rootDir: __dirname } }],
       },
     },
     {

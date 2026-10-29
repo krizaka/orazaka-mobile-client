@@ -31,7 +31,7 @@ export function VideoArtefact({ value, token, label, audio = false }: Readonly<M
         style={styles.fill}
         nativeControls
         contentFit="contain"
-        allowsFullscreen
+        fullscreenOptions={{ enable: true }}
         accessibilityLabel={label}
       />
     </View>
