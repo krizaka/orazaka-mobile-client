@@ -8,7 +8,7 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "eslint src",
+    "lint": "eslint src && npm run format:check",
     "typecheck": "tsc --noEmit",
     "validate": "npm run lint && npm run typecheck && npm run test && npm run test:links && npm run check:icons && npm run test:icons && npm run test:flows",
     "test": "jest",
