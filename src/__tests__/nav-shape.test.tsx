@@ -32,7 +32,7 @@ describe("the phone's tab bar", () => {
   });
 
   it("holds four tabs, Studios first, in the web's words and order", async () => {
-    render(
+    await render(
       <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
         <AuthProvider>
           <AppNavigator />

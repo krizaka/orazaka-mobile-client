@@ -94,7 +94,6 @@ if (code !== 0) {
 }
 
 // ---- cutting -------------------------------------------------------------------------------------------------------
-const at = (name, from = 0) => marks.find((m, i) => i >= from && m.name === name);
 const offset = (m) => Math.max(0, m.t - startedAt - 0.4); // simctl's first frame lags the process start a little
 const probe = JSON.parse(execFileSync("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate", "-of", "json", raw], { encoding: "utf8" })).streams[0];
 console.log(`raw recording ${probe.width}x${probe.height} @ ${probe.r_frame_rate}`);

@@ -7,7 +7,6 @@
     "orientation": "portrait",
     "scheme": "orazaka",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.krizaka.orazaka",
@@ -60,7 +59,7 @@
       ]
     },
     "plugins": [
-      "./plugins/with-xcode27",
+      "./plugins/with-scene-lifecycle",
       [
         "expo-image-picker",
         {

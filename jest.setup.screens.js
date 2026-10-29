@@ -10,5 +10,5 @@ if (typeof global.structuredClone !== "function") {
 jest.mock("expo-video", () => {
   const { View } = jest.requireActual("react-native");
   const player = { loop: false, play: () => undefined };
-  return { useVideoPlayer: () => player, VideoView: (props) => require("react").createElement(View, props) };
+  return { useVideoPlayer: () => player, VideoView: (props) => jest.requireActual("react").createElement(View, props) };
 });
