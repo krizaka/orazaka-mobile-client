@@ -17,6 +17,7 @@ import { spawn, execFileSync } from "node:child_process";
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { toolPath } from "./tool-path.mjs";
 import os from "node:os";
 
 const arg = (name, fallback) => {
@@ -63,8 +64,8 @@ if (recut) {
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const markUrl = `http://127.0.0.1:${server.address().port}`;
 
-  execFileSync("xcrun", ["simctl", "ui", DEVICE, "appearance", appearance]);
-  execFileSync("xcrun", [
+  execFileSync(toolPath("xcrun"), ["simctl", "ui", DEVICE, "appearance", appearance]);
+  execFileSync(toolPath("xcrun"), [
     "simctl",
     "status_bar",
     DEVICE,
@@ -81,9 +82,13 @@ if (recut) {
     "3",
   ]);
 
-  const recorder = spawn("xcrun", ["simctl", "io", DEVICE, "recordVideo", "--codec", "h264", "--force", raw], {
-    stdio: "ignore",
-  });
+  const recorder = spawn(
+    toolPath("xcrun"),
+    ["simctl", "io", DEVICE, "recordVideo", "--codec", "h264", "--force", raw],
+    {
+      stdio: "ignore",
+    },
+  );
   startedAt = Date.now() / 1000;
   await new Promise((r) => setTimeout(r, 2500));
 
@@ -115,12 +120,14 @@ if (recut) {
     "-e",
     `WITH_VIDEO=${withVideo}`,
   ];
-  const code = await new Promise((resolve) => spawn("maestro", args, { stdio: "inherit" }).on("exit", resolve));
+  const code = await new Promise((resolve) =>
+    spawn(toolPath("maestro"), args, { stdio: "inherit" }).on("exit", resolve),
+  );
   await new Promise((r) => setTimeout(r, 1500));
   recorder.kill("SIGINT");
   await new Promise((r) => recorder.on("exit", r));
   server.close();
-  execFileSync("xcrun", ["simctl", "status_bar", DEVICE, "clear"]);
+  execFileSync(toolPath("xcrun"), ["simctl", "status_bar", DEVICE, "clear"]);
   fs.writeFileSync(
     path.join(out, `marks-${arg("name", appearance)}.json`),
     JSON.stringify({ startedAt, marks }, null, 2),
@@ -135,7 +142,7 @@ if (recut) {
 const offset = (m) => Math.max(0, m.t - startedAt - 0.4); // simctl's first frame lags the process start a little
 const probe = JSON.parse(
   execFileSync(
-    "ffprobe",
+    toolPath("ffprobe"),
     ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height,r_frame_rate", "-of", "json", raw],
     { encoding: "utf8" },
   ),
@@ -209,7 +216,7 @@ for (const id of clips) {
         const cut = Math.round(p.b - p.a);
         const text = `${p.label ? `${p.label} \u00b7 ` : ""}${cut} s cut`;
         const png = path.join(out, `label-${id}-${n}.png`);
-        execFileSync("python3", ["-I", "-c", LABEL_PY, png, text, String(probe.width), String(probe.height)]);
+        execFileSync(toolPath("python3"), ["-I", "-c", LABEL_PY, png, text, String(probe.width), String(probe.height)]);
         labels.push(png);
         const input = labels.length; // ffmpeg input 0 is the recording
         filters.push(
@@ -222,7 +229,7 @@ for (const id of clips) {
   const inputs = ["-i", raw, ...labels.flatMap((l) => ["-i", l])];
   const graph = `${filters.join(";")};${parts.join("")}concat=n=${parts.length}:v=1:a=0,scale=720:1566:flags=lanczos,format=yuv420p[out]`;
   const base = path.join(out, `clip-${id}-${appearance}`);
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -243,7 +250,7 @@ for (const id of clips) {
     "+faststart",
     `${base}.mp4`,
   ]);
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -261,11 +268,15 @@ for (const id of clips) {
   ]);
   // The poster: a frame from the clip (ffmpeg here has no webp encoder, Pillow writes it).
   const len = Number(
-    execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", `${base}.mp4`], {
-      encoding: "utf8",
-    }),
+    execFileSync(
+      toolPath("ffprobe"),
+      ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", `${base}.mp4`],
+      {
+        encoding: "utf8",
+      },
+    ),
   );
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -277,7 +288,7 @@ for (const id of clips) {
     "1",
     `${base}-poster.png`,
   ]);
-  execFileSync("python3", [
+  execFileSync(toolPath("python3"), [
     "-I",
     "-c",
     "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], 'WEBP', quality=82)",

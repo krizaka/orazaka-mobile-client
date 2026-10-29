@@ -11,6 +11,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { toolPath } from "./tool-path.mjs";
 
 const arg = (n, d) => {
   const i = process.argv.indexOf(`--${n}`);
@@ -74,11 +75,11 @@ function compose(src, out, W, H, screenH) {
   const pad = Math.round(screenH * 0.018);
   const sw = Math.round((screenH * SRC_W) / SRC_H / 2) * 2;
   const frame = `${out}.frame.png`;
-  execFileSync("python3", ["-I", "-c", FRAME_PY, frame, String(sw), String(screenH), String(pad), BEZEL]);
+  execFileSync(toolPath("python3"), ["-I", "-c", FRAME_PY, frame, String(sw), String(screenH), String(pad), BEZEL]);
   const x = Math.round((W - sw) / 2),
     y = Math.round((H - screenH) / 2);
   const g = `color=c=${BG}:s=${W}x${H}:r=60[bg];[0:v]scale=${sw}:${screenH}:flags=lanczos[s];[bg][s]overlay=${x}:${y}:shortest=1[a];[a][1:v]overlay=${x - pad}:${y - pad},format=yuv420p[out]`;
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -103,7 +104,7 @@ function compose(src, out, W, H, screenH) {
     "+faststart",
     `${out}.mp4`,
   ]);
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -121,11 +122,15 @@ function compose(src, out, W, H, screenH) {
     `${out}.webm`,
   ]);
   const len = Number(
-    execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", `${out}.mp4`], {
-      encoding: "utf8",
-    }),
+    execFileSync(
+      toolPath("ffprobe"),
+      ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", `${out}.mp4`],
+      {
+        encoding: "utf8",
+      },
+    ),
   );
-  execFileSync("ffmpeg", [
+  execFileSync(toolPath("ffmpeg"), [
     "-y",
     "-v",
     "error",
@@ -137,7 +142,7 @@ function compose(src, out, W, H, screenH) {
     "1",
     `${out}.poster.png`,
   ]);
-  execFileSync("python3", [
+  execFileSync(toolPath("python3"), [
     "-I",
     "-c",
     "import sys; from PIL import Image; Image.open(sys.argv[1]).save(sys.argv[2], 'WEBP', quality=82)",
@@ -152,7 +157,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   for (const id of clips) {
     const src = path.join(dir, `clip-${id}-${appearance}.mp4`);
     const duration = Number(
-      execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", src], {
+      execFileSync(toolPath("ffprobe"), ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", src], {
         encoding: "utf8",
       }),
     );
