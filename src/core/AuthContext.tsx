@@ -28,8 +28,7 @@ const SESSION_KEY = "orazaka.session";
  * app stack holding nothing — every call then 401s with no explanation.
  */
 export type RegistrationOutcome =
-  | { readonly kind: "signed-in" }
-  | { readonly kind: "verification-required"; readonly email: string };
+  { readonly kind: "signed-in" } | { readonly kind: "verification-required"; readonly email: string };
 
 interface AuthState {
   readonly session: AuthSession | null;
@@ -90,12 +89,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
   );
 
   const register = useCallback(
-    async (
-      username: string,
-      email: string,
-      password: string,
-      language = "fr",
-    ): Promise<RegistrationOutcome> => {
+    async (username: string, email: string, password: string, language = "fr"): Promise<RegistrationOutcome> => {
       const body = await apiRequest<Partial<AuthSession> & { requires_verification?: boolean }>(
         "/api/v1/auth/register",
         { method: "POST", body: { username, email, password, language } },

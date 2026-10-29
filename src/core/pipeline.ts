@@ -10,7 +10,8 @@
 export function pipelineOfAck(payload: unknown): string[] {
   if (typeof payload !== "object" || payload === null) return [];
   const { coreInterceptorIds, dynamicInterceptorIds } = payload as Record<string, unknown>;
-  const ids = (value: unknown): string[] => (Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : []);
+  const ids = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
   return [...ids(coreInterceptorIds), ...ids(dynamicInterceptorIds)];
 }
 

@@ -30,7 +30,11 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
       // session exists, so there is exactly one place that decides where a signed-in user lands.
     } catch (cause: unknown) {
       // A 401 here is a wrong e-mail or password, not an expired session.
-      setError(cause instanceof ApiError && cause.status === 401 ? t("auth.invalidCredentials") : errorText(cause, t, "auth.signInFailed"));
+      setError(
+        cause instanceof ApiError && cause.status === 401
+          ? t("auth.invalidCredentials")
+          : errorText(cause, t, "auth.signInFailed"),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -63,9 +67,27 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
           {error}
         </Txt>
       )}
-      <Button testID="login-submit" variant="primary" label={t("auth.signIn")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
-      <Button variant="ghost" label={t("auth.forgot")} disabled={isSubmitting} onPress={() => navigation.navigate("ForgotPassword")} />
-      <Button variant="ghost" label={t("auth.create")} disabled={isSubmitting} onPress={() => navigation.navigate("Register")} />
+      <Button
+        testID="login-submit"
+        variant="primary"
+        label={t("auth.signIn")}
+        size="lg"
+        loading={isSubmitting}
+        disabled={!canSubmit}
+        onPress={() => void submit()}
+      />
+      <Button
+        variant="ghost"
+        label={t("auth.forgot")}
+        disabled={isSubmitting}
+        onPress={() => navigation.navigate("ForgotPassword")}
+      />
+      <Button
+        variant="ghost"
+        label={t("auth.create")}
+        disabled={isSubmitting}
+        onPress={() => navigation.navigate("Register")}
+      />
     </AuthShell>
   );
 }

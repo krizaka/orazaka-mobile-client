@@ -12,9 +12,17 @@ function Spans({ inline }: Readonly<{ inline: readonly Inline[] }>): React.JSX.E
         const key = `${span.kind}-${String(index)}`;
         switch (span.kind) {
           case "bold":
-            return <Text key={key} style={styles.bold}>{span.text}</Text>;
+            return (
+              <Text key={key} style={styles.bold}>
+                {span.text}
+              </Text>
+            );
           case "italic":
-            return <Text key={key} style={styles.italic}>{span.text}</Text>;
+            return (
+              <Text key={key} style={styles.italic}>
+                {span.text}
+              </Text>
+            );
           case "code":
             return (
               <Text key={key} style={[styles.code, { backgroundColor: theme.surface3 }]}>
@@ -57,7 +65,9 @@ function BlockView({ block }: Readonly<{ block: Block }>): React.JSX.Element {
         <View style={styles.list}>
           {block.items.map((item, index) => (
             <View key={`item-${String(index)}`} style={styles.item}>
-              <Text style={[body, { color: theme.accentText, width: 22 }]}>{block.ordered ? `${String(index + 1)}.` : "•"}</Text>
+              <Text style={[body, { color: theme.accentText, width: 22 }]}>
+                {block.ordered ? `${String(index + 1)}.` : "•"}
+              </Text>
               <Text style={[body, styles.itemText]}>
                 <Spans inline={item} />
               </Text>

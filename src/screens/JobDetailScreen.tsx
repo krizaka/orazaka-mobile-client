@@ -30,8 +30,18 @@ export function JobDetailScreen({ route, navigation }: Props): React.JSX.Element
   const kind = job ? t(`jobs.kind.${jobKind(job.featureKey)}` as Key) : t("tabs.jobs");
   const header = <Header title={kind} size="inline" backLabel={t("common.back")} onBack={() => navigation.goBack()} />;
 
-  if (isLoading) return <Screen header={header}><Loading /></Screen>;
-  if (error !== null || job === null) return <Screen header={header}><LoadError message={error ?? t("common.unavailable")} onRetry={reload} /></Screen>;
+  if (isLoading)
+    return (
+      <Screen header={header}>
+        <Loading />
+      </Screen>
+    );
+  if (error !== null || job === null)
+    return (
+      <Screen header={header}>
+        <LoadError message={error ?? t("common.unavailable")} onRetry={reload} />
+      </Screen>
+    );
 
   const running = job.status === "PENDING" || job.status === "PROCESSING";
   const artefacts = jobArtefacts(job);
@@ -45,11 +55,17 @@ export function JobDetailScreen({ route, navigation }: Props): React.JSX.Element
           {formatDistanceToNow(parseISO(job.createdAt), { addSuffix: true, locale: locale === "fr" ? frCA : enCA })}
         </Txt>
       </View>
-      {running && <Progress label={t("jobs.running", { kind })} value={job.progress && job.progress > 0 ? job.progress : null} />}
+      {running && (
+        <Progress label={t("jobs.running", { kind })} value={job.progress && job.progress > 0 ? job.progress : null} />
+      )}
       {artefacts.map((artefact) => (
         <ArtefactCard key={artefact.key} artefact={artefact} token={token} />
       ))}
-      {job.status === "FAILED" && <Txt tone="danger" variant="caption">{t("jobs.failedHint")}</Txt>}
+      {job.status === "FAILED" && (
+        <Txt tone="danger" variant="caption">
+          {t("jobs.failedHint")}
+        </Txt>
+      )}
       {!running && job.status !== "FAILED" && artefacts.length === 0 && <Txt tone="muted">{t("jobs.nothing")}</Txt>}
     </Screen>
   );

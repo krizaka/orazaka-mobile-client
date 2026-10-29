@@ -48,12 +48,14 @@ describe("the catalogues never mix languages", () => {
   });
 
   it("have no empty string", () => {
-    for (const [key, value] of [...Object.entries(english), ...Object.entries(french)]) expect([key, value.trim() === ""]).toEqual([key, false]);
+    for (const [key, value] of [...Object.entries(english), ...Object.entries(french)])
+      expect([key, value.trim() === ""]).toEqual([key, false]);
   });
 
   it("keep the same {placeholders} in both languages", () => {
     const holes = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort().join(",");
-    for (const key of Object.keys(english)) expect([key, holes(french[key] ?? "")]).toEqual([key, holes(english[key] ?? "")]);
+    for (const key of Object.keys(english))
+      expect([key, holes(french[key] ?? "")]).toEqual([key, holes(english[key] ?? "")]);
   });
 
   it("do not leave a French sentence in the English catalogue, nor the reverse", () => {

@@ -39,10 +39,7 @@ const eslintConfig = defineConfig([
     // Components stay scannable — max 250 lines per .tsx (AGENTS §8).
     files: ["**/*.tsx"],
     rules: {
-      "max-lines": [
-        "error",
-        { max: 250, skipBlankLines: false, skipComments: false },
-      ],
+      "max-lines": ["error", { max: 250, skipBlankLines: false, skipComments: false }],
     },
   },
   {

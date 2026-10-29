@@ -13,9 +13,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": [
-        "applinks:dev.orazaka.com"
-      ]
+      "associatedDomains": ["applinks:dev.orazaka.com"]
     },
     "android": {
       "adaptiveIcon": {
@@ -51,10 +49,7 @@
               "pathPrefix": "/studios"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },

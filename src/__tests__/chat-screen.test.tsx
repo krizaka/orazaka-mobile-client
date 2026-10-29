@@ -44,7 +44,14 @@ class FakeXhr {
 }
 
 const catalog = [
-  { modelName: "mistral-3-14B", modelLabel: "Mistral 3 14B", category: "chat", providerName: "do-inference", isDefault: true, compatible: true },
+  {
+    modelName: "mistral-3-14B",
+    modelLabel: "Mistral 3 14B",
+    category: "chat",
+    providerName: "do-inference",
+    isDefault: true,
+    compatible: true,
+  },
   { modelName: "qwen2.5:7b", modelLabel: "Qwen 2.5 7B", category: "chat", providerName: "ollama", compatible: true },
 ];
 
@@ -88,7 +95,9 @@ describe("the chat screen — one real chat", () => {
     expect(xhr).not.toBeNull();
     expect(JSON.parse(xhr?.body ?? "{}")).toMatchObject({ prompt: "Draft a polite reply to a customer", model: null });
 
-    xhr?.push('event:pipeline-ack\ndata:{"coreInterceptorIds":["UserContextResolver","SafetyInterceptor"],"dynamicInterceptorIds":["RouterInterceptor"]}\n\n');
+    xhr?.push(
+      'event:pipeline-ack\ndata:{"coreInterceptorIds":["UserContextResolver","SafetyInterceptor"],"dynamicInterceptorIds":["RouterInterceptor"]}\n\n',
+    );
     xhr?.push('event:pipeline-step\ndata:{"interceptorId":"UserContextResolver"}\n\n');
     xhr?.push('event:pipeline-step\ndata:{"interceptorId":"SafetyInterceptor"}\n\n');
     xhr?.push('event:message\ndata:{"content":"Dear **customer**,"}\n\n');

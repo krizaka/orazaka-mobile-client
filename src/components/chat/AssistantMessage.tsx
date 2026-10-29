@@ -20,7 +20,9 @@ export function AssistantMessage({ message }: Readonly<{ message: ChatMessage }>
       {waiting ? (
         <TypingIndicator label={t("chat.thinking")} />
       ) : message.content !== "" ? (
-        <View style={[styles.bubble, { borderRadius: radius.xl, borderTopLeftRadius: 6, backgroundColor: theme.surface2 }]}>
+        <View
+          style={[styles.bubble, { borderRadius: radius.xl, borderTopLeftRadius: 6, backgroundColor: theme.surface2 }]}
+        >
           <Markdown text={message.content} />
         </View>
       ) : null}

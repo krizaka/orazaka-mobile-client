@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { ActionSheet, Avatar, Badge, Button, Header, Screen, Segmented, Txt, useTheme, type Mode } from "@krizaka/ui/native";
+import {
+  ActionSheet,
+  Avatar,
+  Badge,
+  Button,
+  Header,
+  Screen,
+  Segmented,
+  Txt,
+  useTheme,
+  type Mode,
+} from "@krizaka/ui/native";
 import { AutomationIcon, CreditsIcon, GlobeIcon, LogoutIcon, ServerIcon, ThemeIcon } from "@krizaka/icons/native";
 import { spendableCredits, type Wallet } from "@krizaka/orazaka-shared";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -59,7 +70,11 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
       ) : (
         <>
           <View style={styles.identity}>
-            <Avatar size="xl" alt={t("profile.avatarOf", { name: data.username })} defaultAvatar={{ brand: "orazaka", seed: data.id }} />
+            <Avatar
+              size="xl"
+              alt={t("profile.avatarOf", { name: data.username })}
+              defaultAvatar={{ brand: "orazaka", seed: data.id }}
+            />
             <Txt variant="title" style={styles.centre}>
               {data.username}
             </Txt>
@@ -80,7 +95,9 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
               <SettingsRow
                 icon={(color) => <CreditsIcon size={20} color={color} />}
                 label={t("profile.credits")}
-                value={t("profile.creditsValue", { count: credits.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA") })}
+                value={t("profile.creditsValue", {
+                  count: credits.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA"),
+                })}
               />
             </SettingsGroup>
           )}

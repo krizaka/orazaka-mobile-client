@@ -150,7 +150,13 @@ export function ChatStreamScreen(): React.JSX.Element {
           size="inline"
           actions={
             messages.length > 0 ? (
-              <IconButton label={t("chat.newChat")} variant="ghost" size="sm" icon={<PlusIcon size={20} color={theme.textPrimary} />} onPress={newChat} />
+              <IconButton
+                label={t("chat.newChat")}
+                variant="ghost"
+                size="sm"
+                icon={<PlusIcon size={20} color={theme.textPrimary} />}
+                onPress={newChat}
+              />
             ) : undefined
           }
         />

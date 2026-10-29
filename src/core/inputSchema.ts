@@ -50,7 +50,11 @@ interface RawChoice {
 
 /** The `oneOf` of `const` entries the server writes for a catalogue-fed field; undefined for anything else. */
 function choicesOf(oneOf: unknown): Choice[] | undefined {
-  if (!Array.isArray(oneOf) || oneOf.length === 0 || !oneOf.every((entry) => entry !== null && typeof entry === "object" && "const" in entry)) {
+  if (
+    !Array.isArray(oneOf) ||
+    oneOf.length === 0 ||
+    !oneOf.every((entry) => entry !== null && typeof entry === "object" && "const" in entry)
+  ) {
     return undefined;
   }
   return (oneOf as RawChoice[]).map((entry) => {
@@ -196,11 +200,6 @@ export function toInputs(
  * @param answers what the actor typed
  * @returns true when the run can be submitted
  */
-export function isComplete(
-  fields: readonly SchemaField[],
-  answers: Readonly<Record<string, string>>,
-): boolean {
-  return fields
-    .filter((field) => field.required)
-    .every((field) => (answers[field.key] ?? "").trim() !== "");
+export function isComplete(fields: readonly SchemaField[], answers: Readonly<Record<string, string>>): boolean {
+  return fields.filter((field) => field.required).every((field) => (answers[field.key] ?? "").trim() !== "");
 }

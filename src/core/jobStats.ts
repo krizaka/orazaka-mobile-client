@@ -17,7 +17,11 @@ const dayKey = (date: Date) => formatISO(startOfDay(date), { representation: "da
 
 /** The jobs of each of the last `days` days by outcome, oldest first, empty days included. */
 export function jobsPerDay(jobs: readonly JobRecord[], days: number, now: Date = new Date()) {
-  const rows = Array.from({ length: days }, (_, i) => ({ day: dayKey(subDays(now, days - 1 - i)), done: 0, failed: 0 }));
+  const rows = Array.from({ length: days }, (_, i) => ({
+    day: dayKey(subDays(now, days - 1 - i)),
+    done: 0,
+    failed: 0,
+  }));
   const index = new Map(rows.map((row) => [row.day, row]));
   for (const job of jobs) {
     const row = index.get(dayKey(parseISO(job.createdAt)));

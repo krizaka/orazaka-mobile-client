@@ -14,7 +14,12 @@ interface MediaProps {
  * A finished clip, playing: expo-video with the Bearer on the request (the edge's assets are private), the native
  * controls, started as soon as the run is done — the person came to see it. Audio is the same player, short.
  */
-export function VideoArtefact({ value, token, label, audio = false }: Readonly<MediaProps & { audio?: boolean }>): React.JSX.Element {
+export function VideoArtefact({
+  value,
+  token,
+  label,
+  audio = false,
+}: Readonly<MediaProps & { audio?: boolean }>): React.JSX.Element {
   const { theme } = useTheme();
   const source = mediaSource(value, token);
   const player = useVideoPlayer(

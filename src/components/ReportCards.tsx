@@ -28,23 +28,40 @@ export function ReportCards({ report }: Readonly<{ report: Report }>): React.JSX
             {`${verdictWords(verdict)} · ${String(count)}`}
           </Badge>
         ))}
-        {report.source !== null && <Txt variant="caption" style={{ color: theme.textMuted }}>{report.source}</Txt>}
+        {report.source !== null && (
+          <Txt variant="caption" style={{ color: theme.textMuted }}>
+            {report.source}
+          </Txt>
+        )}
       </View>
       {report.findings.map((finding) => (
         <Card.Root key={finding.id}>
           <Card.Body padding="sm" style={styles.finding}>
             <View style={styles.head}>
               <Badge tone={BADGE[finding.tone]}>{verdictWords(finding.verdict)}</Badge>
-              <Txt variant="caption" style={{ color: theme.textMuted }}>{finding.id}</Txt>
+              <Txt variant="caption" style={{ color: theme.textMuted }}>
+                {finding.id}
+              </Txt>
             </View>
             <Txt variant="label">{finding.title}</Txt>
-            {finding.explanation !== null && <Txt variant="body" style={{ color: theme.textSecondary }}>{finding.explanation}</Txt>}
+            {finding.explanation !== null && (
+              <Txt variant="body" style={{ color: theme.textSecondary }}>
+                {finding.explanation}
+              </Txt>
+            )}
             {finding.quote !== null && (
               <View style={[styles.quote, { borderLeftColor: theme.accent }]}>
-                <Txt variant="caption" style={{ color: theme.textSecondary, fontStyle: "italic" }}>{`« ${finding.quote} »`}</Txt>
+                <Txt
+                  variant="caption"
+                  style={{ color: theme.textSecondary, fontStyle: "italic" }}
+                >{`« ${finding.quote} »`}</Txt>
               </View>
             )}
-            {finding.citation !== null && <Txt variant="caption" style={{ color: theme.textMuted }}>{finding.citation}</Txt>}
+            {finding.citation !== null && (
+              <Txt variant="caption" style={{ color: theme.textMuted }}>
+                {finding.citation}
+              </Txt>
+            )}
           </Card.Body>
         </Card.Root>
       ))}

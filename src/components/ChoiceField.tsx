@@ -32,7 +32,8 @@ export function ChoiceField({ field, title, value, disabled, onChange }: Props):
   };
   const choices: readonly Choice[] = field.choices ?? [];
   const running = choices.find((choice) => choice.value === field.defaultValue);
-  const automatic = running === undefined ? t("studios.form.automaticPlain") : t("studios.form.automatic", { name: running.label });
+  const automatic =
+    running === undefined ? t("studios.form.automaticPlain") : t("studios.form.automatic", { name: running.label });
   const shown = choices.find((choice) => choice.value === (value === "" ? field.defaultValue : value));
   return (
     <Select
@@ -40,7 +41,10 @@ export function ChoiceField({ field, title, value, disabled, onChange }: Props):
       sheetTitle={title}
       placeholder={automatic}
       disabled={disabled}
-      hint={shown?.hint ?? (field.choices === undefined ? t("studios.form.choicesUnreachable") : t("studios.form.automaticHint"))}
+      hint={
+        shown?.hint ??
+        (field.choices === undefined ? t("studios.form.choicesUnreachable") : t("studios.form.automaticHint"))
+      }
       value={value}
       onValueChange={onChange}
       options={[

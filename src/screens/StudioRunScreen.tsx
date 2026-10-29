@@ -21,7 +21,9 @@ import { useI18n, type Key } from "../i18n";
 
 /** Where a run starts: an installed Studio's installation, or — a TOOLKIT Studio has none — its own key. */
 export const runPath = (installationId: string | null, studioKey: string): string =>
-  installationId === null ? `/api/v1/studios/${studioKey}/runs` : `/api/v1/studios/installations/${installationId}/runs`;
+  installationId === null
+    ? `/api/v1/studios/${studioKey}/runs`
+    : `/api/v1/studios/installations/${installationId}/runs`;
 
 /** How often a live run is re-read. The DAG advances on job outcomes, not on a clock. */
 const POLL_MS = 2000;
@@ -84,10 +86,11 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
     setIsStarting(true);
     setError(null);
     try {
-      const started = await apiRequest<Run>(
-        runPath(installationId, studioKey),
-        { method: "POST", token: bearer, body: { inputs: toInputs(fields, answers) } },
-      );
+      const started = await apiRequest<Run>(runPath(installationId, studioKey), {
+        method: "POST",
+        token: bearer,
+        body: { inputs: toInputs(fields, answers) },
+      });
       setRun(started);
       if (!isTerminalRun(started.status)) {
         timer.current = setInterval(() => void refresh(started.id), POLL_MS);
@@ -125,7 +128,9 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           title={titleOf(field)}
           maxLength={field.maxLength}
           onValueChange={(base64) => setAnswers((prev) => ({ ...prev, [field.key]: base64 }))}
-          onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
+          onBusyChange={(busy) =>
+            setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))
+          }
         />
       </FileFieldBox>
     ) : field.assetKind === "image" ? (
@@ -134,13 +139,28 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           title={titleOf(field)}
           token={bearer}
           onAssetChange={(assetId) => setAnswers((prev) => ({ ...prev, [field.key]: assetId }))}
-          onBusyChange={(busy) => setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))}
+          onBusyChange={(busy) =>
+            setSending((prev) => (prev[field.key] === busy ? prev : { ...prev, [field.key]: busy }))
+          }
         />
       </FileFieldBox>
     ) : field.choices !== undefined || field.fedByCatalogue === true ? (
-      <ChoiceField key={field.key} field={field} title={titleOf(field)} value={answers[field.key] ?? ""} disabled={isStarting} onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))} />
+      <ChoiceField
+        key={field.key}
+        field={field}
+        title={titleOf(field)}
+        value={answers[field.key] ?? ""}
+        disabled={isStarting}
+        onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+      />
     ) : field.control === "seed" ? (
-      <SeedField key={field.key} title={titleOf(field)} value={answers[field.key] ?? ""} disabled={isStarting} onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))} />
+      <SeedField
+        key={field.key}
+        title={titleOf(field)}
+        value={answers[field.key] ?? ""}
+        disabled={isStarting}
+        onChange={(value) => setAnswers((prev) => ({ ...prev, [field.key]: value }))}
+      />
     ) : field.options ? (
       <View key={field.key} style={styles.field}>
         <Txt variant="label" tone="secondary">
@@ -212,7 +232,17 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
       ) : (
         <>
           <View style={styles.status}>
-            <Badge tone={run.status === "SUCCEEDED" ? "success" : run.status === "FAILED" || run.status === "CANCELLED" ? "danger" : "accent"} dot={live} pulse={live}>
+            <Badge
+              tone={
+                run.status === "SUCCEEDED"
+                  ? "success"
+                  : run.status === "FAILED" || run.status === "CANCELLED"
+                    ? "danger"
+                    : "accent"
+              }
+              dot={live}
+              pulse={live}
+            >
               {t(`studios.run.${run.status}` as Key)}
             </Badge>
             {run.steps.length > 0 && (
@@ -221,7 +251,13 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
               </Txt>
             )}
           </View>
-          {live && <Progress label={t("studios.progress")} value={percent} valueText={percent === null ? t("studios.generating") : `${String(percent)}%`} />}
+          {live && (
+            <Progress
+              label={t("studios.progress")}
+              value={percent}
+              valueText={percent === null ? t("studios.generating") : `${String(percent)}%`}
+            />
+          )}
 
           {run.outputs.length > 0 && (
             <View style={styles.outputs}>
@@ -232,12 +268,29 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
           )}
 
           {/* The platform's own error text is a stack trace: it is never shown, the person gets a sentence they can act on. */}
-          {run.status === "FAILED" && <Txt tone="danger" variant="caption">{t("studios.failedHint")}</Txt>}
-          {!live && <Button variant="secondary" label={t("studios.runAgain")} onPress={() => { setRun(null); setError(null); }} />}
+          {run.status === "FAILED" && (
+            <Txt tone="danger" variant="caption">
+              {t("studios.failedHint")}
+            </Txt>
+          )}
+          {!live && (
+            <Button
+              variant="secondary"
+              label={t("studios.runAgain")}
+              onPress={() => {
+                setRun(null);
+                setError(null);
+              }}
+            />
+          )}
         </>
       )}
 
-      {error !== null && <Txt tone="danger" variant="caption">{error}</Txt>}
+      {error !== null && (
+        <Txt tone="danger" variant="caption">
+          {error}
+        </Txt>
+      )}
     </Screen>
   );
 }

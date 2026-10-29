@@ -36,10 +36,33 @@ export function ForgotPasswordScreen({ navigation }: Props): React.JSX.Element {
 
   return (
     <AuthShell title={t("auth.forgotScreen.title")} subtitle={t("auth.forgotScreen.subtitle")}>
-      <TextField testID="forgot-email" label={t("auth.emailAddress")} keyboardType="email-address" autoCapitalize="none" value={email} onValueChange={setEmail} />
-      {sent && <Txt tone="secondary" variant="caption">{t("auth.forgotScreen.sent")}</Txt>}
-      {error !== null && <Txt tone="danger" variant="caption">{error}</Txt>}
-      <Button testID="forgot-submit" variant="primary" label={t("auth.forgotScreen.submit")} size="lg" loading={isSubmitting} disabled={!canSubmit} onPress={() => void submit()} />
+      <TextField
+        testID="forgot-email"
+        label={t("auth.emailAddress")}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        value={email}
+        onValueChange={setEmail}
+      />
+      {sent && (
+        <Txt tone="secondary" variant="caption">
+          {t("auth.forgotScreen.sent")}
+        </Txt>
+      )}
+      {error !== null && (
+        <Txt tone="danger" variant="caption">
+          {error}
+        </Txt>
+      )}
+      <Button
+        testID="forgot-submit"
+        variant="primary"
+        label={t("auth.forgotScreen.submit")}
+        size="lg"
+        loading={isSubmitting}
+        disabled={!canSubmit}
+        onPress={() => void submit()}
+      />
       <Button variant="ghost" label={t("auth.forgotScreen.back")} onPress={() => navigation.navigate("Login")} />
     </AuthShell>
   );

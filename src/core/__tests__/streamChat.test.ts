@@ -60,7 +60,10 @@ beforeEach(() => {
   (globalThis as { XMLHttpRequest: unknown }).XMLHttpRequest = FakeXhr;
 });
 
-function start(token: string | null = "jwt-123", options: { model?: string | null; assetIds?: readonly string[] } = {}) {
+function start(
+  token: string | null = "jwt-123",
+  options: { model?: string | null; assetIds?: readonly string[] } = {},
+) {
   const content: string[] = [];
   const errors: StreamFailure[] = [];
   const pipeline: string[][] = [];
@@ -132,8 +135,8 @@ describe("streamChat", () => {
   it("ignores pipeline events so interceptor traffic never lands in the reply", () => {
     const { xhr, content } = start();
 
-    xhr.push("event: pipeline-ack\ndata: {\"coreInterceptorIds\":[\"a\"],\"dynamicInterceptorIds\":[\"b\"]}\n\n");
-    xhr.push("event: pipeline-step\ndata: {\"interceptorId\":\"translation\"}\n\n");
+    xhr.push('event: pipeline-ack\ndata: {"coreInterceptorIds":["a"],"dynamicInterceptorIds":["b"]}\n\n');
+    xhr.push('event: pipeline-step\ndata: {"interceptorId":"translation"}\n\n');
     xhr.push('data: {"content":"Bonjour"}\n\n');
 
     expect(content).toEqual(["Bonjour"]);
@@ -167,7 +170,7 @@ describe("streamChat", () => {
 
     // The blank line ends the pipeline event; without resetting, everything after it would be
     // discarded as if it were still pipeline traffic — an answer that never appears.
-    xhr.push("event: pipeline-step\ndata: {\"interceptorId\":\"x\"}\n\n");
+    xhr.push('event: pipeline-step\ndata: {"interceptorId":"x"}\n\n');
     xhr.push('data: {"content":"Salut"}\n\n');
 
     expect(content).toEqual(["Salut"]);
@@ -241,7 +244,7 @@ describe("streamChat", () => {
   it("does not time out a request whose acknowledgement arrived", () => {
     const { xhr } = start();
 
-    xhr.push("event:pipeline-ack\ndata:{\"coreInterceptorIds\":[\"a\"]}\n\n");
+    xhr.push('event:pipeline-ack\ndata:{"coreInterceptorIds":["a"]}\n\n');
     jest.advanceTimersByTime(20000);
 
     expect(FakeXhr.instances).toHaveLength(1);
@@ -267,7 +270,9 @@ describe("streamChat", () => {
   });
 
   it("sends the model the person picked", () => {
-    expect(JSON.parse(start("jwt", { model: "gemma-4-31B-it" }).xhr.sentBody ?? "{}")).toMatchObject({ model: "gemma-4-31B-it" });
+    expect(JSON.parse(start("jwt", { model: "gemma-4-31B-it" }).xhr.sentBody ?? "{}")).toMatchObject({
+      model: "gemma-4-31B-it",
+    });
   });
 
   it("sends null for the platform default", () => {

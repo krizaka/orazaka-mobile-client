@@ -22,7 +22,12 @@ export function ChatMeta({ model, onPickModel }: Readonly<Props>): React.JSX.Ele
   if (model === null) return null;
   return (
     <View style={styles.row}>
-      <Chip size="sm" selected={false} onSelectedChange={onPickModel} accessibilityLabel={`${t("chat.model")}: ${model.modelLabel ?? model.modelName}`}>
+      <Chip
+        size="sm"
+        selected={false}
+        onSelectedChange={onPickModel}
+        accessibilityLabel={`${t("chat.model")}: ${model.modelLabel ?? model.modelName}`}
+      >
         <View style={styles.chip}>
           <Txt variant="caption" numberOfLines={1} style={styles.chipLabel}>
             {model.modelLabel ?? model.modelName}

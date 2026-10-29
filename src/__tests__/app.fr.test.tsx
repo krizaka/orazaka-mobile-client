@@ -42,7 +42,8 @@ describe("on a French phone, in light mode", () => {
     expect(calls.find((c) => c.path.startsWith("/api/v1/studios"))?.path).toBe("/api/v1/studios?locale=fr");
 
     // Four tabs, in the phone's language, never truncated to a code.
-    for (const name of ["Studios", "Chat", "Tâches", "Paramètres"]) expect(screen.getByRole("tab", { name })).toBeTruthy();
+    for (const name of ["Studios", "Chat", "Tâches", "Paramètres"])
+      expect(screen.getByRole("tab", { name })).toBeTruthy();
     expect(screen.getAllByRole("tab")).toHaveLength(4);
     expect(screen.getByText("Verrouillé")).toBeTruthy();
 

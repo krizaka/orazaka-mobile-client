@@ -12,12 +12,16 @@ export function pngInfo(file) {
   if (b.length < 33 || b.readUInt32BE(0) !== 0x89504e47) return null;
   const colorType = b[25];
   let transparency = false;
-  for (let o = 8; o + 8 <= b.length; ) {
+  for (let o = 8; o + 8 <= b.length;) {
     const len = b.readUInt32BE(o);
     if (b.toString("latin1", o + 4, o + 8) === "tRNS") transparency = true;
     o += 12 + len;
   }
-  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20), alpha: colorType === 4 || colorType === 6 || transparency };
+  return {
+    width: b.readUInt32BE(16),
+    height: b.readUInt32BE(20),
+    alpha: colorType === 4 || colorType === 6 || transparency,
+  };
 }
 
 export function checkIcons(root) {
@@ -29,7 +33,8 @@ export function checkIcons(root) {
     if (!existsSync(resolve(p))) return errors.push(`${label}: ${p} does not exist`);
     const info = pngInfo(resolve(p));
     if (!info) return errors.push(`${label}: ${p} is not a PNG`);
-    if (info.width !== 1024 || info.height !== 1024) errors.push(`${label}: ${p} is ${info.width}x${info.height}, expected 1024x1024`);
+    if (info.width !== 1024 || info.height !== 1024)
+      errors.push(`${label}: ${p} is ${info.width}x${info.height}, expected 1024x1024`);
     if (!alphaOk && info.alpha) errors.push(`${label}: ${p} has an alpha channel (the iOS icon must be opaque)`);
   };
   need("iOS icon (expo.icon)", expo.ios?.icon ?? expo.icon);
@@ -38,7 +43,8 @@ export function checkIcons(root) {
   else {
     need("Android adaptive foreground", adaptive.foregroundImage, { alphaOk: true });
     if (adaptive.backgroundImage) need("Android adaptive background", adaptive.backgroundImage);
-    else if (!adaptive.backgroundColor) errors.push("Android adaptive background: set backgroundImage or backgroundColor");
+    else if (!adaptive.backgroundColor)
+      errors.push("Android adaptive background: set backgroundImage or backgroundColor");
   }
   return errors;
 }

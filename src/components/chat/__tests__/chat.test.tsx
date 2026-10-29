@@ -8,10 +8,25 @@ import { PipelineChips } from "../PipelineChips";
 import type { CatalogModel } from "../../../core/sovereignty";
 
 const wrap = (ui: React.ReactElement) =>
-  render(<ThemeProvider defaultMode="dark" overrides={brands.orazaka}>{ui}</ThemeProvider>);
+  render(
+    <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
+      {ui}
+    </ThemeProvider>,
+  );
 
-const hosted: CatalogModel = { modelName: "mistral-3-14B", modelLabel: "Mistral 3 14B", category: "chat", providerName: "do-inference", isDefault: true };
-const selfHosted: CatalogModel = { modelName: "qwen2.5:7b", modelLabel: "Qwen 2.5 7B", category: "chat", providerName: "ollama" };
+const hosted: CatalogModel = {
+  modelName: "mistral-3-14B",
+  modelLabel: "Mistral 3 14B",
+  category: "chat",
+  providerName: "do-inference",
+  isDefault: true,
+};
+const selfHosted: CatalogModel = {
+  modelName: "qwen2.5:7b",
+  modelLabel: "Qwen 2.5 7B",
+  category: "chat",
+  providerName: "ollama",
+};
 
 describe("the line under the chat: which model, and what the network saw", () => {
   it("names the model that answers and opens the choice", async () => {
@@ -46,7 +61,16 @@ describe("the answer and the pipeline that really ran", () => {
   });
 
   it("renders the answer as Markdown and one chip per interceptor that finished, in words", async () => {
-    await wrap(<AssistantMessage message={{ ...base, content: "**Hello** there", steps: ["UserContextResolver", "SafetyInterceptor", "BrandNewInterceptor"], settled: true }} />);
+    await wrap(
+      <AssistantMessage
+        message={{
+          ...base,
+          content: "**Hello** there",
+          steps: ["UserContextResolver", "SafetyInterceptor", "BrandNewInterceptor"],
+          settled: true,
+        }}
+      />,
+    );
     expect(screen.getByText("Hello")).toBeTruthy();
     expect(screen.queryByText(/\*\*/)).toBeNull();
     expect(screen.getByText("User context")).toBeTruthy();

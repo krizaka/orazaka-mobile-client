@@ -33,7 +33,14 @@ export function DiscoveryGate({ children }: Readonly<{ children: React.ReactNode
         />
       )}
       maintenance={(gate) => (
-        <MaintenanceScreen fill mark={<OrazakaMark size={64} />} title={t("update.maintenanceTitle")} message={pickMessage(gate.message, locale)} retryLabel={t("common.retry")} onRetry={retry} />
+        <MaintenanceScreen
+          fill
+          mark={<OrazakaMark size={64} />}
+          title={t("update.maintenanceTitle")}
+          message={pickMessage(gate.message, locale)}
+          retryLabel={t("common.retry")}
+          onRetry={retry}
+        />
       )}
     >
       {children}
@@ -45,7 +52,11 @@ export function DiscoveryGate({ children }: Readonly<{ children: React.ReactNode
 export function Discovery({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   const { theme } = useTheme();
   return (
-    <DiscoveryProvider discovery={discovery} subscribeForeground={onForeground} loading={<View style={{ flex: 1, backgroundColor: theme.surface0 }} />}>
+    <DiscoveryProvider
+      discovery={discovery}
+      subscribeForeground={onForeground}
+      loading={<View style={{ flex: 1, backgroundColor: theme.surface0 }} />}
+    >
       {children}
     </DiscoveryProvider>
   );

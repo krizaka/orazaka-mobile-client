@@ -9,7 +9,10 @@ export function isAdvanced(field: SchemaField): boolean {
 }
 
 /** Splits a Studio's fields into the ones always shown and the ones behind "More options". */
-export function splitFields(fields: readonly SchemaField[]): { readonly basic: SchemaField[]; readonly advanced: SchemaField[] } {
+export function splitFields(fields: readonly SchemaField[]): {
+  readonly basic: SchemaField[];
+  readonly advanced: SchemaField[];
+} {
   return { basic: fields.filter((f) => !isAdvanced(f)), advanced: fields.filter(isAdvanced) };
 }
 

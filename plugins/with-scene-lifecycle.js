@@ -7,22 +7,31 @@
 // Remove it when the app moves to an SDK whose template adopts scenes (Expo 58+).
 const { withAppDelegate, withInfoPlist } = require("expo/config-plugins");
 
-const START_IN_APP_DELEGATE = /\n#if os\(iOS\) \|\| os\(tvOS\)\n\s*window = UIWindow\(frame: UIScreen\.main\.bounds\)\n\s*factory\.startReactNative\([\s\S]*?\)\n#endif\n/;
+const START_IN_APP_DELEGATE =
+  /\n#if os\(iOS\) \|\| os\(tvOS\)\n\s*window = UIWindow\(frame: UIScreen\.main\.bounds\)\n\s*factory\.startReactNative\([\s\S]*?\)\n#endif\n/;
 
 /** One window scene, delegated to Expo's scene delegate. */
 const SCENE_MANIFEST = {
   UIApplicationSupportsMultipleScenes: false,
   UISceneConfigurations: {
-    UIWindowSceneSessionRoleApplication: [{ UISceneConfigurationName: "Default Configuration", UISceneDelegateClassName: "EXExpoAppSceneDelegate" }],
+    UIWindowSceneSessionRoleApplication: [
+      { UISceneConfigurationName: "Default Configuration", UISceneDelegateClassName: "EXExpoAppSceneDelegate" },
+    ],
   },
 };
 
 /** The SDK 57 AppDelegate.swift, made the factory provider of the scene delegate. Idempotent; throws on another template. */
 function adoptScenes(src) {
   if (!src.includes("ExpoReactNativeFactoryProvider")) {
-    src = src.replace("class AppDelegate: ExpoAppDelegate {", "class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {");
+    src = src.replace(
+      "class AppDelegate: ExpoAppDelegate {",
+      "class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {",
+    );
   }
-  src = src.replace(START_IN_APP_DELEGATE, "\n    // The scene delegate creates the window and starts React Native (scene life cycle, iOS 27 SDK).\n");
+  src = src.replace(
+    START_IN_APP_DELEGATE,
+    "\n    // The scene delegate creates the window and starts React Native (scene life cycle, iOS 27 SDK).\n",
+  );
   if (!src.includes("ExpoReactNativeFactoryProvider") || src.includes("factory.startReactNative(")) {
     throw new Error("with-scene-lifecycle: the AppDelegate template changed — check the plugin against the Expo SDK");
   }

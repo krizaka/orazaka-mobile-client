@@ -13,7 +13,8 @@ const path = require("path");
 
 const reactDir = path.dirname(require.resolve("react/package.json", { paths: [__dirname] }));
 /** @krizaka/* packages export ES modules only (an `import` condition): Jest requires their files directly. */
-const krizaka = (name, file) => path.join(path.dirname(require.resolve(`@krizaka/${name}/package.json`, { paths: [__dirname] })), file);
+const krizaka = (name, file) =>
+  path.join(path.dirname(require.resolve(`@krizaka/${name}/package.json`, { paths: [__dirname] })), file);
 
 /** The ES-module entries of the packages the kit and the app import (each has only an `import` condition). */
 const esmEntries = {

@@ -2,9 +2,7 @@
   "id": "1c10ee07-1b3a-4140-923e-4923f959f8c7",
   "username": "Eric",
   "email": "eric.morel@example.com",
-  "authorities": [
-    "ROLE_USER"
-  ],
+  "authorities": ["ROLE_USER"],
   "preferences": {
     "primaryIndustry": "creative",
     "voiceModel": "nova",

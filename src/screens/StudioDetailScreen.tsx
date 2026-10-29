@@ -34,10 +34,27 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
   const [isInstalling, setIsInstalling] = useState(false);
   const [installError, setInstallError] = useState<string | null>(null);
 
-  const header = <Header title={data?.label ?? t("screens.studio")} size="inline" backLabel={t("common.back")} onBack={() => navigation.goBack()} />;
+  const header = (
+    <Header
+      title={data?.label ?? t("screens.studio")}
+      size="inline"
+      backLabel={t("common.back")}
+      onBack={() => navigation.goBack()}
+    />
+  );
 
-  if (isLoading) return <Screen header={header}><Loading /></Screen>;
-  if (error !== null || !data) return <Screen header={header}><LoadError message={error ?? t("studios.notFound")} onRetry={reload} /></Screen>;
+  if (isLoading)
+    return (
+      <Screen header={header}>
+        <Loading />
+      </Screen>
+    );
+  if (error !== null || !data)
+    return (
+      <Screen header={header}>
+        <LoadError message={error ?? t("studios.notFound")} onRetry={reload} />
+      </Screen>
+    );
 
   const isToolkit = data.kind === "TOOLKIT";
   const install = async () => {
@@ -49,10 +66,11 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
     setIsInstalling(true);
     setInstallError(null);
     try {
-      const installation = await apiRequest<InstallationResponse>(
-        `/api/v1/studios/${studioKey}/installations`,
-        { method: "POST", token: bearer, body: { config: {} } },
-      );
+      const installation = await apiRequest<InstallationResponse>(`/api/v1/studios/${studioKey}/installations`, {
+        method: "POST",
+        token: bearer,
+        body: { config: {} },
+      });
       navigation.navigate("StudioRun", { installationId: installation.id, label: data.label, studioKey });
     } catch (cause: unknown) {
       setInstallError(errorText(cause, t, "studios.installFailed" as Key));
@@ -76,12 +94,18 @@ export function StudioDetailScreen({ route, navigation }: Props): React.JSX.Elem
       </View>
 
       {data.description ? <Txt tone="secondary">{data.description}</Txt> : null}
-      {installError !== null && <Txt tone="danger" variant="caption">{installError}</Txt>}
+      {installError !== null && (
+        <Txt tone="danger" variant="caption">
+          {installError}
+        </Txt>
+      )}
 
       {data.locked ? (
         // A locked Studio keeps its page and loses its button: the actor must be able to see what
         // they would be buying, which is the whole reason locked entries stay in the catalogue.
-        <Txt tone="secondary" style={styles.locked}>{t("studios.notIncluded")}</Txt>
+        <Txt tone="secondary" style={styles.locked}>
+          {t("studios.notIncluded")}
+        </Txt>
       ) : (
         <Button
           testID="studio-open"

@@ -106,13 +106,20 @@ describe("the video Studio's inputs (orazaka-mobile-client#22)", () => {
 
   it("reads an enum as options with its default, and an integer as a number field", () => {
     const fields = parseInputSchema(schema);
-    expect(fields.find((f) => f.key === "aspect")).toMatchObject({ options: ["9:16", "16:9", "1:1"], defaultValue: "16:9" });
+    expect(fields.find((f) => f.key === "aspect")).toMatchObject({
+      options: ["9:16", "16:9", "1:1"],
+      defaultValue: "16:9",
+    });
     expect(fields.find((f) => f.key === "seed")?.isNumber).toBe(true);
   });
 
   it("sends the seed as a number and the aspect as chosen", () => {
     const fields = parseInputSchema(schema);
-    expect(toInputs(fields, { prompt: "une lampe", aspect: "9:16", seed: "42" })).toEqual({ prompt: "une lampe", aspect: "9:16", seed: 42 });
+    expect(toInputs(fields, { prompt: "une lampe", aspect: "9:16", seed: "42" })).toEqual({
+      prompt: "une lampe",
+      aspect: "9:16",
+      seed: 42,
+    });
   });
 });
 
@@ -126,8 +133,17 @@ describe("parseInputSchema — closed sets are choices", () => {
         "x-options": { source: "models", category: "image" },
         default: "sd-hosted",
         oneOf: [
-          { const: "sd-hosted", title: "SD hosted", description: "Hosted.", "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true } },
-          { const: "flux", title: "FLUX", "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX is not running" } },
+          {
+            const: "sd-hosted",
+            title: "SD hosted",
+            description: "Hosted.",
+            "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true },
+          },
+          {
+            const: "flux",
+            title: "FLUX",
+            "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX is not running" },
+          },
         ],
       },
       seed: { type: "string", "x-control": "seed", "x-advanced": true },
@@ -138,8 +154,28 @@ describe("parseInputSchema — closed sets are choices", () => {
 
   it("reads the labelled list the server wrote, with what a picker shows", () => {
     expect(field("model").choices).toEqual([
-      { value: "sd-hosted", label: "SD hosted", hint: "Hosted.", runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true, unavailableReason: null },
-      { value: "flux", label: "FLUX", hint: null, runsOn: "local", speed: null, typicalSeconds: null, priceCents: null, available: false, unavailableReason: "FLUX is not running" },
+      {
+        value: "sd-hosted",
+        label: "SD hosted",
+        hint: "Hosted.",
+        runsOn: "cloud",
+        speed: "fast",
+        typicalSeconds: 8,
+        priceCents: 8,
+        available: true,
+        unavailableReason: null,
+      },
+      {
+        value: "flux",
+        label: "FLUX",
+        hint: null,
+        runsOn: "local",
+        speed: null,
+        typicalSeconds: null,
+        priceCents: null,
+        available: false,
+        unavailableReason: "FLUX is not running",
+      },
     ]);
     expect(field("model")).toMatchObject({ defaultValue: "sd-hosted", advanced: true, fedByCatalogue: true });
   });

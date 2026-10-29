@@ -76,9 +76,7 @@ describe("apiRequest", () => {
   it("surfaces the service's own message when it left one", async () => {
     respondWith('{"message":"Studio introuvable"}', 404);
 
-    await expect(apiRequest("/api/v1/studios/nope", { token: "t" })).rejects.toThrow(
-      "Studio introuvable",
-    );
+    await expect(apiRequest("/api/v1/studios/nope", { token: "t" })).rejects.toThrow("Studio introuvable");
   });
 
   it("falls back to the status when the body carries no message", async () => {

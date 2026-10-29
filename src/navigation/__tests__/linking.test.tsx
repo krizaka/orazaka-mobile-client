@@ -66,11 +66,25 @@ describe("universal links open the screen that shows the same thing", () => {
     const walk = (screens: Record<string, unknown> | undefined) => {
       for (const [name, value] of Object.entries(screens ?? {})) {
         declared.add(name);
-        if (value && typeof value === "object" && "screens" in value) walk((value as { screens: Record<string, unknown> }).screens);
+        if (value && typeof value === "object" && "screens" in value)
+          walk((value as { screens: Record<string, unknown> }).screens);
       }
     };
     walk(linking.config?.screens as Record<string, unknown>);
-    for (const screen of ["Login", "Register", "ForgotPassword", "ResetPassword", "StudioDetail", "StudioRun", "Connectors", "System", "Studios", "ChatStream", "Jobs", "Profile"]) {
+    for (const screen of [
+      "Login",
+      "Register",
+      "ForgotPassword",
+      "ResetPassword",
+      "StudioDetail",
+      "StudioRun",
+      "Connectors",
+      "System",
+      "Studios",
+      "ChatStream",
+      "Jobs",
+      "Profile",
+    ]) {
       expect(declared.has(screen)).toBe(true);
     }
   });

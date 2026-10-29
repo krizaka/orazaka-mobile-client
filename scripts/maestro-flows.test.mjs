@@ -12,13 +12,21 @@ const flows = readdirSync(dir)
 const tags = (text) => {
   const header = text.split(/^---$/m)[0];
   const block = header.match(/^tags:\n((?:\s+- .+\n?)+)/m);
-  return block ? block[1].split("\n").map((l) => l.trim().replace(/^- /, "")).filter(Boolean) : [];
+  return block
+    ? block[1]
+        .split("\n")
+        .map((l) => l.trim().replace(/^- /, ""))
+        .filter(Boolean)
+    : [];
 };
 
 test("every flow is tagged ci or manual", () => {
   for (const { name, text } of flows) {
     const t = tags(text);
-    assert.ok(t.includes("ci") !== t.includes("manual"), `${name}: exactly one of ci / manual (${t.join(", ") || "none"})`);
+    assert.ok(
+      t.includes("ci") !== t.includes("manual"),
+      `${name}: exactly one of ci / manual (${t.join(", ") || "none"})`,
+    );
   }
 });
 
