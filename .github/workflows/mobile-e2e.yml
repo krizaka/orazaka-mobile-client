@@ -20,7 +20,7 @@ jobs:
   mobile-e2e:
     permissions:
       contents: read
-    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@58d71a2cacfa1563a74aab117bc6a1db75821b87 # main (krizaka/.github#241, #243)
+    uses: krizaka/.github/.github/workflows/mobile-e2e.yml@cf1e598a446ed2d4d98b98a67ec9795c0f80100d # main (krizaka/.github#241, #243)
     with:
       app-id: com.krizaka.orazaka
       package-manager: npm
