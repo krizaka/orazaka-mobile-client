@@ -21,7 +21,11 @@ describe("jobStats", () => {
   });
 
   it("lays out every day of the window, failures apart", () => {
-    const rows = jobsPerDay([job({}), job({ status: "FAILED" }), job({ createdAt: "2026-09-01T10:00:00Z" })], 3, new Date("2026-10-11T12:00:00Z"));
+    const rows = jobsPerDay(
+      [job({}), job({ status: "FAILED" }), job({ createdAt: "2026-09-01T10:00:00Z" })],
+      3,
+      new Date("2026-10-11T12:00:00Z"),
+    );
     expect(rows).toHaveLength(3);
     expect(rows[2]).toMatchObject({ done: 1, failed: 1 });
   });

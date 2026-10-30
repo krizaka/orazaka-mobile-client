@@ -52,7 +52,17 @@ export function ConnectorsScreen({ navigation }: Props): React.JSX.Element {
   };
 
   return (
-    <Screen scroll={false} header={<Header title={t("screens.connectors")} size="inline" backLabel={t("common.back")} onBack={() => navigation.goBack()} />}>
+    <Screen
+      scroll={false}
+      header={
+        <Header
+          title={t("screens.connectors")}
+          size="inline"
+          backLabel={t("common.back")}
+          onBack={() => navigation.goBack()}
+        />
+      }
+    >
       {body()}
     </Screen>
   );

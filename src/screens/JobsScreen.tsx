@@ -68,28 +68,38 @@ function JobCard({ job }: Readonly<{ job: JobRecord }>): React.JSX.Element {
   const running = job.status === "PENDING" || job.status === "PROCESSING";
   const kind = t(`jobs.kind.${jobKind(job.featureKey)}` as Key);
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={t("jobs.open", { kind })} onPress={() => navigation.navigate("JobDetail", { jobId: job.id })}>
-    <Card.Root>
-      <Card.Body padding="sm" style={styles.job}>
-        <View style={styles.header}>
-          <Txt variant="label" numberOfLines={1} style={styles.kind}>
-            {kind}
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={t("jobs.open", { kind })}
+      onPress={() => navigation.navigate("JobDetail", { jobId: job.id })}
+    >
+      <Card.Root>
+        <Card.Body padding="sm" style={styles.job}>
+          <View style={styles.header}>
+            <Txt variant="label" numberOfLines={1} style={styles.kind}>
+              {kind}
+            </Txt>
+            <Badge tone={JOB_TONE[job.status] ?? "neutral"} dot={running}>
+              {t(`jobs.status.${job.status}` as Key)}
+            </Badge>
+          </View>
+          <Txt variant="caption" tone="muted">
+            {formatDistanceToNow(parseISO(job.createdAt), { addSuffix: true, locale: locale === "fr" ? frCA : enCA })}
           </Txt>
-          <Badge tone={JOB_TONE[job.status] ?? "neutral"} dot={running}>
-            {t(`jobs.status.${job.status}` as Key)}
-          </Badge>
-        </View>
-        <Txt variant="caption" tone="muted">
-          {formatDistanceToNow(parseISO(job.createdAt), { addSuffix: true, locale: locale === "fr" ? frCA : enCA })}
-        </Txt>
-        {running && <Progress size="sm" label={t("jobs.running", { kind })} value={job.progress && job.progress > 0 ? job.progress : null} />}
-        {job.status === "FAILED" ? (
-          <Txt variant="caption" tone="danger">
-            {t("jobs.failedHint")}
-          </Txt>
-        ) : null}
-      </Card.Body>
-    </Card.Root>
+          {running && (
+            <Progress
+              size="sm"
+              label={t("jobs.running", { kind })}
+              value={job.progress && job.progress > 0 ? job.progress : null}
+            />
+          )}
+          {job.status === "FAILED" ? (
+            <Txt variant="caption" tone="danger">
+              {t("jobs.failedHint")}
+            </Txt>
+          ) : null}
+        </Card.Body>
+      </Card.Root>
     </Pressable>
   );
 }

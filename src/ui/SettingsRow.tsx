@@ -49,7 +49,10 @@ export function SettingsRow({ icon, label, hint, value, onPress }: Readonly<Prop
 }
 
 /** A titled group of rows on a card surface, hairline-separated. */
-export function SettingsGroup({ title, children }: Readonly<{ title: string; children: React.ReactNode }>): React.JSX.Element {
+export function SettingsGroup({
+  title,
+  children,
+}: Readonly<{ title: string; children: React.ReactNode }>): React.JSX.Element {
   const { theme, radius } = useTheme();
   const rows = React.Children.toArray(children);
   return (
@@ -57,7 +60,12 @@ export function SettingsGroup({ title, children }: Readonly<{ title: string; chi
       <Txt variant="caption" tone="muted" style={styles.title}>
         {title}
       </Txt>
-      <View style={[styles.card, { borderRadius: radius.lg, backgroundColor: theme.surface1, borderColor: theme.borderSubtle }]}>
+      <View
+        style={[
+          styles.card,
+          { borderRadius: radius.lg, backgroundColor: theme.surface1, borderColor: theme.borderSubtle },
+        ]}
+      >
         {rows.map((row, index) => (
           <View key={index} style={index > 0 ? [styles.separator, { borderTopColor: theme.borderSubtle }] : undefined}>
             {row}
@@ -69,7 +77,14 @@ export function SettingsGroup({ title, children }: Readonly<{ title: string; chi
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 12, minHeight: 56 },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 56,
+  },
   icon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   text: { flex: 1, gap: 2 },
   value: { maxWidth: 140 },

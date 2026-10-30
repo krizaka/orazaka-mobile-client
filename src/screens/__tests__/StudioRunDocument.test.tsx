@@ -14,12 +14,24 @@ jest.mock("expo-secure-store", () => ({
 }));
 
 // The phone's file picker and file system are native: stand-ins that "pick" the file a test names and read its bytes.
-const mockPicked: { current: { name: string; mimeType: string; size: number; base64: string } | null } = { current: null };
+const mockPicked: { current: { name: string; mimeType: string; size: number; base64: string } | null } = {
+  current: null,
+};
 jest.mock("expo-document-picker", () => ({
   getDocumentAsync: async () =>
     mockPicked.current === null
       ? { canceled: true, assets: null }
-      : { canceled: false, assets: [{ uri: "file:///cache/doc", name: mockPicked.current.name, mimeType: mockPicked.current.mimeType, size: mockPicked.current.size }] },
+      : {
+          canceled: false,
+          assets: [
+            {
+              uri: "file:///cache/doc",
+              name: mockPicked.current.name,
+              mimeType: mockPicked.current.mimeType,
+              size: mockPicked.current.size,
+            },
+          ],
+        },
 }));
 jest.mock("expo-file-system", () => ({
   EncodingType: { Base64: "base64" },
@@ -28,8 +40,14 @@ jest.mock("expo-file-system", () => ({
 const toBase64 = (text: string) => Buffer.from(text, "latin1").toString("base64");
 
 const finished = {
-  id: "run-1", installationId: "inst-1", studioKey: "document-authenticity", blueprintVersion: "1.0.0", status: "SUCCEEDED",
-  startedAt: "2026-10-15T10:00:00Z", finishedAt: "2026-10-15T10:01:00Z", errorMessage: null,
+  id: "run-1",
+  installationId: "inst-1",
+  studioKey: "document-authenticity",
+  blueprintVersion: "1.0.0",
+  status: "SUCCEEDED",
+  startedAt: "2026-10-15T10:00:00Z",
+  finishedAt: "2026-10-15T10:01:00Z",
+  errorMessage: null,
   steps: [{ stepId: "check", ordinal: 0, status: "SUCCEEDED" }],
   outputs: [{ key: "clip", label: "Clip", type: "TEXT", value: "**Plan :** ok" }],
 };
@@ -57,7 +75,12 @@ describe("StudioRunScreen — a document is picked from the phone's files and ch
   const goodPdf = "%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\nstartxref\n9\n%%EOF\n";
 
   it("shows a picker, not a text box for the base64; a good PDF starts the run with its base64", async () => {
-    mockPicked.current = { name: "lease.pdf", mimeType: "application/pdf", size: goodPdf.length, base64: toBase64(goodPdf) };
+    mockPicked.current = {
+      name: "lease.pdf",
+      mimeType: "application/pdf",
+      size: goodPdf.length,
+      base64: toBase64(goodPdf),
+    };
     const calls = await open();
     expect(await screen.findByText("Choose a PDF")).toBeTruthy();
     expect(screen.queryByTestId("field-documentBase64-input")).toBeNull();
@@ -66,11 +89,18 @@ describe("StudioRunScreen — a document is picked from the phone's files and ch
     await waitFor(() => expect(screen.getByTestId("run-launch").props.accessibilityState?.disabled).toBeFalsy());
     await fireEvent.press(screen.getByText("Launch"));
     expect(await screen.findByText("Plan :", {}, { timeout: 5000 })).toBeTruthy();
-    expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({ inputs: { documentBase64: toBase64(goodPdf) } });
+    expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({
+      inputs: { documentBase64: toBase64(goodPdf) },
+    });
   }, 20000);
 
   it("refuses a program renamed .pdf, says why in words, and sends nothing", async () => {
-    mockPicked.current = { name: "lease.pdf", mimeType: "application/pdf", size: 40, base64: toBase64("MZ\u0090\u0000 not a document at all") };
+    mockPicked.current = {
+      name: "lease.pdf",
+      mimeType: "application/pdf",
+      size: 40,
+      base64: toBase64("MZ\u0090\u0000 not a document at all"),
+    };
     const calls = await open();
     await fireEvent.press(await screen.findByText("Choose a PDF"));
     expect(await screen.findByText("This file is a program, not a document.")).toBeTruthy();
@@ -84,4 +114,3 @@ describe("StudioRunScreen — a document is picked from the phone's files and ch
     expect(await screen.findByText(/too large for this check \(1 MB at most\)/)).toBeTruthy();
   });
 });
-

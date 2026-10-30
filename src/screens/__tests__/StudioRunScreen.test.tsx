@@ -18,10 +18,24 @@ jest.mock("@krizaka/ui/native/media-picker", () => {
   const { Pressable, Text } = jest.requireActual("react-native");
   const photo = { uri: "file:///photos/me.png", kind: "image", width: 800, height: 600, fileName: "me.png" };
   return {
-    MediaPicker: ({ value, onValueChange, labels }: { value: unknown[]; onValueChange: (m: unknown[]) => void; labels: { add: string; remove: () => string } }) => (
+    MediaPicker: ({
+      value,
+      onValueChange,
+      labels,
+    }: {
+      value: unknown[];
+      onValueChange: (m: unknown[]) => void;
+      labels: { add: string; remove: () => string };
+    }) => (
       <>
-        <Pressable accessibilityRole="button" onPress={() => onValueChange([photo])}><Text>{labels.add}</Text></Pressable>
-        {value.length > 0 && <Pressable accessibilityRole="button" onPress={() => onValueChange([])}><Text>{labels.remove()}</Text></Pressable>}
+        <Pressable accessibilityRole="button" onPress={() => onValueChange([photo])}>
+          <Text>{labels.add}</Text>
+        </Pressable>
+        {value.length > 0 && (
+          <Pressable accessibilityRole="button" onPress={() => onValueChange([])}>
+            <Text>{labels.remove()}</Text>
+          </Pressable>
+        )}
       </>
     ),
   };
@@ -37,8 +51,14 @@ const inputSchema = JSON.stringify({
 });
 
 const finished = {
-  id: "run-1", installationId: "inst-1", studioKey: "video-generation", blueprintVersion: "1.3.0", status: "SUCCEEDED",
-  startedAt: "2026-10-15T10:00:00Z", finishedAt: "2026-10-15T10:01:00Z", errorMessage: null,
+  id: "run-1",
+  installationId: "inst-1",
+  studioKey: "video-generation",
+  blueprintVersion: "1.3.0",
+  status: "SUCCEEDED",
+  startedAt: "2026-10-15T10:00:00Z",
+  finishedAt: "2026-10-15T10:01:00Z",
+  errorMessage: null,
   steps: [{ stepId: "render", ordinal: 0, status: "SUCCEEDED" }],
   outputs: [
     { key: "clip", label: "Clip", type: "VIDEO", value: "/api/v1/assets/job-1/video.mp4" },
@@ -93,7 +113,10 @@ describe("StudioRunScreen — start, then the result as the phone should show it
   it("picks a photo for the starting image, uploads it, and starts the run with its asset id — never a typed id", async () => {
     const schema = JSON.stringify({
       required: ["prompt"],
-      properties: { prompt: { type: "string", title: "Prompt" }, image: { type: "string", format: "asset:image", title: "Image d'amorce (facultatif)" } },
+      properties: {
+        prompt: { type: "string", title: "Prompt" },
+        image: { type: "string", format: "asset:image", title: "Image d'amorce (facultatif)" },
+      },
     });
     const calls = answerFetch({
       "/api/v1/studios/video-generation/runs": finished,
@@ -120,7 +143,9 @@ describe("StudioRunScreen — start, then the result as the phone should show it
     await fireEvent.press(screen.getByText("Launch"));
     expect(await screen.findByLabelText("Clip", {}, { timeout: 5000 })).toBeTruthy();
     expect(calls.some((c) => c.path === "/api/v1/media/upload" && c.method === "POST")).toBe(true);
-    expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({ inputs: { prompt: "une lampe", image: "asset-9" } });
+    expect(calls.find((c) => c.path.endsWith("/runs") && c.method === "POST")?.body).toEqual({
+      inputs: { prompt: "une lampe", image: "asset-9" },
+    });
   });
 
   describe("closed sets are picked from a list, never typed", () => {
@@ -135,16 +160,34 @@ describe("StudioRunScreen — start, then the result as the phone should show it
           "x-options": { source: "models", category: "image" },
           default: "sd-hosted",
           oneOf: [
-            { const: "sd-hosted", title: "Stable Diffusion 3.5 Large", description: "Hosted.", "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true } },
-            { const: "z-image", title: "Z-Image Turbo", "x-meta": { runsOn: "local", speed: "slow", typicalSeconds: 157, available: true } },
-            { const: "flux", title: "FLUX.2 [klein] 4B", "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX.2 is not running" } },
+            {
+              const: "sd-hosted",
+              title: "Stable Diffusion 3.5 Large",
+              description: "Hosted.",
+              "x-meta": { runsOn: "cloud", speed: "fast", typicalSeconds: 8, priceCents: 8, available: true },
+            },
+            {
+              const: "z-image",
+              title: "Z-Image Turbo",
+              "x-meta": { runsOn: "local", speed: "slow", typicalSeconds: 157, available: true },
+            },
+            {
+              const: "flux",
+              title: "FLUX.2 [klein] 4B",
+              "x-meta": { runsOn: "local", available: false, unavailableReason: "FLUX.2 is not running" },
+            },
           ],
         },
         seed: { type: "string", title: "Seed", "x-control": "seed", "x-advanced": true },
       },
     });
 
-    const open = async (calls = answerFetch({ "/api/v1/studios/image-generation": { inputSchema: imageSchema }, "/api/v1/studios/image-generation/runs": finished })) => {
+    const open = async (
+      calls = answerFetch({
+        "/api/v1/studios/image-generation": { inputSchema: imageSchema },
+        "/api/v1/studios/image-generation/runs": finished,
+      }),
+    ) => {
       const route = { params: { installationId: null, label: "Image", studioKey: "image-generation" } };
       await render(
         <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>

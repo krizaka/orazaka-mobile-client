@@ -29,7 +29,10 @@ export function LoadError({ message, onRetry }: Readonly<LoadErrorProps>): React
   const t = useT();
   return (
     <View style={styles.centre}>
-      <EmptyState title={message} action={<Button label={t("common.retry")} variant="outline" size="sm" onPress={onRetry} />} />
+      <EmptyState
+        title={message}
+        action={<Button label={t("common.retry")} variant="outline" size="sm" onPress={onRetry} />}
+      />
     </View>
   );
 }

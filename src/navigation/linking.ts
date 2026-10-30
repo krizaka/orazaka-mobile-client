@@ -23,7 +23,16 @@ export const linking: LinkingOptions<RootStackParamList> = {
           // The web's /studios/runs/<id> is a past run: the phone lists its runs on the Jobs tab.
           Jobs: { path: "jobs", alias: ["studios/runs/:runId"] },
           // account, appearance, workspace, api-keys, webhooks: the web's sections the phone shows as one Settings screen.
-          Profile: { path: "settings", alias: ["settings/account", "settings/appearance", "settings/workspace", "settings/api-keys", "settings/webhooks"] },
+          Profile: {
+            path: "settings",
+            alias: [
+              "settings/account",
+              "settings/appearance",
+              "settings/workspace",
+              "settings/api-keys",
+              "settings/webhooks",
+            ],
+          },
         },
       },
       StudioDetail: "studios/:studioKey",

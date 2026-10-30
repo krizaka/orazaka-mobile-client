@@ -11,7 +11,14 @@
  */
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
-import { chunkedStorage, createDiscovery, type DiscoveryOptions, KRIZAKA_HOST_SUFFIXES, KRIZAKA_MANIFEST_URLS, KRIZAKA_PUBLIC_KEYS } from "@krizaka/discovery";
+import {
+  chunkedStorage,
+  createDiscovery,
+  type DiscoveryOptions,
+  KRIZAKA_HOST_SUFFIXES,
+  KRIZAKA_MANIFEST_URLS,
+  KRIZAKA_PUBLIC_KEYS,
+} from "@krizaka/discovery";
 import { DEV_EDGE_URL, setEdgeBase, trimSlashes } from "./api";
 
 export const APP_VERSION = Constants.expoConfig?.version ?? "0.0.0";
@@ -25,7 +32,10 @@ export const BAKED_ADDRESSES = { apiBase: DEV_EDGE_URL, webBase: DEV_WEB_URL } a
 export const LEGACY_ADDRESSES = { apiBase: DEV_EDGE_URL, webBase: DEV_WEB_URL } as const;
 
 /** Where an update is while the app is distributed through TestFlight and EAS (the stores' pages replace these at launch). */
-export const UPDATE_URL = { ios: "itms-beta://", android: "https://expo.dev/accounts/oussamaabid/projects/orazaka-mobile/builds" } as const;
+export const UPDATE_URL = {
+  ios: "itms-beta://",
+  android: "https://expo.dev/accounts/oussamaabid/projects/orazaka-mobile/builds",
+} as const;
 
 export function edgeOverrideFrom(raw: string | undefined): string | undefined {
   const value = raw?.trim();
@@ -36,7 +46,8 @@ export function edgeOverrideFrom(raw: string | undefined): string | undefined {
   } catch {
     throw new Error("EXPO_PUBLIC_EDGE_URL must be an absolute http(s) URL");
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error("EXPO_PUBLIC_EDGE_URL must be an absolute http(s) URL");
+  if (url.protocol !== "https:" && url.protocol !== "http:")
+    throw new Error("EXPO_PUBLIC_EDGE_URL must be an absolute http(s) URL");
   return trimSlashes(value);
 }
 

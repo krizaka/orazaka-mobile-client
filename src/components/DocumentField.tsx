@@ -33,7 +33,8 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
   const [checking, setChecking] = useState(false);
   const attempt = useRef(0);
   const maxBytes = maxPdfBytesFor(maxLength);
-  const number = (value: number) => value.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", { maximumFractionDigits: 1 });
+  const number = (value: number) =>
+    value.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA", { maximumFractionDigits: 1 });
 
   const clear = useCallback(() => {
     attempt.current++;
@@ -46,7 +47,11 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
   }, [onBusyChange, onValueChange]);
 
   const choose = useCallback(async () => {
-    const picked = await DocumentPicker.getDocumentAsync({ type: "application/pdf", copyToCacheDirectory: true, multiple: false });
+    const picked = await DocumentPicker.getDocumentAsync({
+      type: "application/pdf",
+      copyToCacheDirectory: true,
+      multiple: false,
+    });
     const asset = picked.canceled ? undefined : picked.assets[0];
     if (asset === undefined) return;
     const mine = ++attempt.current;
@@ -66,9 +71,13 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
     if (asset.size !== undefined && asset.size > maxBytes) return refuse(tooLarge);
     try {
       const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: FileSystem.EncodingType.Base64 });
-      const result = await createInspector(documentRules({ maxBytes })).inspect(base64ToBytes(base64), { name: asset.name, type: asset.mimeType ?? "" });
+      const result = await createInspector(documentRules({ maxBytes })).inspect(base64ToBytes(base64), {
+        name: asset.name,
+        type: asset.mimeType ?? "",
+      });
       if (mine !== attempt.current) return;
-      if (result.kind === "rejected") return refuse(result.reason === "TOO_LARGE" ? tooLarge : t(reasonKey(result.reason)));
+      if (result.kind === "rejected")
+        return refuse(result.reason === "TOO_LARGE" ? tooLarge : t(reasonKey(result.reason)));
       setName(asset.name);
       setMegabytes(Math.round(((asset.size ?? base64.length * 0.75) / MB) * 10) / 10);
       setChecking(false);
@@ -81,7 +90,12 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
 
   return (
     <View style={styles.box} accessibilityLabel={title}>
-      <Button variant="secondary" label={name === null ? t("studios.document.choose") : t("studios.document.replace")} disabled={checking} onPress={() => void choose()} />
+      <Button
+        variant="secondary"
+        label={name === null ? t("studios.document.choose") : t("studios.document.replace")}
+        disabled={checking}
+        onPress={() => void choose()}
+      />
       {checking && (
         <Txt variant="caption" tone="secondary" accessibilityLiveRegion="polite">
           {t("studios.document.reading")}

@@ -181,7 +181,9 @@ export function streamChat(
         if (mine.status >= 200 && mine.status < 300) {
           handlers.onDone();
         } else {
-          handlers.onError(mine.status === 401 ? { kind: "unauthorized" } : { kind: "interrupted", status: mine.status });
+          handlers.onError(
+            mine.status === 401 ? { kind: "unauthorized" } : { kind: "interrupted", status: mine.status },
+          );
         }
       }
     };

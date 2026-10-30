@@ -19,10 +19,13 @@ describe("the dev edge address (the baked default and the legacy address; the ma
     expect(DEV_EDGE_URL).toBe("https://dev.orazaka.com/edge");
   });
 
-  it.each(["development", "preview", "production", "simulator"])("is not baked into the EAS %s profile: discovery decides (an override would win over it)", (profile) => {
-    expect(Object.keys(eas.build[profile].env ?? {})).not.toContain("EXPO_PUBLIC_EDGE_URL");
-    expect(JSON.stringify(eas.build[profile])).not.toContain("orazaka.com");
-  });
+  it.each(["development", "preview", "production", "simulator"])(
+    "is not baked into the EAS %s profile: discovery decides (an override would win over it)",
+    (profile) => {
+      expect(Object.keys(eas.build[profile].env ?? {})).not.toContain("EXPO_PUBLIC_EDGE_URL");
+      expect(JSON.stringify(eas.build[profile])).not.toContain("orazaka.com");
+    },
+  );
 });
 
 describe("the login contract", () => {

@@ -59,7 +59,12 @@ export function LocaleProvider({ children }: Readonly<{ children: React.ReactNod
 }
 
 /** What a component reads outside a provider (a unit test): English, one stable translator. */
-const ENGLISH: LocaleState = { locale: "en", preference: "auto", setPreference: () => undefined, t: i18n.translator("en") };
+const ENGLISH: LocaleState = {
+  locale: "en",
+  preference: "auto",
+  setPreference: () => undefined,
+  t: i18n.translator("en"),
+};
 
 /** The translator and the active language. Outside a provider (a unit test) it speaks English. */
 export function useI18n(): LocaleState {

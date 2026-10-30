@@ -14,9 +14,22 @@ import { SystemScreen } from "../../screens/SystemScreen";
 import { answerFetch } from "../../__tests__/test-api";
 import { LocaleProvider } from "../../i18n";
 import { apiRequest, DEV_EDGE_URL, edgeBase, edgeUrl, setEdgeBase } from "../api";
-import { appEnvironmentFrom, BAKED_ADDRESSES, createAppDiscovery, discovery, edgeOverrideFrom, LEGACY_ADDRESSES, orazakaWebUrl, UPDATE_URL } from "../discovery";
+import {
+  appEnvironmentFrom,
+  BAKED_ADDRESSES,
+  createAppDiscovery,
+  discovery,
+  edgeOverrideFrom,
+  LEGACY_ADDRESSES,
+  orazakaWebUrl,
+  UPDATE_URL,
+} from "../discovery";
 
-jest.mock("expo-secure-store", () => ({ getItemAsync: jest.fn(async () => null), setItemAsync: jest.fn(async () => undefined), deleteItemAsync: jest.fn(async () => undefined) }));
+jest.mock("expo-secure-store", () => ({
+  getItemAsync: jest.fn(async () => null),
+  setItemAsync: jest.fn(async () => undefined),
+  deleteItemAsync: jest.fn(async () => undefined),
+}));
 
 const root = join(__dirname, "../../..");
 const key = (() => {
@@ -41,10 +54,16 @@ const manifest = (over: Partial<ServiceEntry> = {}, issuedAt = "2026-10-21T12:00
 };
 const memory = () => {
   const data = new Map<string, string>();
-  return { getItem: async (k: string) => data.get(k) ?? null, setItem: async (k: string, v: string) => void data.set(k, v), removeItem: async (k: string) => void data.delete(k) };
+  return {
+    getItem: async (k: string) => data.get(k) ?? null,
+    setItem: async (k: string, v: string) => void data.set(k, v),
+    removeItem: async (k: string) => void data.delete(k),
+  };
 };
-const serving = (get: () => string) => (async () => ({ ok: true, status: 200, text: async () => get() })) as unknown as typeof fetch;
-const make = (get: () => string, appVersion = "1.0.0") => createAppDiscovery({ fetch: serving(get), publicKeys: { k1: key.publicKey }, storage: memory(), appVersion });
+const serving = (get: () => string) =>
+  (async () => ({ ok: true, status: 200, text: async () => get() })) as unknown as typeof fetch;
+const make = (get: () => string, appVersion = "1.0.0") =>
+  createAppDiscovery({ fetch: serving(get), publicKeys: { k1: key.publicKey }, storage: memory(), appVersion });
 
 describe("the baked addresses", () => {
   it("are the dev edge and the dev website until the manifest says otherwise", () => {
@@ -82,9 +101,15 @@ describe("the live switch: a manifest edit moves the app without a rebuild", () 
     const d = make(() => current);
     await d.start();
     expect(d.getService("orazaka")).toMatchObject({ webBase: "https://dev.orazaka.com", source: "live" });
-    current = manifest({ webBase: "https://www.orazaka.com", apiBase: "https://api.orazaka.com/edge" }, "2026-10-21T13:00:00Z");
+    current = manifest(
+      { webBase: "https://www.orazaka.com", apiBase: "https://api.orazaka.com/edge" },
+      "2026-10-21T13:00:00Z",
+    );
     await d.refresh();
-    expect(d.getService("orazaka")).toMatchObject({ webBase: "https://www.orazaka.com", apiBase: "https://api.orazaka.com/edge" });
+    expect(d.getService("orazaka")).toMatchObject({
+      webBase: "https://www.orazaka.com",
+      apiBase: "https://api.orazaka.com/edge",
+    });
   });
 
   it("refuses an address off the allow-list even when signed", async () => {
@@ -104,7 +129,10 @@ describe("the live switch: a manifest edit moves the app without a rebuild", () 
     } finally {
       setEdgeBase(() => discovery.getService("orazaka").apiBase);
     }
-    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["https://api.orazaka.com/edge/api/v1/profile", "https://other.orazaka.com/edge/api/v1/profile"]);
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual([
+      "https://api.orazaka.com/edge/api/v1/profile",
+      "https://other.orazaka.com/edge/api/v1/profile",
+    ]);
     expect(edgeUrl("api/v1/studios")).toBe(`${DEV_EDGE_URL}/api/v1/studios`);
   });
 });
@@ -131,7 +159,13 @@ describe("the gate the manifest raises", () => {
   });
 
   it("replaces the app with the update screen below minAppVersion, with the manifest's message", async () => {
-    await shown(() => manifest({ minAppVersion: "2.0.0", latestAppVersion: "2.1.0", message: { en: "Please update.", fr: "Mettez à jour." } }));
+    await shown(() =>
+      manifest({
+        minAppVersion: "2.0.0",
+        latestAppVersion: "2.1.0",
+        message: { en: "Please update.", fr: "Mettez à jour." },
+      }),
+    );
     expect(await screen.findByText("Update Orazaka to continue")).toBeTruthy();
     expect(screen.getByText("Please update.")).toBeTruthy();
     expect(screen.getByText("Version 2.1.0")).toBeTruthy();

@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
@@ -15,22 +13,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
-    "types": [
-      "jest",
-      "node"
-    ]
+    "types": ["jest", "node"]
   },
-  "include": [
-    "expo-env.d.ts",
-    "src/**/*",
-    "App.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["expo-env.d.ts", "src/**/*", "App.tsx"],
+  "exclude": ["node_modules"],
   "extends": "expo/tsconfig.base"
 }

@@ -1,11 +1,23 @@
 import { initialAnswers, isAdvanced, runPercent, splitFields } from "../runForm";
 import type { SchemaField } from "../inputSchema";
 
-const field = (key: string, required = false): SchemaField => ({ key, title: key, required, isList: false, isNumber: false });
+const field = (key: string, required = false): SchemaField => ({
+  key,
+  title: key,
+  required,
+  isList: false,
+  isNumber: false,
+});
 
 describe("a run form on a phone", () => {
   it("keeps the required prompt and the format in view, tuning behind More options", () => {
-    const { basic, advanced } = splitFields([field("prompt", true), field("size"), field("seed"), field("model"), field("negativePrompt")]);
+    const { basic, advanced } = splitFields([
+      field("prompt", true),
+      field("size"),
+      field("seed"),
+      field("model"),
+      field("negativePrompt"),
+    ]);
     expect(basic.map((f) => f.key)).toEqual(["prompt", "size"]);
     expect(advanced.map((f) => f.key)).toEqual(["seed", "model", "negativePrompt"]);
   });
@@ -21,7 +33,9 @@ describe("run progress", () => {
   });
 
   it("counts the steps that are over, skipped ones included", () => {
-    expect(runPercent([{ status: "SUCCEEDED" }, { status: "SKIPPED" }, { status: "RUNNING" }, { status: "PENDING" }])).toBe(50);
+    expect(
+      runPercent([{ status: "SUCCEEDED" }, { status: "SKIPPED" }, { status: "RUNNING" }, { status: "PENDING" }]),
+    ).toBe(50);
   });
 });
 
@@ -47,7 +61,24 @@ describe("what the schema says is rare is behind More options", () => {
 describe("a catalogue-fed choice starts on automatic", () => {
   it("does not pre-select a model: the platform keeps choosing the best available one when the run starts", () => {
     const fields: SchemaField[] = [
-      { ...field("model"), defaultValue: "sd-hosted", fedByCatalogue: true, choices: [{ value: "sd-hosted", label: "SD", hint: null, runsOn: "cloud", speed: null, typicalSeconds: null, priceCents: null, available: true, unavailableReason: null }] },
+      {
+        ...field("model"),
+        defaultValue: "sd-hosted",
+        fedByCatalogue: true,
+        choices: [
+          {
+            value: "sd-hosted",
+            label: "SD",
+            hint: null,
+            runsOn: "cloud",
+            speed: null,
+            typicalSeconds: null,
+            priceCents: null,
+            available: true,
+            unavailableReason: null,
+          },
+        ],
+      },
       { ...field("aspect"), options: ["9:16", "16:9"], defaultValue: "16:9" },
     ];
     expect(initialAnswers(fields)).toEqual({ aspect: "16:9" });

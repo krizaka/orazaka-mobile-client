@@ -44,11 +44,24 @@ export function SystemScreen({ navigation }: Props): React.JSX.Element {
   }, [probe]);
 
   const status =
-    latency === null ? t("common.loading") : latency === "down" ? t("system.unreachable") : t("system.reachable", { ms: latency });
+    latency === null
+      ? t("common.loading")
+      : latency === "down"
+        ? t("system.unreachable")
+        : t("system.reachable", { ms: latency });
   const interceptions = session?.activeInterceptions ?? [];
 
   return (
-    <Screen header={<Header title={t("screens.system")} size="inline" backLabel={t("common.back")} onBack={() => navigation.goBack()} />}>
+    <Screen
+      header={
+        <Header
+          title={t("screens.system")}
+          size="inline"
+          backLabel={t("common.back")}
+          onBack={() => navigation.goBack()}
+        />
+      }
+    >
       <DescriptionList
         layout="stacked"
         items={[
@@ -58,7 +71,10 @@ export function SystemScreen({ navigation }: Props): React.JSX.Element {
           { term: t("system.status"), details: status },
           { term: t("system.account"), details: session?.email ?? "—" },
           { term: t("system.version"), details: Constants.expoConfig?.version ?? "—" },
-          { term: t("system.interceptions"), details: interceptions.length > 0 ? String(interceptions.length) : t("system.none") },
+          {
+            term: t("system.interceptions"),
+            details: interceptions.length > 0 ? String(interceptions.length) : t("system.none"),
+          },
         ]}
       />
       <Button variant="secondary" label={t("system.refresh")} onPress={() => void probe()} style={styles.button} />

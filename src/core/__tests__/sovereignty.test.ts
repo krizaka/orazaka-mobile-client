@@ -3,7 +3,13 @@ import { humanizeInterceptor, pipelineOfAck, stepOf } from "../pipeline";
 
 const catalog: CatalogModel[] = [
   { modelName: "qwen2.5:7b", category: "chat", providerName: "ollama" },
-  { modelName: "mistral-3-14B", modelLabel: "Mistral 3 14B", category: "chat", providerName: "do-inference", isDefault: true },
+  {
+    modelName: "mistral-3-14B",
+    modelLabel: "Mistral 3 14B",
+    category: "chat",
+    providerName: "do-inference",
+    isDefault: true,
+  },
   { modelName: "wan2-2-t2v-a14b", category: "video", providerName: "do-inference" },
   { modelName: "legacy", category: "chat", providerName: "ollama", compatible: false },
 ];

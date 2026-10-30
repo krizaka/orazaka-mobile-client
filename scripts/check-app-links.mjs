@@ -43,7 +43,9 @@ export function normalizeRoute(route) {
  */
 export function isNotFoundOnly(source) {
   const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-  return /^\s*(import\s[^;]+;\s*)*export\s+default\s+(async\s+)?function\s+\w*\s*\([^)]*\)\s*\{\s*notFound\(\)\s*;?\s*\}\s*$/.test(code);
+  return /^\s*(import\s[^;]+;\s*)*export\s+default\s+(async\s+)?function\s+\w*\s*\([^)]*\)\s*\{\s*notFound\(\)\s*;?\s*\}\s*$/.test(
+    code,
+  );
 }
 
 /** Next.js `app/` tree → routes, groups `(x)` and slots `@x` removed, only folders holding a page (a not-found-only catch-all is no route). */
@@ -88,7 +90,9 @@ export function expoRoutes(appDir) {
 export function expoMatches(expoRoute, path) {
   const re = expoRoute
     .split("/")
-    .map((s) => (/^\[\.\.\.[^\]]+\]$/.test(s) ? ".+" : /^\[[^\]]+\]$/.test(s) ? "[^/]+" : s.replace(/[.+?^${}()|\\*]/g, "\\$&")))
+    .map((s) =>
+      /^\[\.\.\.[^\]]+\]$/.test(s) ? ".+" : /^\[[^\]]+\]$/.test(s) ? "[^/]+" : s.replace(/[.+?^${}()|\\*]/g, "\\$&"),
+    )
     .join("/");
   return new RegExp("^" + re + "$").test(path);
 }
@@ -108,7 +112,10 @@ export function checkWebRoutes({ routes, paths, excluded = [], extra = [] }) {
   const shareable = all.filter((r) => !skip.some((re) => re.test(r)));
   for (const r of shareable) {
     const probe = concrete(r);
-    if (!claims.some((re) => re.test(probe))) gaps.push(`web route ${r} is shareable but no AASA / intent-filter path claims it (add a path, or exclude the route with a reason)`);
+    if (!claims.some((re) => re.test(probe)))
+      gaps.push(
+        `web route ${r} is shareable but no AASA / intent-filter path claims it (add a path, or exclude the route with a reason)`,
+      );
   }
   for (const p of paths) {
     const re = globToRegExp(p);
@@ -125,14 +132,22 @@ export function checkAppJson(app, { host, iosBundleId, androidPackage, paths }) 
   const expo = app?.expo ?? app ?? {};
   if (expo.ios?.bundleIdentifier !== iosBundleId) gaps.push(`app.json ios.bundleIdentifier is not ${iosBundleId}`);
   if (expo.android?.package !== androidPackage) gaps.push(`app.json android.package is not ${androidPackage}`);
-  if (!asArray(expo.ios?.associatedDomains).includes(`applinks:${host}`)) gaps.push(`app.json ios.associatedDomains lacks applinks:${host}`);
-  const filters = asArray(expo.android?.intentFilters).filter((f) => f.autoVerify === true && asArray(f.action).includes("VIEW"));
+  if (!asArray(expo.ios?.associatedDomains).includes(`applinks:${host}`))
+    gaps.push(`app.json ios.associatedDomains lacks applinks:${host}`);
+  const filters = asArray(expo.android?.intentFilters).filter(
+    (f) => f.autoVerify === true && asArray(f.action).includes("VIEW"),
+  );
   const data = filters.flatMap((f) => asArray(f.data)).filter((d) => d.scheme === "https" && d.host === host);
   if (!filters.length) gaps.push("app.json android.intentFilters has no VIEW filter with autoVerify: true");
   else if (!data.length) gaps.push(`app.json android.intentFilters: no https data with host ${host}`);
   for (const p of paths) {
     const stem = p.replace(/\*$/, "");
-    const ok = data.some((d) => d.path === p || (d.pathPrefix && stem.startsWith(d.pathPrefix)) || (d.pathPattern && globToRegExp(d.pathPattern.replace(/\.\*/g, "*")).test(concrete(p))));
+    const ok = data.some(
+      (d) =>
+        d.path === p ||
+        (d.pathPrefix && stem.startsWith(d.pathPrefix)) ||
+        (d.pathPattern && globToRegExp(d.pathPattern.replace(/\.\*/g, "*")).test(concrete(p))),
+    );
     if (!ok) gaps.push(`app.json Android intent filters do not cover ${p}`);
   }
   return gaps;
@@ -146,7 +161,8 @@ export function checkNativeScreens({ screens, paths, nativeIntent }) {
       if (!nativeIntent) gaps.push(`${p}: no +native-intent file to rewrite /@handle to a screen`);
       continue;
     }
-    if (!screens.some((s) => expoMatches(s, concrete(p)))) gaps.push(`claimed path ${p} has no screen in the Expo Router tree`);
+    if (!screens.some((s) => expoMatches(s, concrete(p))))
+      gaps.push(`claimed path ${p} has no screen in the Expo Router tree`);
   }
   return gaps;
 }
@@ -166,10 +182,13 @@ export async function checkLive(base, config, { fetchImpl = fetch, cdn = true } 
       return null;
     }
     if (res.status !== 200) {
-      gaps.push(`${url} answers ${res.status}${res.status >= 300 && res.status < 400 ? " (a redirect: Apple and Google refuse it)" : ""}, expected 200`);
+      gaps.push(
+        `${url} answers ${res.status}${res.status >= 300 && res.status < 400 ? " (a redirect: Apple and Google refuse it)" : ""}, expected 200`,
+      );
       return null;
     }
-    if (!/^application\/json/i.test(res.headers.get("content-type") ?? "")) gaps.push(`${url} content-type is "${res.headers.get("content-type")}", expected application/json`);
+    if (!/^application\/json/i.test(res.headers.get("content-type") ?? ""))
+      gaps.push(`${url} content-type is "${res.headers.get("content-type")}", expected application/json`);
     try {
       return await res.json();
     } catch {
@@ -181,8 +200,11 @@ export async function checkLive(base, config, { fetchImpl = fetch, cdn = true } 
   if (aasa) {
     const details = aasa.applinks?.details ?? [];
     const ids = details.flatMap((d) => asArray(d.appIDs ?? d.appID));
-    if (!ids.some((id) => /^[A-Z0-9]{10}\./.test(id) && id.endsWith(`.${config.iosBundleId}`))) gaps.push(`AASA has no appID <TeamID>.${config.iosBundleId}`);
-    const claimed = details.flatMap((d) => [...asArray(d.paths), ...asArray(d.components).map((c) => c["/"])]).filter(Boolean);
+    if (!ids.some((id) => /^[A-Z0-9]{10}\./.test(id) && id.endsWith(`.${config.iosBundleId}`)))
+      gaps.push(`AASA has no appID <TeamID>.${config.iosBundleId}`);
+    const claimed = details
+      .flatMap((d) => [...asArray(d.paths), ...asArray(d.components).map((c) => c["/"])])
+      .filter(Boolean);
     for (const p of config.paths) if (!claimed.includes(p)) gaps.push(`AASA does not claim ${p}`);
   }
   const links = await file("assetlinks.json");
@@ -191,22 +213,34 @@ export async function checkLive(base, config, { fetchImpl = fetch, cdn = true } 
     const entry = (Array.isArray(links) ? links : []).find((e) => e.target?.package_name === config.androidPackage);
     fingerprints = entry?.target?.sha256_cert_fingerprints ?? [];
     if (!entry) gaps.push(`assetlinks.json has no target for ${config.androidPackage}`);
-    else if (!fingerprints.length || !fingerprints.every((f) => /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/.test(f))) gaps.push("assetlinks.json: sha256_cert_fingerprints missing or malformed");
+    else if (!fingerprints.length || !fingerprints.every((f) => /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/.test(f)))
+      gaps.push("assetlinks.json: sha256_cert_fingerprints missing or malformed");
   }
   if (cdn && aasa) {
     try {
-      const res = await fetchImpl(`https://app-site-association.cdn-apple.com/a/v1/${host}`, { signal: AbortSignal.timeout(20000) });
-      if (res.status !== 200) gaps.push(`Apple's CDN has no file for ${host} (status ${res.status}); redeploy, then retry in a few minutes`);
+      const res = await fetchImpl(`https://app-site-association.cdn-apple.com/a/v1/${host}`, {
+        signal: AbortSignal.timeout(20000),
+      });
+      if (res.status !== 200)
+        gaps.push(`Apple's CDN has no file for ${host} (status ${res.status}); redeploy, then retry in a few minutes`);
     } catch (e) {
       gaps.push(`Apple's CDN unreachable (${e.message})`);
     }
   }
   if (cdn && fingerprints.length) {
-    const q = new URLSearchParams({ "source.web.site": `https://${host}`, relation: "delegate_permission/common.handle_all_urls", "target.androidApp.packageName": config.androidPackage, "target.androidApp.certificate.sha256Fingerprint": fingerprints[0] });
+    const q = new URLSearchParams({
+      "source.web.site": `https://${host}`,
+      relation: "delegate_permission/common.handle_all_urls",
+      "target.androidApp.packageName": config.androidPackage,
+      "target.androidApp.certificate.sha256Fingerprint": fingerprints[0],
+    });
     try {
-      const res = await fetchImpl(`https://digitalassetlinks.googleapis.com/v1/assetlinks:check?${q}`, { signal: AbortSignal.timeout(20000) });
+      const res = await fetchImpl(`https://digitalassetlinks.googleapis.com/v1/assetlinks:check?${q}`, {
+        signal: AbortSignal.timeout(20000),
+      });
       const body = res.ok ? await res.json() : {};
-      if (body.linked !== true) gaps.push("Google's Digital Asset Links API does not report the site linked to the app");
+      if (body.linked !== true)
+        gaps.push("Google's Digital Asset Links API does not report the site linked to the app");
     } catch (e) {
       gaps.push(`Google's Digital Asset Links API unreachable (${e.message})`);
     }
@@ -236,19 +270,42 @@ export async function main(argv) {
   } else {
     if (config.web) {
       const routes = nextRoutes(resolve(root, config.web.appDir));
-      const { gaps: g, shareable } = checkWebRoutes({ routes, paths: config.paths, excluded: config.web.excluded, extra: config.web.extra });
+      const { gaps: g, shareable } = checkWebRoutes({
+        routes,
+        paths: config.paths,
+        excluded: config.web.excluded,
+        extra: config.web.extra,
+      });
       gaps.push(...g);
-      for (const r of ["aasaRoute", "assetlinksRoute"]) if (!existsSync(resolve(root, config.web[r]))) gaps.push(`${config.web[r]} does not exist: the file is not served`);
-      const manifest = { host: config.host, iosBundleId: config.iosBundleId, androidPackage: config.androidPackage, paths: config.paths, shareable };
+      for (const r of ["aasaRoute", "assetlinksRoute"])
+        if (!existsSync(resolve(root, config.web[r])))
+          gaps.push(`${config.web[r]} does not exist: the file is not served`);
+      const manifest = {
+        host: config.host,
+        iosBundleId: config.iosBundleId,
+        androidPackage: config.androidPackage,
+        paths: config.paths,
+        shareable,
+      };
       const out = resolve(root, arg("--write-routes") ?? config.web.routesFile ?? "routes.json");
       if (argv.includes("--write-routes")) writeFileSync(out, JSON.stringify(manifest, null, 2) + "\n");
-      else if (!existsSync(out) || JSON.stringify(readJson(out)) !== JSON.stringify(manifest)) gaps.push(`${out.replace(root + "/", "")} is missing or out of date: run with --write-routes ${out.replace(root + "/", "")} and commit it`);
+      else if (!existsSync(out) || JSON.stringify(readJson(out)) !== JSON.stringify(manifest))
+        gaps.push(
+          `${out.replace(root + "/", "")} is missing or out of date: run with --write-routes ${out.replace(root + "/", "")} and commit it`,
+        );
     }
     if (config.native) {
       const web = await loadRoutes(arg("--routes") ?? config.native.routes);
       const paths = web.paths;
       const appDir = resolve(root, config.native.appDir);
-      gaps.push(...checkAppJson(readJson(resolve(root, config.native.appJson)), { host: web.host, iosBundleId: web.iosBundleId, androidPackage: web.androidPackage, paths }));
+      gaps.push(
+        ...checkAppJson(readJson(resolve(root, config.native.appJson)), {
+          host: web.host,
+          iosBundleId: web.iosBundleId,
+          androidPackage: web.androidPackage,
+          paths,
+        }),
+      );
       const nativeIntent = ["ts", "tsx", "js"].some((e) => existsSync(join(appDir, `+native-intent.${e}`)));
       gaps.push(...checkNativeScreens({ screens: expoRoutes(appDir), paths, nativeIntent }));
     }

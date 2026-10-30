@@ -5,10 +5,18 @@ import { join } from "path";
 // Firebase's google-services.json taken from the build environment only.
 const root = join(__dirname, "../../..");
 const { expo } = JSON.parse(readFileSync(join(root, "app.json"), "utf8")) as {
-  expo: { owner: string; slug: string; extra: { eas: { projectId: string } }; ios: { bundleIdentifier: string }; android: { package: string } };
+  expo: {
+    owner: string;
+    slug: string;
+    extra: { eas: { projectId: string } };
+    ios: { bundleIdentifier: string };
+    android: { package: string };
+  };
 };
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const appConfig = require(join(root, "app.config.js")) as (ctx: { config: typeof expo }) => typeof expo & { android: { googleServicesFile?: string } };
+const appConfig = require(join(root, "app.config.js")) as (ctx: {
+  config: typeof expo;
+}) => typeof expo & { android: { googleServicesFile?: string } };
 
 describe("app config — EAS project", () => {
   const saved = process.env.GOOGLE_SERVICES_JSON;

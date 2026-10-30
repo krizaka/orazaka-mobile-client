@@ -6,7 +6,9 @@ import { describe, expect, it } from "@jest/globals";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { adoptScenes, SCENE_MANIFEST } = require("../with-scene-lifecycle") as {
   adoptScenes: (src: string) => string;
-  SCENE_MANIFEST: { UISceneConfigurations: { UIWindowSceneSessionRoleApplication: { UISceneDelegateClassName: string }[] } };
+  SCENE_MANIFEST: {
+    UISceneConfigurations: { UIWindowSceneSessionRoleApplication: { UISceneDelegateClassName: string }[] };
+  };
 };
 
 /** The AppDelegate.swift of expo-template-bare-minimum@57.0.29, what `expo prebuild` generates for this SDK. */
@@ -36,6 +38,8 @@ describe("with-scene-lifecycle (iOS 27 requires the scene life cycle)", () => {
   });
 
   it("declares one window scene delegated to Expo's scene delegate", () => {
-    expect(SCENE_MANIFEST.UISceneConfigurations.UIWindowSceneSessionRoleApplication[0].UISceneDelegateClassName).toBe("EXExpoAppSceneDelegate");
+    expect(SCENE_MANIFEST.UISceneConfigurations.UIWindowSceneSessionRoleApplication[0].UISceneDelegateClassName).toBe(
+      "EXExpoAppSceneDelegate",
+    );
   });
 });
