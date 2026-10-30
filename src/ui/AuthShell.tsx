@@ -1,6 +1,8 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { OrazakaMark, Screen, Txt } from "@krizaka/ui/native";
+import { Mascot, OrazakaMark, Screen, Txt } from "@krizaka/ui/native";
+
+import { useT } from "../i18n";
 
 interface Props {
   readonly title: string;
@@ -8,17 +10,25 @@ interface Props {
   readonly children: React.ReactNode;
 }
 
-/** The frame of every signed-out screen: the Orazaka mark, a title and a line, then the form — the kit's `Screen`. */
+/**
+ * The frame of every signed-out screen: the Orazaka mark and its duck (the mascot of Orazaka everywhere, orazaka#516), a title, a line,
+ * the honest « in development » status the family says, then the form — the kit's `Screen`.
+ */
 export function AuthShell({ title, subtitle, children }: Readonly<Props>): React.JSX.Element {
+  const t = useT();
   return (
     <Screen padding={24} contentStyle={styles.content}>
       <View style={styles.head}>
-        <OrazakaMark size={64} />
+        <OrazakaMark size={40} />
+        <Mascot bird="duck" mood="welcome" size={96} />
         <Txt variant="display" style={styles.centre}>
           {title}
         </Txt>
         <Txt tone="secondary" style={styles.centre}>
           {subtitle}
+        </Txt>
+        <Txt tone="secondary" style={styles.centre} testID="development-status">
+          {t("auth.development")}
         </Txt>
       </View>
       {children}
