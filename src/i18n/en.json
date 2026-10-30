@@ -31,6 +31,7 @@
     "emailAddress": "Email address",
     "password": "Password",
     "username": "Username",
+    "development": "In development: still being tested, not ready for the public.",
     "signIn": "Sign in",
     "signInFailed": "Sign-in failed",
     "forgot": "Forgot password?",
