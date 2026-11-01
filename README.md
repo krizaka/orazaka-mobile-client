@@ -12,6 +12,8 @@
 
 Expo / React Native client of the Orazaka platform (talks to the edge with Bearer tokens).
 
+**Users read the commercial name, Sovkora** (Orazaka is the code name: repository, packages, bundle id and scheme keep it). The name under the icon is `expo.name` in `app.json`; `npm run check:code-names` fails when a message or a system prompt shows the code name.
+
 [![CI](https://github.com/krizaka/orazaka-mobile-client/actions/workflows/ci.yml/badge.svg)](https://github.com/krizaka/orazaka-mobile-client/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/krizaka/orazaka-mobile-client/badge)](https://scorecard.dev/viewer/?uri=github.com/krizaka/orazaka-mobile-client)
 [![License: FSL-1.1-ALv2](https://img.shields.io/badge/license-FSL--1.1--ALv2-blue.svg)](LICENSE.md)

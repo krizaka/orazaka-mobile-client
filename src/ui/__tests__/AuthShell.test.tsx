@@ -7,13 +7,13 @@ import fr from "../../i18n/fr.json";
 import { LocaleProvider } from "../../i18n";
 import { AuthShell } from "../AuthShell";
 
-// orazaka#516: the sign-in says Orazaka is in development (like Yomizaka and Akinaza) and carries the duck, Orazaka's mascot.
+// orazaka#516: the sign-in says Sovkora is in development (like Yomizaka and Akinaza) and carries the duck, Sovkora's mascot.
 describe("AuthShell", () => {
   it("says the product is in development, from the catalogue", async () => {
     await render(
       <LocaleProvider>
         <ThemeProvider defaultMode="dark" overrides={brands.orazaka}>
-          <AuthShell title="Sign in" subtitle="to Orazaka">
+          <AuthShell title="Sign in" subtitle="to Sovkora">
             <></>
           </AuthShell>
         </ThemeProvider>

@@ -2,7 +2,7 @@
  * @file sovereignty.ts
  * @description When may the app say "0 bytes left your network"? Only when it is computed true.
  *
- * Orazaka routes each request to a provider declared in the model catalogue. A provider that runs on the operator's own
+ * Sovkora routes each request to a provider declared in the model catalogue. A provider that runs on the operator's own
  * infrastructure (Ollama, LocalAI) keeps the prompt inside the network; a hosted inference provider does not. The
  * claim is derived from the catalogue entry of the model that answers — and silent when it is not true.
  */

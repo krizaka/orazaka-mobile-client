@@ -57,7 +57,7 @@ describe("the answer and the pipeline that really ran", () => {
 
   it("shows the typing indicator until the first word arrives", async () => {
     await wrap(<AssistantMessage message={{ ...base, content: "" }} />);
-    expect(screen.getByLabelText("Orazaka is answering")).toBeTruthy();
+    expect(screen.getByLabelText("Sovkora is answering")).toBeTruthy();
   });
 
   it("renders the answer as Markdown and one chip per interceptor that finished, in words", async () => {

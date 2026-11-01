@@ -1,5 +1,5 @@
 /**
- * Answers the app's `fetch` from recorded edge responses (`src/__fixtures__/api`, recorded from the local Orazaka
+ * Answers the app's `fetch` from recorded edge responses (`src/__fixtures__/api`, recorded from the local Sovkora
  * stack as the demo persona): a route is a path prefix → a JSON body (200) or `{ status, body }`. Every call is kept.
  */
 export interface Call {

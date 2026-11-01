@@ -78,7 +78,7 @@ describe("the chat screen — one real chat", () => {
     // The old showcase card (a fake exchange, a fake pipeline) is gone, and there is exactly one composer.
     expect(screen.queryByText(/sovereign AI, on this device/i)).toBeNull();
     expect(screen.queryByText(/Nothing leaves your network/i)).toBeNull();
-    expect(screen.getAllByLabelText("Message Orazaka")).toHaveLength(1);
+    expect(screen.getAllByLabelText("Message Sovkora")).toHaveLength(1);
   });
 
   it("says which model answers, and nothing about the network while that model is a hosted one", async () => {

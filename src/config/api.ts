@@ -62,7 +62,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Reads the message an Orazaka service puts in its error body, if it left one. */
+/** Reads the message an Sovkora service puts in its error body, if it left one. */
 function messageOf(body: unknown, fallback: string): string {
   if (typeof body === "object" && body !== null) {
     const record = body as Record<string, unknown>;

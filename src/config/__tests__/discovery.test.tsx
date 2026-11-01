@@ -166,7 +166,7 @@ describe("the gate the manifest raises", () => {
         message: { en: "Please update.", fr: "Mettez à jour." },
       }),
     );
-    expect(await screen.findByText("Update Orazaka to continue")).toBeTruthy();
+    expect(await screen.findByText("Update Sovkora to continue")).toBeTruthy();
     expect(screen.getByText("Please update.")).toBeTruthy();
     expect(screen.getByText("Version 2.1.0")).toBeTruthy();
     expect(screen.queryByText("the app")).toBeNull();
@@ -174,7 +174,7 @@ describe("the gate the manifest raises", () => {
 
   it("replaces the app with the maintenance screen and its message", async () => {
     await shown(() => manifest({ status: "maintenance", message: { en: "Back at noon.", fr: "De retour à midi." } }));
-    await waitFor(() => expect(screen.getByText("Orazaka is under maintenance")).toBeTruthy());
+    await waitFor(() => expect(screen.getByText("Sovkora is under maintenance")).toBeTruthy());
     expect(screen.getByText("Back at noon.")).toBeTruthy();
   });
 });

@@ -1,4 +1,4 @@
-# The story recorded for the Orazaka site (home "On your phone", /gallery "A day of work", /docs/orazaka/mobile): the
+# The story recorded for the Sovkora site (home "On your phone", /gallery "A day of work", /docs/orazaka/mobile): the
 # real app on an iOS simulator, signed in as the demo persona (Mira), against the dev platform the app points at. Run it through
 # scripts/record-story.mjs, which records the screen and receives the marks below (typing is sped up and waits are cut
 # afterwards, labelled — never faked).
@@ -75,7 +75,7 @@ tags:
 # 3. Ask: one real chat, streamed
 - tapOn: "Chat"
 - runScript: { file: lib/mark.js, env: { NAME: "clip:ask:start" } }
-- tapOn: "Message Orazaka"
+- tapOn: "Message Sovkora"
 - runScript: { file: lib/mark.js, env: { NAME: "type:start" } }
 - inputText: ${CHAT_PROMPT}
 - runScript: { file: lib/mark.js, env: { NAME: "type:end" } }
