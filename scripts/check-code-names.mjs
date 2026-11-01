@@ -8,9 +8,9 @@
  *   node scripts/check-code-names.mjs [--report]
  */
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, parse } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -29,13 +29,25 @@ export function displayedTexts(config) {
   return { name: expo.name, prompts, infoPlist };
 }
 
+/**
+ * The guard bin of @krizaka/org, found like Node resolves a package: from `start` up through every `node_modules`.
+ * In the workspace CI the app sits in a hoisted install, so the package is not under the app's own `node_modules`.
+ */
+export function guardPath(start) {
+  const bin = join("node_modules", "@krizaka", "org", "bin", "krizaka-code-names.mjs");
+  for (let dir = start; ; dir = dirname(dir)) {
+    if (existsSync(join(dir, bin))) return join(dir, bin);
+    if (dir === parse(dir).root) return join(start, bin);
+  }
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const scratch = mkdtempSync(join(tmpdir(), "code-names-"));
   mkdirSync(join(scratch, "i18n"));
   cpSync(join(root, "src", "i18n"), join(scratch, "i18n"), { recursive: true });
   const config = JSON.parse(readFileSync(join(root, "app.json"), "utf8"));
   writeFileSync(join(scratch, "store.json"), JSON.stringify(displayedTexts(config)));
-  const guard = join(root, "node_modules", "@krizaka", "org", "bin", "krizaka-code-names.mjs");
+  const guard = guardPath(root);
   const report = process.argv.includes("--report") ? ["--report"] : [];
   const run = spawnSync(process.execPath, [guard, ...report, scratch], { cwd: root, stdio: "inherit" });
   rmSync(scratch, { recursive: true, force: true });
