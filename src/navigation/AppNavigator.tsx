@@ -72,9 +72,11 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
+const renderTabBar: React.ComponentProps<typeof Tab.Navigator>["tabBar"] = (props) => <AppTabBar {...props} />;
+
 function TabNavigator(): React.JSX.Element {
   return (
-    <Tab.Navigator tabBar={(props) => <AppTabBar {...props} />} screenOptions={{ headerShown: false }}>
+    <Tab.Navigator tabBar={renderTabBar} screenOptions={{ headerShown: false }}>
       <Tab.Screen name="Studios" component={StudioCatalogueScreen} />
       <Tab.Screen name="ChatStream" component={ChatStreamScreen} />
       <Tab.Screen name="Jobs" component={JobsScreen} />

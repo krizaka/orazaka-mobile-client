@@ -20,7 +20,15 @@ export type Block =
   | { readonly kind: "code"; readonly text: string }
   | { readonly kind: "rule" };
 
-const INLINE = /(\*\*[^*]+\*\*|__[^_]+__|\*[^*\s][^*]*\*|_[^_\s][^_]*_|`[^`]+`|\[[^\]]+\]\([^)\s]+\))/g;
+const INLINE_FORMS = [
+  String.raw`\*\*[^*]+\*\*`,
+  "__[^_]+__",
+  String.raw`\*[^*\s][^*]*\*`,
+  String.raw`_[^_\s][^_]*_`,
+  "`[^`]+`",
+  String.raw`\[[^\]]+\]\([^)\s]+\)`,
+];
+const INLINE = new RegExp(`(${INLINE_FORMS.join("|")})`, "g");
 
 /** Reads the inline marks of one line of text. */
 export function parseInline(source: string): Inline[] {
@@ -46,9 +54,54 @@ export function parseInline(source: string): Inline[] {
   return out;
 }
 
-const BULLET = /^\s*[-*+]\s+(.*)$/;
-const NUMBERED = /^\s*\d+[.)]\s+(.*)$/;
-const HEADING = /^(#{1,6})\s+(.*?)\s*#*$/;
+const BULLET = /^\s*[-*+]\s(.*)$/;
+const NUMBERED = /^\s*\d+[.)]\s(.*)$/;
+const HEADING = /^(#{1,6})\s(.*)$/;
+
+type Heading = Extract<Block, { kind: "heading" }>;
+
+/** Drops the closing `#` run of a heading, scanning from the end once. */
+function stripTrailingHashes(text: string): string {
+  let end = text.length;
+  while (end > 0 && text[end - 1] === "#") end -= 1;
+  return text.slice(0, end);
+}
+
+/** `## Title ##` → a heading of level 2 (at most 3) whose closing hashes are dropped. */
+function readHeading(line: string): Heading | null {
+  const match = HEADING.exec(line);
+  if (!match) return null;
+  const text = stripTrailingHashes((match[2] ?? "").trim()).trim();
+  return { kind: "heading", level: Math.min(match[1]?.length ?? 1, 3) as 1 | 2 | 3, inline: parseInline(text) };
+}
+
+/** The list item a line opens: its text and whether the list is numbered. */
+function readItem(line: string): { entry: Inline[]; ordered: boolean } | null {
+  const bullet = BULLET.exec(line);
+  const numbered = bullet ? null : NUMBERED.exec(line);
+  const item = bullet ?? numbered;
+  return item ? { entry: parseInline((item[1] ?? "").trimStart()), ordered: numbered !== null } : null;
+}
+
+/** A fenced block opened at `start`: its code and the index of the closing fence (or the end). */
+function readFence(lines: readonly string[], start: number): { text: string; end: number } {
+  const code: string[] = [];
+  let i = start + 1;
+  while (i < lines.length && !(lines[i] ?? "").trim().startsWith("```")) {
+    code.push(lines[i] ?? "");
+    i += 1;
+  }
+  return { text: code.join("\n"), end: i };
+}
+
+function addItem(blocks: Block[], item: { entry: Inline[]; ordered: boolean }): void {
+  const previous = blocks.at(-1);
+  if (previous?.kind === "list" && previous.ordered === item.ordered) {
+    blocks[blocks.length - 1] = { ...previous, items: [...previous.items, item.entry] };
+  } else {
+    blocks.push({ kind: "list", ordered: item.ordered, items: [item.entry] });
+  }
+}
 
 /** Reads a whole answer into blocks. A streamed, half-written answer is fine: an open fence is code to the end. */
 export function parseMarkdown(source: string): Block[] {
@@ -63,56 +116,34 @@ export function parseMarkdown(source: string): Block[] {
     }
   };
 
-  for (let i = 0; i < lines.length; i += 1) {
+  let i = 0;
+  while (i < lines.length) {
     const line = lines[i] ?? "";
+    const heading = readHeading(line);
+    const item = readItem(line);
     if (line.trim().startsWith("```")) {
       flush();
-      const code: string[] = [];
-      i += 1;
-      while (i < lines.length && !(lines[i] ?? "").trim().startsWith("```")) {
-        code.push(lines[i] ?? "");
-        i += 1;
-      }
-      blocks.push({ kind: "code", text: code.join("\n") });
-      continue;
-    }
-    if (line.trim() === "") {
+      const fence = readFence(lines, i);
+      blocks.push({ kind: "code", text: fence.text });
+      i = fence.end;
+    } else if (line.trim() === "") {
       flush();
-      continue;
-    }
-    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
+    } else if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
       flush();
       blocks.push({ kind: "rule" });
-      continue;
-    }
-    const heading = HEADING.exec(line);
-    if (heading) {
+    } else if (heading) {
       flush();
-      const level = Math.min(heading[1]?.length ?? 1, 3) as 1 | 2 | 3;
-      blocks.push({ kind: "heading", level, inline: parseInline(heading[2] ?? "") });
-      continue;
-    }
-    if (line.startsWith(">")) {
+      blocks.push(heading);
+    } else if (line.startsWith(">")) {
       flush();
       blocks.push({ kind: "quote", inline: parseInline(line.replace(/^>\s?/, "")) });
-      continue;
-    }
-    const bullet = BULLET.exec(line);
-    const numbered = bullet ? null : NUMBERED.exec(line);
-    const item = bullet ?? numbered;
-    if (item) {
+    } else if (item) {
       flush();
-      const ordered = numbered !== null;
-      const previous = blocks[blocks.length - 1];
-      const entry = parseInline(item[1] ?? "");
-      if (previous?.kind === "list" && previous.ordered === ordered) {
-        blocks[blocks.length - 1] = { ...previous, items: [...previous.items, entry] };
-      } else {
-        blocks.push({ kind: "list", ordered, items: [entry] });
-      }
-      continue;
+      addItem(blocks, item);
+    } else {
+      paragraph.push(line.trim());
     }
-    paragraph.push(line.trim());
+    i += 1;
   }
   flush();
   return blocks;
