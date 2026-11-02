@@ -5,14 +5,20 @@ import type { Run } from "@krizaka/orazaka-shared";
 import { useI18n, type Key } from "../i18n";
 import { ArtefactCard } from "./ArtefactCard";
 
-type Props = {
+type Props = Readonly<{
   run: Run;
   live: boolean;
   done: number;
   percent: number | null;
   token: string | null;
   onRunAgain: () => void;
-};
+}>;
+
+/** The badge tone of a run status. */
+function statusTone(status: Run["status"]): "success" | "danger" | "accent" {
+  if (status === "SUCCEEDED") return "success";
+  return status === "FAILED" || status === "CANCELLED" ? "danger" : "accent";
+}
 
 /** What a started run shows: its status, its progress while live, its outputs, and the way to run again. */
 export function RunResult({ run, live, done, percent, token, onRunAgain }: Props): React.JSX.Element {
@@ -20,17 +26,7 @@ export function RunResult({ run, live, done, percent, token, onRunAgain }: Props
   return (
     <>
       <View style={styles.status}>
-        <Badge
-          tone={
-            run.status === "SUCCEEDED"
-              ? "success"
-              : run.status === "FAILED" || run.status === "CANCELLED"
-                ? "danger"
-                : "accent"
-          }
-          dot={live}
-          pulse={live}
-        >
+        <Badge tone={statusTone(run.status)} dot={live} pulse={live}>
           {t(`studios.run.${run.status}` as Key)}
         </Badge>
         {run.steps.length > 0 && (

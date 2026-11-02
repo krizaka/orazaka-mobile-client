@@ -13,7 +13,9 @@ type Props = NativeStackScreenProps<RootStackParamList, "System">;
 
 /** The edge URL → its host — what a person recognises, not the path. */
 export function hostOf(url: string): string {
-  return url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const bare = url.replace(/^https?:\/\//, "");
+  const slash = bare.indexOf("/");
+  return slash < 0 ? bare : bare.slice(0, slash);
 }
 
 /**
@@ -43,12 +45,9 @@ export function SystemScreen({ navigation }: Props): React.JSX.Element {
     void probe();
   }, [probe]);
 
-  const status =
-    latency === null
-      ? t("common.loading")
-      : latency === "down"
-        ? t("system.unreachable")
-        : t("system.reachable", { ms: latency });
+  let status = t("system.reachable", { ms: latency ?? 0 });
+  if (latency === null) status = t("common.loading");
+  else if (latency === "down") status = t("system.unreachable");
   const interceptions = session?.activeInterceptions ?? [];
 
   return (

@@ -88,6 +88,8 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
     }
   }, [maxBytes, onBusyChange, onValueChange, t, locale]);
 
+  const sizeText = megabytes === null ? "" : ` · ${t("studios.document.size", { size: number(megabytes) })}`;
+  const readyText = name === null ? "" : `${t("studios.document.ready", { name })}${sizeText}`;
   return (
     <View style={styles.box} accessibilityLabel={title}>
       <Button
@@ -104,7 +106,7 @@ export function DocumentField({ title, maxLength, onValueChange, onBusyChange }:
       {name !== null && (
         <>
           <Txt variant="caption" tone="secondary" accessibilityLiveRegion="polite">
-            {`${t("studios.document.ready", { name })}${megabytes === null ? "" : ` · ${t("studios.document.size", { size: number(megabytes) })}`}`}
+            {readyText}
           </Txt>
           <Button variant="ghost" label={t("studios.document.remove")} onPress={clear} />
         </>

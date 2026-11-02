@@ -52,8 +52,10 @@ const ts = (t) => {
     s = t % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${s.toFixed(3).padStart(6, "0")}`;
 };
+const cueText = ([a, b, en, fr], i, duration, lang) =>
+  [`${i + 1}`, `${ts(a * duration)} --> ${ts(b * duration)}`, lang === "fr" ? fr : en, ""].join("\n");
 export const vtt = (cues, duration, lang) =>
-  `WEBVTT\n\n${cues.map(([a, b, en, fr], i) => `${i + 1}\n${ts(a * duration)} --> ${ts(b * duration)}\n${lang === "fr" ? fr : en}\n`).join("\n")}`;
+  "WEBVTT\n\n" + cues.map((cue, i) => cueText(cue, i, duration, lang)).join("\n");
 
 const FRAME_PY = `
 import sys

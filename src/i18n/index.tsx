@@ -8,7 +8,7 @@
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { createI18n, format, type MessageKey, type Translate } from "@krizaka/i18n";
+import { createI18n, type MessageKey, type Translate } from "@krizaka/i18n";
 import en from "./en.json";
 import fr from "./fr.json";
 import { setRequestLanguage } from "../config/api";
@@ -34,16 +34,16 @@ const LocaleContext = createContext<LocaleState | null>(null);
 
 /** Speaks the device's language, or the one pinned in Profile; the pinned one is remembered on the device. */
 export function LocaleProvider({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
-  const [preference, setPreferenceState] = useState<LanguagePreference>("auto");
+  const [preference, setPreference] = useState<LanguagePreference>("auto");
 
   useEffect(() => {
     void SecureStore.getItemAsync(PREFERENCE_KEY)
-      .then((stored) => setPreferenceState(asLanguagePreference(stored)))
+      .then((stored) => setPreference(asLanguagePreference(stored)))
       .catch(() => undefined);
   }, []);
 
-  const setPreference = useCallback((next: LanguagePreference) => {
-    setPreferenceState(next);
+  const changePreference = useCallback((next: LanguagePreference) => {
+    setPreference(next);
     void SecureStore.setItemAsync(PREFERENCE_KEY, next).catch(() => undefined);
   }, []);
 
@@ -52,8 +52,8 @@ export function LocaleProvider({ children }: Readonly<{ children: React.ReactNod
     // Before the children fetch: the platform answers in the language the app speaks.
     setRequestLanguage(locale);
     const translate = i18n.translator(locale);
-    return { locale, preference, setPreference, t: translate };
-  }, [preference, setPreference]);
+    return { locale, preference, setPreference: changePreference, t: translate };
+  }, [preference, changePreference]);
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
@@ -76,4 +76,4 @@ export function useT(): LocaleState["t"] {
   return useI18n().t;
 }
 
-export { format };
+export { format } from "@krizaka/i18n";
