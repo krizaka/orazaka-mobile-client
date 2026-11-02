@@ -8,8 +8,9 @@ jest.mock("expo/src/winter/ImportMetaRegistry", () => ({
     },
   },
 }));
-if (typeof global.structuredClone !== "function") {
-  global.structuredClone = (value) => JSON.parse(JSON.stringify(value));
+if (typeof globalThis.structuredClone !== "function") {
+  // The polyfill itself: structuredClone is what is missing here.
+  globalThis.structuredClone = (value) => JSON.parse(JSON.stringify(value)); // NOSONAR
 }
 
 // expo-video is a native module (a player has no JS to run under Jest): screens render a plain View in its place.

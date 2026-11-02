@@ -161,6 +161,17 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
   return fields.sort((left, right) => Number(right.required) - Number(left.required));
 }
 
+/** One typed answer as the payload wants it: a list split on lines, a number as a number, else the text. */
+function answerValue(field: SchemaField, answer: string): string | number | string[] {
+  if (field.isList) {
+    return answer
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line !== "");
+  }
+  return field.isNumber && Number.isFinite(Number(answer)) ? Number(answer) : answer;
+}
+
 /**
  * Turns the typed answers into the `inputs` map the run endpoint expects.
  *
@@ -178,14 +189,7 @@ export function toInputs(
     if (answer === "") {
       continue;
     }
-    inputs[field.key] = field.isList
-      ? answer
-          .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line !== "")
-      : field.isNumber && Number.isFinite(Number(answer))
-        ? Number(answer)
-        : answer;
+    inputs[field.key] = answerValue(field, answer);
   }
   return inputs;
 }

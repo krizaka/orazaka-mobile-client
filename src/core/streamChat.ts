@@ -97,47 +97,45 @@ export function streamChat(
     silence = null;
   };
 
+  /** One line of the event stream: it names the event, or carries its data. */
+  const handleLine = (line: string): void => {
+    const cleaned = line.trim();
+    if (cleaned === "") {
+      currentEvent = "message";
+      return;
+    }
+    if (cleaned.startsWith("event:")) {
+      currentEvent = cleaned.slice(6).trim();
+      return;
+    }
+    if (!cleaned.startsWith("data:")) return;
+    const raw = cleaned.slice(5).trim();
+    // pipeline-ack / pipeline-step describe the interceptor pipeline, not the answer: they feed the
+    // pipeline chips and never land in the reply.
+    if (currentEvent === "pipeline-ack") {
+      const ids = pipelineOfAck(jsonOf(raw));
+      if (ids.length > 0) handlers.onPipeline?.(ids);
+      return;
+    }
+    if (currentEvent === "pipeline-step") {
+      const id = stepOf(jsonOf(raw));
+      if (id !== null) handlers.onStep?.(id);
+      return;
+    }
+    if (currentEvent !== "message") return;
+    const chunk = chunkOf(raw);
+    if (chunk !== "") {
+      accumulated += chunk;
+      handlers.onContent(accumulated);
+    }
+  };
+
   const consume = (text: string) => {
     pending += text;
     const lines = pending.split("\n");
     // The last element may be half a line; keep it for the next progress event.
     pending = lines.pop() ?? "";
-
-    for (const line of lines) {
-      const cleaned = line.trim();
-      if (cleaned === "") {
-        currentEvent = "message";
-        continue;
-      }
-      if (cleaned.startsWith("event:")) {
-        currentEvent = cleaned.slice(6).trim();
-        continue;
-      }
-      if (!cleaned.startsWith("data:")) {
-        continue;
-      }
-      const raw = cleaned.slice(5).trim();
-      // pipeline-ack / pipeline-step describe the interceptor pipeline, not the answer: they feed the
-      // pipeline chips and never land in the reply.
-      if (currentEvent === "pipeline-ack") {
-        const ids = pipelineOfAck(jsonOf(raw));
-        if (ids.length > 0) handlers.onPipeline?.(ids);
-        continue;
-      }
-      if (currentEvent === "pipeline-step") {
-        const id = stepOf(jsonOf(raw));
-        if (id !== null) handlers.onStep?.(id);
-        continue;
-      }
-      if (currentEvent !== "message") {
-        continue;
-      }
-      const chunk = chunkOf(raw);
-      if (chunk !== "") {
-        accumulated += chunk;
-        handlers.onContent(accumulated);
-      }
-    }
+    for (const line of lines) handleLine(line);
   };
 
   const attach = (): void => {

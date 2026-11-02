@@ -1,19 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { Button, Chip, Header, Screen, TextField, Txt } from "@krizaka/ui/native";
+import { Button, Header, Screen, Txt } from "@krizaka/ui/native";
 import { isTerminalRun } from "@krizaka/orazaka-shared";
 import type { Run } from "@krizaka/orazaka-shared";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useToken } from "../core/AuthContext";
 import { apiRequest } from "../config/api";
 import { useApi } from "../core/useApi";
-import { ChoiceField } from "../components/ChoiceField";
-import { DocumentField } from "../components/DocumentField";
-import { FileFieldBox } from "../components/FileFieldBox";
+import { StudioField } from "../components/StudioField";
 import { RunResult } from "../components/RunResult";
-import { PhotoField } from "../components/PhotoField";
-import { SeedField } from "../components/SeedField";
 import { isComplete, parseInputSchema, toInputs, type SchemaField } from "../core/inputSchema";
 import { initialAnswers, runPercent, splitFields } from "../core/runForm";
 import { fieldWords } from "../core/fieldWords";
@@ -48,7 +44,7 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   const detail = useApi<{ inputSchema: string | null }>(`/api/v1/studios/${studioKey}?locale=${locale}`);
   const fields = parseInputSchema(detail.data?.inputSchema);
   const { basic, advanced } = splitFields(fields);
-  const [typed, setAnswers] = useState<Record<string, string>>({});
+  const [typed, setTyped] = useState<Record<string, string>>({});
   const [showAdvanced, setShowAdvanced] = useState(false);
   // A field with a default (the video Studio's `aspect`) starts on it; what the person chose wins.
   const answers = { ...initialAnswers(fields), ...typed };
@@ -109,81 +105,24 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
   const { titleOf, choiceLabel } = fieldWords(t, studioKey);
 
   /** The setter of one field's answer. */
-  const answerOf = (key: string) => (value: string) => setAnswers((prev) => ({ ...prev, [key]: value }));
+  const answerOf = (key: string) => (value: string) => setTyped((prev) => ({ ...prev, [key]: value }));
   /** The setter of one field's "being sent" flag. */
   const busyOf = (key: string) => (busy: boolean) =>
     setSending((prev) => (prev[key] === busy ? prev : { ...prev, [key]: busy }));
 
-  const renderField = (field: SchemaField): React.JSX.Element =>
-    field.documentKind === "pdf" ? (
-      <FileFieldBox key={field.key} field={field} title={titleOf(field)}>
-        <DocumentField
-          title={titleOf(field)}
-          maxLength={field.maxLength}
-          onValueChange={answerOf(field.key)}
-          onBusyChange={busyOf(field.key)}
-        />
-      </FileFieldBox>
-    ) : field.assetKind === "image" ? (
-      <FileFieldBox key={field.key} field={field} title={titleOf(field)}>
-        <PhotoField
-          title={titleOf(field)}
-          token={bearer}
-          onAssetChange={answerOf(field.key)}
-          onBusyChange={busyOf(field.key)}
-        />
-      </FileFieldBox>
-    ) : field.choices !== undefined || field.fedByCatalogue === true ? (
-      <ChoiceField
-        key={field.key}
-        field={field}
-        title={titleOf(field)}
-        value={answers[field.key] ?? ""}
-        disabled={isStarting}
-        onChange={answerOf(field.key)}
-      />
-    ) : field.control === "seed" ? (
-      <SeedField
-        key={field.key}
-        title={titleOf(field)}
-        value={answers[field.key] ?? ""}
-        disabled={isStarting}
-        onChange={answerOf(field.key)}
-      />
-    ) : field.options ? (
-      <View key={field.key} style={styles.field}>
-        <Txt variant="label" tone="secondary">
-          {titleOf(field)}
-        </Txt>
-        <Chip.Group
-          type="single"
-          aria-label={titleOf(field)}
-          value={answers[field.key] ?? field.options[0] ?? ""}
-          onValueChange={answerOf(field.key)}
-        >
-          {field.options.map((value) => (
-            <Chip key={value} value={value}>
-              {choiceLabel(field.key, value)}
-            </Chip>
-          ))}
-        </Chip.Group>
-      </View>
-    ) : (
-      <TextField
-        key={field.key}
-        testID={`field-${field.key}`}
-        label={`${titleOf(field)}${field.required ? " *" : ""}`}
-        placeholder={field.isList ? t("studios.listPlaceholder") : undefined}
-        multiline={field.isList || field.key === "prompt" || field.key === "text"}
-        keyboardType={field.isNumber ? "number-pad" : "default"}
-        maxLength={field.maxLength}
-        disabled={isStarting}
-        value={answers[field.key] ?? ""}
-        onValueChange={answerOf(field.key)}
-        returnKeyType={field.key === "prompt" || field.key === "text" ? "done" : undefined}
-        blurOnSubmit
-      />
-    );
+  const renderField = (field: SchemaField): React.JSX.Element => (
+    <StudioField
+      key={field.key}
+      field={field}
+      title={titleOf(field)}
+      choiceLabel={choiceLabel}
+      value={answers[field.key] ?? ""}
+      disabled={isStarting}
+      token={bearer}
+      onAnswer={answerOf(field.key)}
+      onBusy={busyOf(field.key)}
+    />
+  );
 
   const percent = run === null ? null : runPercent(run.steps);
   const done = run?.steps.filter((s) => s.status === "SUCCEEDED" || s.status === "SKIPPED").length ?? 0;
@@ -243,5 +182,4 @@ export function StudioRunScreen({ route, navigation }: Props): React.JSX.Element
 
 const styles = StyleSheet.create({
   content: { gap: 16 },
-  field: { gap: 8 },
 });

@@ -73,7 +73,10 @@ export function asReport(value: string): Report | null {
       citation: str(f.citation) ?? str(f.mayIndicate),
     });
   }
-  const rank = (t: Tone) => (t === "danger" ? 0 : t === "success" ? 2 : 1);
+  const rank = (t: Tone) => {
+    if (t === "danger") return 0;
+    return t === "success" ? 2 : 1;
+  };
   findings.sort((a, b) => rank(a.tone) - rank(b.tone));
   const byVerdict = (record?.summary as { byVerdict?: Record<string, number> } | undefined)?.byVerdict;
   const counts = Object.entries(byVerdict ?? {}).filter(([, n]) => typeof n === "number");

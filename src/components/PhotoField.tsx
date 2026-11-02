@@ -30,7 +30,7 @@ export function PhotoField({ title, token, onAssetChange, onBusyChange }: Props)
   const change = useCallback(
     (next: PickedMedia[]) => {
       const mine = ++attempt.current;
-      const photo = next[next.length - 1];
+      const photo = next.at(-1);
       setFailed(false);
       onAssetChange("");
       if (photo === undefined) {

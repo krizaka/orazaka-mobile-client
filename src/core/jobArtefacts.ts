@@ -45,9 +45,8 @@ export function jobArtefacts(job: JobRecord): RunArtefact[] {
       value: url,
     });
   }
-  const text =
-    typeof result.content === "string" ? result.content : typeof result.text === "string" ? result.text : null;
-  if (text && text.trim()) out.push({ key: "content", label: "content", type: "TEXT", value: text });
+  const text = [result.content, result.text].find((v): v is string => typeof v === "string") ?? null;
+  if (text?.trim()) out.push({ key: "content", label: "content", type: "TEXT", value: text });
   for (const fact of FACTS) {
     const value = result[fact];
     if (typeof value === "string" || typeof value === "number")

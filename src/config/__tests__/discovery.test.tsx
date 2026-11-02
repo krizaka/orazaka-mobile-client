@@ -192,7 +192,7 @@ describe("the System screen tells where the addresses come from", () => {
       </ThemeProvider>,
     );
     expect(await screen.findByText("Website")).toBeTruthy();
-    expect(screen.getAllByText("dev.orazaka.com").length).toBe(2);
+    expect(screen.getAllByText("dev.orazaka.com")).toHaveLength(2);
     expect(screen.getByText("Addresses from")).toBeTruthy();
     expect(screen.getByText("Built-in default")).toBeTruthy();
   });

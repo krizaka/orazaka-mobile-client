@@ -35,6 +35,11 @@ interface UserDescriptor {
 
 type Props = NativeStackScreenProps<RootStackParamList, "Profile">;
 
+const creditsIcon = (color: string) => <CreditsIcon size={20} color={color} />;
+const connectorsIcon = (color: string) => <AutomationIcon size={20} color={color} />;
+const systemIcon = (color: string) => <ServerIcon size={20} color={color} />;
+const languageIcon = (color: string) => <GlobeIcon size={20} color={color} />;
+
 /**
  * The signed-in actor, and the way out.
  *
@@ -57,17 +62,19 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
     const text = t(key);
     return text === key ? humanizeRole(authority) : text;
   };
-  const languageName = (p: LanguagePreference): string =>
-    p === "auto" ? t("profile.languageAuto") : p === "fr" ? "Français" : "English";
+  const languageName = (p: LanguagePreference): string => {
+    if (p === "auto") return t("profile.languageAuto");
+    return p === "fr" ? "Français" : "English";
+  };
   const credits = wallet.data ? spendableCredits(wallet.data) : null;
 
   return (
     <Screen header={<Header title={t("profile.title")} />}>
-      {profile.isLoading ? (
-        <Loading />
-      ) : profile.error !== null || !data ? (
+      {profile.isLoading && <Loading />}
+      {!profile.isLoading && (profile.error !== null || !data) && (
         <LoadError message={profile.error ?? t("profile.loadFailed")} onRetry={profile.reload} />
-      ) : (
+      )}
+      {!profile.isLoading && profile.error === null && data && (
         <>
           <View style={styles.identity}>
             <Avatar
@@ -93,7 +100,7 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
           {credits !== null && (
             <SettingsGroup title={t("profile.account")}>
               <SettingsRow
-                icon={(color) => <CreditsIcon size={20} color={color} />}
+                icon={creditsIcon}
                 label={t("profile.credits")}
                 value={t("profile.creditsValue", {
                   count: credits.toLocaleString(locale === "fr" ? "fr-CA" : "en-CA"),
@@ -104,13 +111,13 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
 
           <SettingsGroup title={t("profile.workspace")}>
             <SettingsRow
-              icon={(color) => <AutomationIcon size={20} color={color} />}
+              icon={connectorsIcon}
               label={t("profile.connectors")}
               hint={t("profile.connectorsHint")}
               onPress={() => navigation.navigate("Connectors")}
             />
             <SettingsRow
-              icon={(color) => <ServerIcon size={20} color={color} />}
+              icon={systemIcon}
               label={t("profile.system")}
               hint={t("profile.systemHint")}
               onPress={() => navigation.navigate("System")}
@@ -119,7 +126,7 @@ export function ProfileScreen({ navigation }: Props): React.JSX.Element {
 
           <SettingsGroup title={t("profile.preferences")}>
             <SettingsRow
-              icon={(color) => <GlobeIcon size={20} color={color} />}
+              icon={languageIcon}
               label={t("profile.language")}
               value={languageName(preference)}
               onPress={() => setChoosingLanguage(true)}

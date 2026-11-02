@@ -183,21 +183,26 @@ for (const id of clips) {
   // Pieces between t0 and t1: normal, typing (sped up), wait (cut → hold).
   const pieces = [];
   let cursor = t0;
-  for (let i = s + 1; i < e; i++) {
+  let next = s + 1;
+  while (next < e) {
+    const i = next;
     const m = marks[i];
+    next += 1;
     if (m.name === "type:start" || m.name === "wait:start") {
       const endName = m.name === "type:start" ? "type:end" : "wait:end";
       const j = marks.findIndex((x, k) => k > i && x.name === endName);
       if (j === -1 || j > e) continue;
-      pieces.push({ kind: "normal", a: cursor, b: offset(m) });
-      pieces.push({
-        kind: m.name === "type:start" ? "type" : "wait",
-        a: offset(m),
-        b: offset(marks[j]),
-        label: m.label,
-      });
+      pieces.push(
+        { kind: "normal", a: cursor, b: offset(m) },
+        {
+          kind: m.name === "type:start" ? "type" : "wait",
+          a: offset(m),
+          b: offset(marks[j]),
+          label: m.label,
+        },
+      );
       cursor = offset(marks[j]);
-      i = j;
+      next = j + 1;
     }
   }
   pieces.push({ kind: "normal", a: cursor, b: t1 });
@@ -214,7 +219,8 @@ for (const id of clips) {
       else {
         // A hold of the screen as it was when the wait began, carrying a label that says how long was cut.
         const cut = Math.round(p.b - p.a);
-        const text = `${p.label ? `${p.label} \u00b7 ` : ""}${cut} s cut`;
+        const prefix = p.label ? `${p.label} \u00b7 ` : "";
+        const text = `${prefix}${cut} s cut`;
         const png = path.join(out, `label-${id}-${n}.png`);
         execFileSync(toolPath("python3"), ["-I", "-c", LABEL_PY, png, text, String(probe.width), String(probe.height)]);
         labels.push(png);
