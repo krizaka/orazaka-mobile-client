@@ -14,6 +14,11 @@ type Props = {
   onRunAgain: () => void;
 };
 
+function statusTone(status: Run["status"]): "success" | "danger" | "accent" {
+  if (status === "SUCCEEDED") return "success";
+  return status === "FAILED" || status === "CANCELLED" ? "danger" : "accent";
+}
+
 /** What a started run shows: its status, its progress while live, its outputs, and the way to run again. */
 export function RunResult({ run, live, done, percent, token, onRunAgain }: Props): React.JSX.Element {
   const { t } = useI18n();
@@ -21,13 +26,7 @@ export function RunResult({ run, live, done, percent, token, onRunAgain }: Props
     <>
       <View style={styles.status}>
         <Badge
-          tone={
-            run.status === "SUCCEEDED"
-              ? "success"
-              : run.status === "FAILED" || run.status === "CANCELLED"
-                ? "danger"
-                : "accent"
-          }
+          tone={statusTone(run.status)}
           dot={live}
           pulse={live}
         >

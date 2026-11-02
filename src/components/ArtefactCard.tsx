@@ -8,6 +8,12 @@ import { ReportCards } from "./ReportCards";
 import { ImageArtefact, VideoArtefact } from "./MediaArtefact";
 import { useT, type Key } from "../i18n";
 
+const MEDIA_TITLE_KEYS: Readonly<Record<string, Key | undefined>> = {
+  IMAGE: "artefact.image",
+  VIDEO: "artefact.video",
+  AUDIO: "artefact.audio",
+};
+
 /**
  * One thing a run produced, as the blueprint typed it: a picture shown, a clip played, a rules report as cards, a
  * model's text as Markdown with the run's facts apart. Never the raw value printed as a label and a path.
@@ -32,15 +38,10 @@ export function ArtefactCard({
   const text = artefact.type === "TEXT" && report === null ? asTextResult(value) : null;
   /** A picture, a clip or a sound is named by what it is; a text keeps the platform's own title. */
   const known = artefact.type === "TEXT" && ["seed", "model", "generationMs"].includes(artefact.key);
-  const title = known
-    ? factName(artefact.key)
-    : artefact.type === "IMAGE"
-      ? t("artefact.image")
-      : artefact.type === "VIDEO"
-        ? t("artefact.video")
-        : artefact.type === "AUDIO"
-          ? t("artefact.audio")
-          : artefact.label;
+  const mediaTitleKey = MEDIA_TITLE_KEYS[artefact.type];
+  let title = artefact.label;
+  if (known) title = factName(artefact.key);
+  else if (mediaTitleKey) title = t(mediaTitleKey);
   const factValue = (key: string, value: string): string => {
     if (key !== "provider") return value;
     const k = `provider.${value}` as Key;

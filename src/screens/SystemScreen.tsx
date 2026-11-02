@@ -43,12 +43,10 @@ export function SystemScreen({ navigation }: Props): React.JSX.Element {
     void probe();
   }, [probe]);
 
-  const status =
-    latency === null
-      ? t("common.loading")
-      : latency === "down"
-        ? t("system.unreachable")
-        : t("system.reachable", { ms: latency });
+  let status: string;
+  if (latency === null) status = t("common.loading");
+  else if (latency === "down") status = t("system.unreachable");
+  else status = t("system.reachable", { ms: latency });
   const interceptions = session?.activeInterceptions ?? [];
 
   return (

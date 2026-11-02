@@ -45,8 +45,9 @@ export function jobArtefacts(job: JobRecord): RunArtefact[] {
       value: url,
     });
   }
-  const text =
-    typeof result.content === "string" ? result.content : typeof result.text === "string" ? result.text : null;
+  let text: string | null = null;
+  if (typeof result.content === "string") text = result.content;
+  else if (typeof result.text === "string") text = result.text;
   if (text && text.trim()) out.push({ key: "content", label: "content", type: "TEXT", value: text });
   for (const fact of FACTS) {
     const value = result[fact];

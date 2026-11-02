@@ -87,12 +87,16 @@ export function expoRoutes(appDir) {
 }
 
 /** Does an Expo route (`/watch/[id]`, `/me/[...rest]`) open for this concrete path? */
+function segmentPattern(s) {
+  if (/^\[\.\.\.[^\]]+\]$/.test(s)) return ".+";
+  if (/^\[[^\]]+\]$/.test(s)) return "[^/]+";
+  return s.replace(/[.+?^${}()|\\*]/g, "\\$&");
+}
+
 export function expoMatches(expoRoute, path) {
   const re = expoRoute
     .split("/")
-    .map((s) =>
-      /^\[\.\.\.[^\]]+\]$/.test(s) ? ".+" : /^\[[^\]]+\]$/.test(s) ? "[^/]+" : s.replace(/[.+?^${}()|\\*]/g, "\\$&"),
-    )
+    .map(segmentPattern)
     .join("/");
   return new RegExp("^" + re + "$").test(path);
 }
