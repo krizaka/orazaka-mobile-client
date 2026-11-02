@@ -35,6 +35,9 @@ tags:
 # One chat, with its empty state and no decorative exchange.
 - tapOn: "Chat"
 - assertVisible: "What can I do for you?"
+# The commercial name (krizaka-internal#2103): the composer addresses Sovkora, the code name is never shown.
+- assertVisible: "Message Sovkora"
+- assertNotVisible: "Orazaka"
 - assertNotVisible: "Your sovereign AI, on this device."
 - tapOn: "Jobs"
 - assertVisible: "Jobs per day"

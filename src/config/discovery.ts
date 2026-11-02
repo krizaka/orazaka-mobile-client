@@ -1,6 +1,6 @@
 /**
  * @file discovery.ts
- * @description Where the Orazaka edge lives, asked of the signed manifest on krizaka.com instead of being baked in the
+ * @description Where the Sovkora edge lives, asked of the signed manifest on krizaka.com instead of being baked in the
  * build (krizaka/.github ADR-003, `@krizaka/discovery`): a URL change is an edit of the manifest and a krizaka.com
  * deploy, never a store release. The order is verified live document → cache (Keychain) → the baked default below →
  * the address hard-coded before discovery (`DEV_EDGE_URL`).
@@ -84,5 +84,5 @@ export const discovery = createAppDiscovery();
 // Every request reads the edge from discovery at the moment it is made.
 setEdgeBase(() => discovery.getService("orazaka").apiBase);
 
-/** The Orazaka website, as of now (the manifest's `webBase`). */
+/** The Sovkora website, as of now (the manifest's `webBase`). */
 export const orazakaWebUrl = (): string => discovery.getService("orazaka").webBase;

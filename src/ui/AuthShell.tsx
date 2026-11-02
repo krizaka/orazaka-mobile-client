@@ -11,7 +11,7 @@ interface Props {
 }
 
 /**
- * The frame of every signed-out screen: the Orazaka mark and its duck (the mascot of Orazaka everywhere, orazaka#516), a title, a line,
+ * The frame of every signed-out screen: the Sovkora mark and its duck (the mascot of Sovkora everywhere, orazaka#516), a title, a line,
  * the honest « in development » status the family says, then the form — the kit's `Screen`.
  */
 export function AuthShell({ title, subtitle, children }: Readonly<Props>): React.JSX.Element {

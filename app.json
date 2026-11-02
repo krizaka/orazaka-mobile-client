@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Orazaka",
+    "name": "Sovkora",
     "slug": "orazaka-mobile",
     "owner": "oussamaabid",
     "version": "1.0.0",
@@ -58,8 +58,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Orazaka reads the photos you choose to start a creation from.",
-          "cameraPermission": "Orazaka uses the camera when you take a photo to start a creation from."
+          "photosPermission": "Sovkora reads the photos you choose to start a creation from.",
+          "cameraPermission": "Sovkora uses the camera when you take a photo to start a creation from."
         }
       ],
       [

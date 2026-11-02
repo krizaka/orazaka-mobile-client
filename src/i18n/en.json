@@ -38,7 +38,7 @@
     "create": "Create an account",
     "register": {
       "title": "Create account",
-      "subtitle": "Join Orazaka",
+      "subtitle": "Join Sovkora",
       "submit": "Create account",
       "haveAccount": "Already have an account? Sign in",
       "failed": "Registration failed",
@@ -63,7 +63,7 @@
       "done": "Your password has been reset. You can sign in."
     },
     "invalidCredentials": "Invalid email or password.",
-    "name": "Orazaka"
+    "name": "Sovkora"
   },
   "studios": {
     "empty": "No Studio in the catalogue yet.",
@@ -229,7 +229,7 @@
   },
   "chat": {
     "title": "Chat",
-    "placeholder": "Message Orazaka",
+    "placeholder": "Message Sovkora",
     "send": "Send",
     "newChat": "New chat",
     "emptyTitle": "What can I do for you?",
@@ -244,10 +244,10 @@
     "chooseModel": "Choose a model",
     "defaultModel": "Default model",
     "noEgress": "0 bytes left your network",
-    "thinking": "Orazaka is answering",
+    "thinking": "Sovkora is answering",
     "steps": "{count} pipeline steps",
     "you": "You",
-    "assistant": "Orazaka",
+    "assistant": "Sovkora",
     "noAnswer": "No answer came back. Try again or pick another model."
   },
   "pipeline": {
@@ -281,7 +281,7 @@
     "creditsValue": "{count} available",
     "workspace": "Workspace",
     "connectors": "Connectors",
-    "connectorsHint": "The services Orazaka can use for you",
+    "connectorsHint": "The services Sovkora can use for you",
     "system": "System",
     "systemHint": "Connection and version",
     "preferences": "Preferences",
@@ -337,9 +337,9 @@
     }
   },
   "update": {
-    "forceTitle": "Update Orazaka to continue",
+    "forceTitle": "Update Sovkora to continue",
     "version": "Version {version}",
     "update": "Update",
-    "maintenanceTitle": "Orazaka is under maintenance"
+    "maintenanceTitle": "Sovkora is under maintenance"
   }
 }

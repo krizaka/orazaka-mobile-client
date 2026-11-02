@@ -12,7 +12,7 @@ import profile from "../__fixtures__/api/profile.local-demo.json";
 
 // Dev preview `mobile.ux-review` (orazaka-mobile-client#37): the shape of the phone's navigation is a tested contract —
 // about five tabs at the thumb, the web's words in the web's order (docs/ux/information-architecture.md § 3 of the
-// Orazaka workspace, docs/UX_DECISIONS.md), Studios first because the app opens on what you can run.
+// Sovkora workspace, docs/UX_DECISIONS.md), Studios first because the app opens on what you can run.
 const mockKeychain = new Map<string, string>();
 jest.mock("expo-secure-store", () => ({
   getItemAsync: async (key: string) => mockKeychain.get(key) ?? null,

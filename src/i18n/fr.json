@@ -38,7 +38,7 @@
     "create": "Créer un compte",
     "register": {
       "title": "Créer un compte",
-      "subtitle": "Rejoignez Orazaka",
+      "subtitle": "Rejoignez Sovkora",
       "submit": "Créer le compte",
       "haveAccount": "Déjà un compte ? Se connecter",
       "failed": "L’inscription a échoué",
@@ -63,7 +63,7 @@
       "done": "Votre mot de passe a été réinitialisé. Vous pouvez vous connecter."
     },
     "invalidCredentials": "Courriel ou mot de passe invalide.",
-    "name": "Orazaka"
+    "name": "Sovkora"
   },
   "studios": {
     "empty": "Aucun Studio au catalogue pour l’instant.",
@@ -229,7 +229,7 @@
   },
   "chat": {
     "title": "Chat",
-    "placeholder": "Écrire à Orazaka",
+    "placeholder": "Écrire à Sovkora",
     "send": "Envoyer",
     "newChat": "Nouvelle conversation",
     "emptyTitle": "Que puis-je faire pour vous ?",
@@ -244,10 +244,10 @@
     "chooseModel": "Choisir un modèle",
     "defaultModel": "Modèle par défaut",
     "noEgress": "0 octet n’a quitté votre réseau",
-    "thinking": "Orazaka répond",
+    "thinking": "Sovkora répond",
     "steps": "{count} étapes du pipeline",
     "you": "Vous",
-    "assistant": "Orazaka",
+    "assistant": "Sovkora",
     "noAnswer": "Aucune réponse n’est revenue. Réessayez ou choisissez un autre modèle."
   },
   "pipeline": {
@@ -281,7 +281,7 @@
     "creditsValue": "{count} disponibles",
     "workspace": "Espace de travail",
     "connectors": "Connecteurs",
-    "connectorsHint": "Les services qu’Orazaka peut utiliser pour vous",
+    "connectorsHint": "Les services qu’Sovkora peut utiliser pour vous",
     "system": "Système",
     "systemHint": "Connexion et version",
     "preferences": "Préférences",
@@ -337,9 +337,9 @@
     }
   },
   "update": {
-    "forceTitle": "Mettez Orazaka à jour pour continuer",
+    "forceTitle": "Mettez Sovkora à jour pour continuer",
     "version": "Version {version}",
     "update": "Mettre à jour",
-    "maintenanceTitle": "Orazaka est en maintenance"
+    "maintenanceTitle": "Sovkora est en maintenance"
   }
 }
