@@ -42,7 +42,8 @@ export function edgeBase(): string {
 
 /** Joins the edge base with an API path (e.g. `"/api/v1/studios"`). */
 export function edgeUrl(path: string): string {
-  return `${edgeBase()}${path.startsWith("/") ? path : `/${path}`}`;
+  const rooted = path.startsWith("/") ? path : `/${path}`;
+  return `${edgeBase()}${rooted}`;
 }
 
 /**

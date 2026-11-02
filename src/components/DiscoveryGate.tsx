@@ -12,37 +12,50 @@ export const onForeground: NonNullable<DiscoveryProviderProps["subscribeForegrou
   return () => subscription.remove();
 };
 
+const retry = () => void discovery.refresh();
+
+type GateProps = React.ComponentProps<typeof Gate>;
+type UpdateGate = Parameters<NonNullable<GateProps["update"]>>[0];
+type MaintenanceGate = Parameters<NonNullable<GateProps["maintenance"]>>[0];
+
+function ForceUpdate({ gate }: Readonly<{ gate: UpdateGate }>): React.JSX.Element {
+  const { t, locale } = useI18n();
+  return (
+    <ForceUpdateScreen
+      fill
+      mark={<OrazakaMark size={64} />}
+      title={t("update.forceTitle")}
+      message={pickMessage(gate.message, locale)}
+      versionLabel={t("update.version", { version: gate.latestAppVersion })}
+      updateLabel={t("update.update")}
+      onUpdate={() => void Linking.openURL(Platform.OS === "ios" ? UPDATE_URL.ios : UPDATE_URL.android)}
+      retryLabel={t("common.retry")}
+      onRetry={retry}
+    />
+  );
+}
+
+function Maintenance({ gate }: Readonly<{ gate: MaintenanceGate }>): React.JSX.Element {
+  const { t, locale } = useI18n();
+  return (
+    <MaintenanceScreen
+      fill
+      mark={<OrazakaMark size={64} />}
+      title={t("update.maintenanceTitle")}
+      message={pickMessage(gate.message, locale)}
+      retryLabel={t("common.retry")}
+      onRetry={retry}
+    />
+  );
+}
+
+const renderUpdate = (gate: UpdateGate): React.JSX.Element => <ForceUpdate gate={gate} />;
+const renderMaintenance = (gate: MaintenanceGate): React.JSX.Element => <Maintenance gate={gate} />;
+
 /** What the signed manifest decided (krizaka/.github ADR-003): a build below `minAppVersion` or a maintenance window replaces the app. */
 export function DiscoveryGate({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
-  const { t, locale } = useI18n();
-  const retry = () => void discovery.refresh();
   return (
-    <Gate
-      product="orazaka"
-      update={(gate) => (
-        <ForceUpdateScreen
-          fill
-          mark={<OrazakaMark size={64} />}
-          title={t("update.forceTitle")}
-          message={pickMessage(gate.message, locale)}
-          versionLabel={t("update.version", { version: gate.latestAppVersion })}
-          updateLabel={t("update.update")}
-          onUpdate={() => void Linking.openURL(Platform.OS === "ios" ? UPDATE_URL.ios : UPDATE_URL.android)}
-          retryLabel={t("common.retry")}
-          onRetry={retry}
-        />
-      )}
-      maintenance={(gate) => (
-        <MaintenanceScreen
-          fill
-          mark={<OrazakaMark size={64} />}
-          title={t("update.maintenanceTitle")}
-          message={pickMessage(gate.message, locale)}
-          retryLabel={t("common.retry")}
-          onRetry={retry}
-        />
-      )}
-    >
+    <Gate product="orazaka" update={renderUpdate} maintenance={renderMaintenance}>
       {children}
     </Gate>
   );

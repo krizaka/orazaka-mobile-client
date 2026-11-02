@@ -17,15 +17,14 @@ export function AssistantMessage({ message }: Readonly<{ message: ChatMessage }>
   const waiting = message.content === "" && !message.settled;
   return (
     <View style={styles.row} testID={message.settled ? "answer-complete" : "answer-streaming"}>
-      {waiting ? (
-        <TypingIndicator label={t("chat.thinking")} />
-      ) : message.content !== "" ? (
+      {waiting && <TypingIndicator label={t("chat.thinking")} />}
+      {!waiting && message.content !== "" && (
         <View
           style={[styles.bubble, { borderRadius: radius.xl, borderTopLeftRadius: 6, backgroundColor: theme.surface2 }]}
         >
           <Markdown text={message.content} />
         </View>
-      ) : null}
+      )}
       <PipelineChips steps={message.steps} />
     </View>
   );

@@ -11,6 +11,12 @@ const BADGE: Record<Tone, BadgeTone> = { success: "success", danger: "danger", w
  * A rules report as cards: the verdict counts, then one card per finding — failures first — with the rule, what was
  * found, the passage quoted and the law cited. The words are the report's own; nothing is summarised here.
  */
+/** The badge tone of a verdict count. */
+function countTone(verdict: string): "danger" | "success" | "warning" {
+  if (verdict === "FAIL") return "danger";
+  return verdict === "PASS" ? "success" : "warning";
+}
+
 export function ReportCards({ report }: Readonly<{ report: Report }>): React.JSX.Element {
   const { theme } = useTheme();
   const t = useT();
@@ -24,7 +30,7 @@ export function ReportCards({ report }: Readonly<{ report: Report }>): React.JSX
     <View style={styles.root}>
       <View style={styles.counts}>
         {report.counts.map(([verdict, count]) => (
-          <Badge key={verdict} tone={verdict === "FAIL" ? "danger" : verdict === "PASS" ? "success" : "warning"}>
+          <Badge key={verdict} tone={countTone(verdict)}>
             {`${verdictWords(verdict)} · ${String(count)}`}
           </Badge>
         ))}

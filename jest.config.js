@@ -9,7 +9,7 @@
  * package's own copy (React 19.2.3, the version of React Native 0.86 renderer — see metro.config.js), never the
  * workspace's hoisted 19.2.x.
  */
-const path = require("path");
+const path = require("node:path");
 
 const reactDir = path.dirname(require.resolve("react/package.json", { paths: [__dirname] }));
 /** @krizaka/* packages export ES modules only (an `import` condition): Jest requires their files directly. */
@@ -29,7 +29,8 @@ const esmMap = Object.fromEntries(
     subs.map((sub) => {
       const dir = path.dirname(require.resolve(`@krizaka/${name}/package.json`, { paths: [__dirname] }));
       const entry = require(path.join(dir, "package.json")).exports[sub === "" ? "." : `./${sub}`].import;
-      return [`^@krizaka/${name}${sub === "" ? "" : `/${sub}`}$`, path.join(dir, entry)];
+      const suffix = sub === "" ? "" : `/${sub}`;
+      return [`^@krizaka/${name}${suffix}$`, path.join(dir, entry)];
     }),
   ),
 );

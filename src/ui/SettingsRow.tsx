@@ -49,6 +49,11 @@ export function SettingsRow({ icon, label, hint, value, onPress }: Readonly<Prop
 }
 
 /** A titled group of rows on a card surface, hairline-separated. */
+/** `Children.toArray` already keys every element; a bare string or number falls back to its text. */
+function rowKey(row: ReturnType<typeof React.Children.toArray>[number], index: number): string {
+  return React.isValidElement(row) && row.key !== null ? row.key : `row-${String(row)}-${String(index)}`;
+}
+
 export function SettingsGroup({
   title,
   children,
@@ -67,7 +72,10 @@ export function SettingsGroup({
         ]}
       >
         {rows.map((row, index) => (
-          <View key={index} style={index > 0 ? [styles.separator, { borderTopColor: theme.borderSubtle }] : undefined}>
+          <View
+            key={rowKey(row, index)}
+            style={index > 0 ? [styles.separator, { borderTopColor: theme.borderSubtle }] : undefined}
+          >
             {row}
           </View>
         ))}

@@ -26,22 +26,21 @@ function Bar(): React.JSX.Element {
  */
 export function Themed({ children }: Readonly<{ children: React.ReactNode }>): React.JSX.Element {
   const insets = useSafeAreaInsets();
-  const system = useColorScheme();
-  const [mode, setModeState] = useState<Mode>("system");
+  useColorScheme();
+  const [mode, setMode] = useState<Mode>("system");
 
   useEffect(() => {
     void SecureStore.getItemAsync(MODE_KEY)
-      .then((stored) => setModeState(asMode(stored)))
+      .then((stored) => setMode(asMode(stored)))
       .catch(() => undefined);
   }, []);
 
   const onModeChange = useCallback((next: Mode) => {
-    setModeState(next);
+    setMode(next);
     void SecureStore.setItemAsync(MODE_KEY, next).catch(() => undefined);
   }, []);
 
   // `system` is resolved by the kit from the device; reading it here re-renders the status bar on a change.
-  void system;
 
   return (
     <ThemeProvider mode={mode} onModeChange={onModeChange} overrides={brands.orazaka} insets={insets}>
