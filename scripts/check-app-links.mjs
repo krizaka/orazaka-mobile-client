@@ -37,8 +37,28 @@ export function globToRegExp(glob) {
 
 /** `/watch/[id]` → `/watch/*`, `/docs/[...slug]` → `/docs/*`. */
 export function normalizeRoute(route) {
-  return route.replace(/\[\[?\.\.\.[^\]]+\]\]?/g, "*").replace(/\[[^\]]+\]/g, "*") || "/";
+  return replaceDynamicSegments(route) || "/";
 }
+
+/** Each `[x]`, `[...x]` or `[[...x]]` becomes `*`: one pass, no backtracking. */
+function replaceDynamicSegments(route) {
+  let out = "";
+  let i = 0;
+  while (i < route.length) {
+    const close = route[i] === "[" ? route.indexOf("]", i) : -1;
+    if (close < 0 || close === i + 1) {
+      out += route[i];
+      i += 1;
+      continue;
+    }
+    out += "*";
+    i = route[close + 1] === "]" && route[i + 1] === "[" ? close + 2 : close + 1;
+  }
+  return out;
+}
+
+/** Matched on code whose whitespace runs are collapsed to one space, so no pattern has to repeat `\s`. */
+const NOT_FOUND_ONLY = /^export default (?:async )?function \w* ?\([^)]*\) ?\{ ?notFound\(\) ?;? ?\}$/;
 
 /**
  * A catch-all page that does nothing but answer 404 (`app/[locale]/[...rest]/page.tsx` → `notFound()`), there so that an
@@ -51,7 +71,7 @@ export function isNotFoundOnly(source) {
     if (end < 0) return false;
     code = code.slice(end + 1).trimStart();
   }
-  return /^export\s+default\s+(async\s+)?function\s+\w*\s*\([^)]*\)\s*\{\s*notFound\(\)\s*(;\s*)?\}$/.test(code);
+  return NOT_FOUND_ONLY.test(code.replaceAll(/\s+/g, " "));
 }
 
 /** Source without its `/* … *\/` blocks and whole-line `//` comments. */

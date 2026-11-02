@@ -161,8 +161,10 @@ export function parseInputSchema(raw: string | null | undefined): SchemaField[] 
   return fields.sort((left, right) => Number(right.required) - Number(left.required));
 }
 
+type AnswerValue = string | number | string[];
+
 /** One typed answer as the payload wants it: a list split on lines, a number as a number, else the text. */
-function answerValue(field: SchemaField, answer: string): string | number | string[] {
+function answerValue(field: SchemaField, answer: string): AnswerValue {
   if (field.isList) {
     return answer
       .split("\n")
@@ -182,8 +184,8 @@ function answerValue(field: SchemaField, answer: string): string | number | stri
 export function toInputs(
   fields: readonly SchemaField[],
   answers: Readonly<Record<string, string>>,
-): Record<string, string | number | string[]> {
-  const inputs: Record<string, string | number | string[]> = {};
+): Record<string, AnswerValue> {
+  const inputs: Record<string, AnswerValue> = {};
   for (const field of fields) {
     const answer = (answers[field.key] ?? "").trim();
     if (answer === "") {

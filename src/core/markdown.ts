@@ -60,11 +60,18 @@ const HEADING = /^(#{1,6})\s(.*)$/;
 
 type Heading = Extract<Block, { kind: "heading" }>;
 
+/** Drops the closing `#` run of a heading, scanning from the end once. */
+function stripTrailingHashes(text: string): string {
+  let end = text.length;
+  while (end > 0 && text[end - 1] === "#") end -= 1;
+  return text.slice(0, end);
+}
+
 /** `## Title ##` → a heading of level 2 (at most 3) whose closing hashes are dropped. */
 function readHeading(line: string): Heading | null {
   const match = HEADING.exec(line);
   if (!match) return null;
-  const text = (match[2] ?? "").trim().replace(/#+$/, "").trim();
+  const text = stripTrailingHashes((match[2] ?? "").trim()).trim();
   return { kind: "heading", level: Math.min(match[1]?.length ?? 1, 3) as 1 | 2 | 3, inline: parseInline(text) };
 }
 
@@ -109,7 +116,8 @@ export function parseMarkdown(source: string): Block[] {
     }
   };
 
-  for (let i = 0; i < lines.length; i += 1) {
+  let i = 0;
+  while (i < lines.length) {
     const line = lines[i] ?? "";
     const heading = readHeading(line);
     const item = readItem(line);
@@ -135,6 +143,7 @@ export function parseMarkdown(source: string): Block[] {
     } else {
       paragraph.push(line.trim());
     }
+    i += 1;
   }
   flush();
   return blocks;
