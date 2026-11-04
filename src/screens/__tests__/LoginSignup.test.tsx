@@ -4,7 +4,7 @@ import { ThemeProvider } from "@krizaka/ui/native";
 import { brands } from "@krizaka/tokens/native";
 import { AppNavigator } from "../../navigation/AppNavigator";
 import { AuthProvider } from "../../core/AuthContext";
-import { signupOpenFrom } from "../../config/signupOpen";
+import { resetAppConfigClient, signupOpenFrom } from "../../config/signupOpen";
 import { answerFetch } from "../../__tests__/test-api";
 
 // krizaka-internal#2402: sign-up is closed everywhere, so the sign-in screen offers « Créer un compte » only when the
@@ -50,6 +50,8 @@ describe("signupOpenFrom", () => {
 });
 
 describe("the sign-in screen and sign-up", () => {
+  beforeEach(() => resetAppConfigClient());
+
   it("shows no sign-up entry while the server says closed", async () => {
     const calls = answerFetch({ "/api/v1/app-config": config({ signupOpen: false }) });
     await open();

@@ -31,6 +31,11 @@ function appConfigClient(): AppConfigClient {
   return client;
 }
 
+/** Forget the made client, so a test starts from a fresh fetch. */
+export function resetAppConfigClient(): void {
+  client = undefined;
+}
+
 const resume = appStateResume(AppState);
 
 /** True only when the server says sign-up is open. */

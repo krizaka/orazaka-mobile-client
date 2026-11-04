@@ -31,7 +31,12 @@ export function answerFetch(routes: Record<string, unknown>): Call[] {
       if (key === undefined) throw new TypeError("Network request failed");
       const route = routes[key];
       const { status, body } = isAnswer(route) ? route : { status: 200, body: route };
-      return { ok: status >= 200 && status < 300, status, text: async () => JSON.stringify(body) } as Response;
+      return {
+        ok: status >= 200 && status < 300,
+        status,
+        text: async () => JSON.stringify(body),
+        json: async () => body,
+      } as Response;
     },
   ) as unknown as typeof fetch;
   return calls;
