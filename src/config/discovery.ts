@@ -24,7 +24,7 @@ import { DEV_EDGE_URL, setEdgeBase, trimSlashes } from "./api";
 export const APP_VERSION = Constants.expoConfig?.version ?? "0.0.0";
 
 /** The website (a cookie session): where the app's universal links come from. Not the API. */
-export const DEV_WEB_URL = "https://dev.orazaka.com";
+export const DEV_WEB_URL = "https://www.orazaka.com";
 
 /** Baked in the build: used until a verified manifest says otherwise (the manifest's own values at build time). */
 export const BAKED_ADDRESSES = { apiBase: DEV_EDGE_URL, webBase: DEV_WEB_URL } as const;

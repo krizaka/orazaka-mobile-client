@@ -41,8 +41,8 @@ const key = (() => {
 })();
 
 const entry = (over: Partial<ServiceEntry> = {}): ServiceEntry => ({
-  apiBase: "https://dev.orazaka.com/edge",
-  webBase: "https://dev.orazaka.com",
+  apiBase: "https://www.orazaka.com/edge",
+  webBase: "https://www.orazaka.com",
   minAppVersion: "1.0.0",
   latestAppVersion: "1.0.0",
   status: "ok",
@@ -67,10 +67,10 @@ const make = (get: () => string, appVersion = "1.0.0") =>
 
 describe("the baked addresses", () => {
   it("are the dev edge and the dev website until the manifest says otherwise", () => {
-    expect(BAKED_ADDRESSES).toEqual({ apiBase: DEV_EDGE_URL, webBase: "https://dev.orazaka.com" });
+    expect(BAKED_ADDRESSES).toEqual({ apiBase: DEV_EDGE_URL, webBase: "https://www.orazaka.com" });
     expect(LEGACY_ADDRESSES).toEqual(BAKED_ADDRESSES);
     expect(edgeBase()).toBe(DEV_EDGE_URL);
-    expect(orazakaWebUrl()).toBe("https://dev.orazaka.com");
+    expect(orazakaWebUrl()).toBe("https://www.orazaka.com");
     expect(discovery.getService("orazaka").source).toBe("default");
   });
   it("send the update screen to TestFlight and the EAS builds while the app is not in the stores", () => {
@@ -100,7 +100,7 @@ describe("the live switch: a manifest edit moves the app without a rebuild", () 
     let current = manifest();
     const d = make(() => current);
     await d.start();
-    expect(d.getService("orazaka")).toMatchObject({ webBase: "https://dev.orazaka.com", source: "live" });
+    expect(d.getService("orazaka")).toMatchObject({ webBase: "https://www.orazaka.com", source: "live" });
     current = manifest(
       { webBase: "https://www.orazaka.com", apiBase: "https://api.orazaka.com/edge" },
       "2026-10-21T13:00:00Z",
@@ -192,7 +192,7 @@ describe("the System screen tells where the addresses come from", () => {
       </ThemeProvider>,
     );
     expect(await screen.findByText("Website")).toBeTruthy();
-    expect(screen.getAllByText("dev.orazaka.com")).toHaveLength(2);
+    expect(screen.getAllByText("www.orazaka.com")).toHaveLength(2);
     expect(screen.getByText("Addresses from")).toBeTruthy();
     expect(screen.getByText("Built-in default")).toBeTruthy();
   });

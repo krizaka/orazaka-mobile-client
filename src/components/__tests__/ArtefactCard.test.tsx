@@ -48,7 +48,7 @@ describe("ArtefactCard", () => {
     expect(screen.getByTestId("video-view").props.nativeControls).toBe(true);
     expect(mockPlayer.play).toHaveBeenCalled();
     expect(mockSources[0]).toEqual({
-      uri: "https://dev.orazaka.com/edge/api/v1/assets/j1/video.mp4",
+      uri: "https://www.orazaka.com/edge/api/v1/assets/j1/video.mp4",
       headers: { Authorization: "Bearer tok" },
     });
     // The path is not printed as text any more.
@@ -63,7 +63,7 @@ describe("ArtefactCard", () => {
       />,
     );
     expect(screen.getByLabelText("Photo").props.source).toEqual({
-      uri: "https://dev.orazaka.com/edge/api/v1/assets/j2/lamp.png",
+      uri: "https://www.orazaka.com/edge/api/v1/assets/j2/lamp.png",
       headers: { Authorization: "Bearer tok" },
     });
   });

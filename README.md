@@ -43,7 +43,7 @@ The app does not hard-code where the edge is: at start it reads the **signed man
 `https://www.krizaka.com/.well-known/krizaka/services.json` ([`@krizaka/discovery`](https://ui.krizaka.com/packages/discovery),
 [ADR-003](https://github.com/krizaka/.github/blob/main/docs/adr/ADR-003-mobile-service-discovery.md)); a move of the edge is a
 manifest edit and a krizaka.com deploy, never a store release. Offline it falls back to its cache, then to the baked dev edge
-(`https://dev.orazaka.com/edge` — the edge, **not** the website: `https://dev.orazaka.com` is the Next.js BFF and answers a
+(`https://www.orazaka.com/edge` — the edge, **not** the website: `https://www.orazaka.com` is the Next.js BFF and answers a
 bearer client `401 Missing active security context`).
 
 To run against the local stack, override discovery for your build with an edge the device can reach:

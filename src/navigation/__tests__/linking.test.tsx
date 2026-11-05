@@ -90,6 +90,6 @@ describe("universal links open the screen that shows the same thing", () => {
   });
 
   it("claims the addresses of the web app and ours", () => {
-    expect(linking.prefixes).toEqual(["https://dev.orazaka.com", "orazaka://"]);
+    expect(linking.prefixes).toEqual(["https://www.orazaka.com", "orazaka://"]);
   });
 });
