@@ -18,6 +18,7 @@ const krizaka = (name, file) =>
 
 /** The ES-module entries of the packages the kit and the app import (each has only an `import` condition). */
 const esmEntries = {
+  "app-config": ["", "react", "client"],
   pacer: ["", "react"],
   discovery: ["", "react", "sign"],
   intl: ["", "plural", "number", "date", "money"],

@@ -24,6 +24,7 @@
     "test:code-names": "node --test scripts/check-code-names.test.mjs"
   },
   "dependencies": {
+    "@krizaka/app-config": "^0.2.0",
     "@krizaka/charts": "^0.6.0",
     "@krizaka/discovery": "^0.1.0",
     "@krizaka/i18n": "^0.2.1",
