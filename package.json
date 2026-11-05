@@ -10,8 +10,10 @@
     "ios": "expo run:ios",
     "lint": "eslint src && npm run format:check",
     "typecheck": "tsc --noEmit",
-    "validate": "npm run lint && npm run typecheck && npm run test && npm run test:links && npm run check:icons && npm run test:icons && npm run test:flows && npm run test:code-names && npm run check:code-names",
+    "validate": "npm run lint && npm run typecheck && npm run test:coverage && npm run test:sonar && npm run test:links && npm run check:icons && npm run test:icons && npm run test:flows && npm run test:code-names && npm run check:code-names",
     "test": "jest",
+    "test:coverage": "jest --coverage --coverageReporters=lcov --coverageReporters=text-summary",
+    "test:sonar": "node --test scripts/sonar-coverage.test.mjs",
     "test:links": "node --test scripts/app-links.test.mjs",
     "check:icons": "node scripts/check-icons.mjs",
     "test:icons": "node --test scripts/check-icons.test.mjs",
@@ -22,6 +24,7 @@
     "test:code-names": "node --test scripts/check-code-names.test.mjs"
   },
   "dependencies": {
+    "@krizaka/app-config": "^0.2.0",
     "@krizaka/charts": "^0.6.0",
     "@krizaka/discovery": "^0.1.0",
     "@krizaka/i18n": "^0.2.1",
