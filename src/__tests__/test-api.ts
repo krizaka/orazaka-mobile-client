@@ -17,7 +17,7 @@ export function answerFetch(routes: Record<string, unknown>): Call[] {
   global.fetch = jest.fn(
     async (input: unknown, init?: { method?: string; headers?: Record<string, string>; body?: unknown }) => {
       const url = new URL(String(input));
-      // The app talks to the dev edge (https://dev.orazaka.com/edge/…): the recorded routes are the edge's own paths.
+      // The app talks to the dev edge (https://www.orazaka.com/edge/…): the recorded routes are the edge's own paths.
       const path = url.pathname.replace(/^\/edge(?=\/)/, "") + url.search;
       calls.push({
         path,

@@ -13,7 +13,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": ["applinks:dev.orazaka.com"]
+      "associatedDomains": ["applinks:www.orazaka.com"]
     },
     "android": {
       "adaptiveIcon": {
@@ -30,22 +30,22 @@
           "data": [
             {
               "scheme": "https",
-              "host": "dev.orazaka.com",
+              "host": "www.orazaka.com",
               "pathPrefix": "/chat"
             },
             {
               "scheme": "https",
-              "host": "dev.orazaka.com",
+              "host": "www.orazaka.com",
               "pathPrefix": "/jobs"
             },
             {
               "scheme": "https",
-              "host": "dev.orazaka.com",
+              "host": "www.orazaka.com",
               "pathPrefix": "/settings"
             },
             {
               "scheme": "https",
-              "host": "dev.orazaka.com",
+              "host": "www.orazaka.com",
               "pathPrefix": "/studios"
             }
           ],

@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { ApiError, apiRequest, DEV_EDGE_URL } from "../api";
 
-// krizaka/orazaka-mobile-client#39: dev.orazaka.com is the Next.js BFF (a cookie session). The edge a bearer client
+// krizaka/orazaka-mobile-client#39: www.orazaka.com is the Next.js BFF (a cookie session). The edge a bearer client
 // talks to is published on the same host under /edge. Pointing the app at the bare host answered
 // 401 "Missing active security context" to every sign-in.
 const root = join(__dirname, "../../..");
@@ -15,8 +15,8 @@ const eas = JSON.parse(readFileSync(join(root, "eas.json"), "utf8")) as {
 };
 
 describe("the dev edge address (the baked default and the legacy address; the manifest of krizaka.com says where it is now)", () => {
-  it("is the public /edge of dev.orazaka.com, never the BFF root", () => {
-    expect(DEV_EDGE_URL).toBe("https://dev.orazaka.com/edge");
+  it("is the public /edge of www.orazaka.com, never the BFF root", () => {
+    expect(DEV_EDGE_URL).toBe("https://www.orazaka.com/edge");
   });
 
   it.each(["development", "preview", "production", "simulator"])(

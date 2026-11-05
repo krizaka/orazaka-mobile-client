@@ -16,10 +16,10 @@
  */
 
 /**
- * The edge of the public dev site. dev.orazaka.com itself is the Next.js BFF (a cookie session a native app cannot
+ * The edge of the public dev site. www.orazaka.com itself is the Next.js BFF (a cookie session a native app cannot
  * hold); its edge answers a bearer client under `/edge`. It is the baked default and the legacy address of the app.
  */
-export const DEV_EDGE_URL = "https://dev.orazaka.com/edge";
+export const DEV_EDGE_URL = "https://www.orazaka.com/edge";
 
 let edgeBaseProvider: () => string = () => DEV_EDGE_URL;
 
