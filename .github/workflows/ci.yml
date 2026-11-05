@@ -29,4 +29,5 @@ jobs:
     with:
       component: orazaka-mobile-client
       duplication: true
+      sonar: true # CI analysis with the jest coverage of `validate` (krizaka-internal#2436); automatic analysis is switched off
     secrets: inherit # zizmor: ignore[secrets-inherit] the org's own pinned pipeline; it reads SONAR_TOKEN and nothing else of the repository's secrets
