@@ -6,6 +6,7 @@ import { ApiError } from "../config/api";
 import { useAuth } from "../core/AuthContext";
 import { errorText } from "../i18n/errorText";
 import { useT } from "../i18n";
+import { useSignupOpen } from "../config/signupOpen";
 import { AuthShell } from "../ui/AuthShell";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
@@ -17,6 +18,7 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const signupOpen = useSignupOpen();
 
   const canSubmit = email.trim() !== "" && password !== "" && !isSubmitting;
 
@@ -82,12 +84,15 @@ export function LoginScreen({ navigation }: Props): React.JSX.Element {
         disabled={isSubmitting}
         onPress={() => navigation.navigate("ForgotPassword")}
       />
-      <Button
-        variant="ghost"
-        label={t("auth.create")}
-        disabled={isSubmitting}
-        onPress={() => navigation.navigate("Register")}
-      />
+      {signupOpen && (
+        <Button
+          testID="login-create-account"
+          variant="ghost"
+          label={t("auth.create")}
+          disabled={isSubmitting}
+          onPress={() => navigation.navigate("Register")}
+        />
+      )}
     </AuthShell>
   );
 }

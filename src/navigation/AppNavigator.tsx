@@ -31,6 +31,7 @@ import { AppTabBar } from "./AppTabBar";
 import { useAuth } from "../core/AuthContext";
 import { useKeepAlive } from "../core/keepAlive";
 import { linking } from "./linking";
+import { useSignupOpen } from "../config/signupOpen";
 
 /** Routes reachable without a session. */
 export type AuthStackParamList = {
@@ -89,6 +90,7 @@ export function AppNavigator(): React.JSX.Element {
   const { session, isRestoring } = useAuth();
   const { theme: c, scheme } = useTheme();
   useKeepAlive(session?.token ?? null);
+  const signupOpen = useSignupOpen();
 
   const navTheme = useMemo<NavTheme>(
     () => ({
@@ -124,7 +126,7 @@ export function AppNavigator(): React.JSX.Element {
       {session === null ? (
         <AuthStack.Navigator screenOptions={screenOptions}>
           <AuthStack.Screen name="Login" component={LoginScreen} />
-          <AuthStack.Screen name="Register" component={RegisterScreen} />
+          {signupOpen && <AuthStack.Screen name="Register" component={RegisterScreen} />}
           <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <AuthStack.Screen name="ResetPassword" component={ResetPasswordScreen} />
         </AuthStack.Navigator>
