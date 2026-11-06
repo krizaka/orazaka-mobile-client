@@ -59,11 +59,11 @@ Running it on a simulator against the local stack, what each screen does today a
 
 ## Position in the platform
 
-| | |
-|:---|:---|
-| Depends on | [`orazaka-ui-kit`](https://github.com/krizaka/orazaka-ui-kit) |
-| Used by | _no other Orazaka repository._ |
-| Workspace path | `orazaka-apps/ui/orazaka-mobile-client` |
+|                |                                                               |
+| :------------- | :------------------------------------------------------------ |
+| Depends on     | [`orazaka-ui-kit`](https://github.com/krizaka/orazaka-ui-kit) |
+| Used by        | _no other Orazaka repository._                                |
+| Workspace path | `orazaka-apps/ui/orazaka-mobile-client`                       |
 
 ## Build
 
@@ -90,10 +90,10 @@ Requirements: Node.js 22+.
 
 Scripts a person runs by hand (ADR-026: nothing runs unlisted); each header says why, how and who owns it.
 
-| Script | What it does |
-| :-- | :-- |
+| Script                     | What it does                                                                                                      |
+| :------------------------- | :---------------------------------------------------------------------------------------------------------------- |
 | `scripts/record-story.mjs` | records the real app on the booted iOS simulator (driven by `.maestro/story.yaml`) and cuts the clips of the site |
-| `scripts/frame-clips.mjs` | puts those raw clips in a device frame and writes what the sites load |
+| `scripts/frame-clips.mjs`  | puts those raw clips in a device frame and writes what the sites load                                             |
 
 `scripts/tool-path.mjs` (absolute path of a spawned program) is imported by both. `scripts/check-app-links.mjs` is run by `npm run test:links` (part of `validate`); it is a diverged copy of krizaka/.github's, to fold into the shared action (ADR-026 B3).
 
