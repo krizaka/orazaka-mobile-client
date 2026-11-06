@@ -86,6 +86,17 @@ carries exactly one of the two tags.
 
 Requirements: Node.js 22+.
 
+## Manual tools
+
+Scripts a person runs by hand (ADR-026: nothing runs unlisted); each header says why, how and who owns it.
+
+| Script | What it does |
+| :-- | :-- |
+| `scripts/record-story.mjs` | records the real app on the booted iOS simulator (driven by `.maestro/story.yaml`) and cuts the clips of the site |
+| `scripts/frame-clips.mjs` | puts those raw clips in a device frame and writes what the sites load |
+
+`scripts/tool-path.mjs` (absolute path of a spawned program) is imported by both. `scripts/check-app-links.mjs` is run by `npm run test:links` (part of `validate`); it is a diverged copy of krizaka/.github's, to fold into the shared action (ADR-026 B3).
+
 ## Governance
 
 This repository follows the Orazaka governance contract — [AGENTS.md](https://github.com/krizaka/orazaka/blob/main/AGENTS.md)
