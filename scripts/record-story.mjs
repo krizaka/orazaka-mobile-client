@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// MANUAL TOOL (ADR-026), run by a person; owner: sovkora-mobile lane; listed in README.md « Manual tools »; the header below says how to run it.
 /**
  * Records the real Orazaka app on the booted iOS simulator and cuts it into the clips of the site.
  *
