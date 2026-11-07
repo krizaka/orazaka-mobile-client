@@ -59,11 +59,11 @@ Running it on a simulator against the local stack, what each screen does today a
 
 ## Position in the platform
 
-| | |
-|:---|:---|
-| Depends on | [`orazaka-ui-kit`](https://github.com/krizaka/orazaka-ui-kit) |
-| Used by | _no other Orazaka repository._ |
-| Workspace path | `orazaka-apps/ui/orazaka-mobile-client` |
+|                |                                                               |
+| :------------- | :------------------------------------------------------------ |
+| Depends on     | [`orazaka-ui-kit`](https://github.com/krizaka/orazaka-ui-kit) |
+| Used by        | _no other Orazaka repository._                                |
+| Workspace path | `orazaka-apps/ui/orazaka-mobile-client`                       |
 
 ## Build
 
@@ -92,6 +92,7 @@ This repository follows the Orazaka governance contract — [AGENTS.md](https://
 in the workspace is normative; the local [AGENTS.md](AGENTS.md) only scopes it to this repository.
 
 <!-- krizaka:workflows:start -->
+
 ## Workflows
 
 What runs in the Actions tab of this repository.
@@ -103,6 +104,7 @@ What runs in the Actions tab of this repository.
 - **Mobile release** (`mobile-release.yml`): Builds the mobile release on EAS (TestFlight, Android APK). Runs on push, on demand.
 - **Scorecard** (`scorecard.yml`): OpenSSF Scorecard of the repository. Runs when branch rules change, on a schedule, on demand.
 - **Security scan** (`security.yml`): Secret scan (gitleaks) and workflow scan (zizmor); both are required checks. Runs on every pull request, in the merge queue, on push.
+
 <!-- krizaka:workflows:end -->
 
 ## License
